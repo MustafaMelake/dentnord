@@ -1,0 +1,56 @@
+{
+  "metadata": {
+    "title": "Dentnord — Boreskabeloner til tandimplantater",
+    "description": "Digital implantatplanlægning og individuelle boreskabeloner, fremstillet i Danmark til tandklinikker."
+  },
+  "common": {
+    "brand": "Dentnord",
+    "comingSoon": "Siden er under opbygning.",
+    "loading": "Indlæser…"
+  },
+  "nav": {
+    "home": "Forside",
+    "services": "Ydelser",
+    "portfolio": "Cases",
+    "about": "Om os",
+    "contact": "Kontakt",
+    "portal": "Tandlægeportal",
+    "login": "Log ind"
+  },
+  "localeSwitcher": {
+    "label": "Sprog",
+    "da": "Dansk",
+    "en": "English"
+  },
+  "home": {
+    "eyebrow": "Guidet implantatkirurgi",
+    "title": "Præcise boreskabeloner, planlagt sammen med dig.",
+    "subtitle": "Dentnord planlægger implantatcases og fremstiller individuelle boreskabeloner til tandklinikker."
+  },
+  "pages": {
+    "services": "Ydelser",
+    "portfolio": "Cases",
+    "portfolioCase": "Case",
+    "about": "Om os",
+    "contact": "Kontakt"
+  },
+  "auth": {
+    "login": { "title": "Log ind" },
+    "register": { "title": "Opret tandlægekonto" },
+    "pendingApproval": {
+      "title": "Din konto afventer godkendelse",
+      "body": "Vi gennemgår alle nye tandlægekonti. Du modtager en e-mail, så snart din konto er godkendt."
+    }
+  },
+  "portal": {
+    "dashboard": { "title": "Oversigt" },
+    "cases": { "title": "Cases" },
+    "newCase": { "title": "Ny case" },
+    "caseDetail": { "title": "Case" },
+    "account": { "title": "Konto" }
+  },
+  "notFound": {
+    "title": "Siden blev ikke fundet",
+    "back": "Tilbage til forsiden"
+  }
+}

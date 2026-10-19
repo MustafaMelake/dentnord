@@ -1,0 +1,391 @@
+// Dentnord data model.
+// - Auth tables (User/Session/Account/Verification) follow Better Auth's schema.
+//   Regenerate with `pnpm auth:generate` after adding auth plugins, then re-apply the enum types below.
+// - Translatable text fields are JSON: { "da": "...", "en": "..." }.
+// - Catalog rows are never hard-deleted once referenced by a case: set `active = false` instead.
+// - Measurements are in millimetres; prices are integer minor units (øre) + currency.
+
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// ───────────────────────────── Auth (Better Auth) ─────────────────────────────
+
+enum Role {
+  ADMIN
+  DENTIST
+}
+
+enum DentistStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+model User {
+  id              String        @id
+  name            String
+  email           String        @unique
+  emailVerified   Boolean       @default(false)
+  image           String?
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+  role            Role          @default(DENTIST)
+  dentistStatus   DentistStatus @default(PENDING)
+  clinicName      String?
+  phone           String?
+  country         String?
+  address         String?
+  preferredLocale String        @default("da")
+
+  sessions      Session[]
+  accounts      Account[]
+  cases         Case[]
+  uploadedFiles CaseFile[]    @relation("CaseFileUploader")
+  caseEvents    CaseEvent[]
+  caseMessages  CaseMessage[]
+
+  @@index([role, dentistStatus])
+  @@map("user")
+}
+
+model Session {
+  id        String   @id
+  expiresAt DateTime
+  token     String   @unique
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  ipAddress String?
+  userAgent String?
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("session")
+}
+
+model Account {
+  id                    String    @id
+  accountId             String
+  providerId            String
+  userId                String
+  user                  User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  accessToken           String?
+  refreshToken          String?
+  idToken               String?
+  accessTokenExpiresAt  DateTime?
+  refreshTokenExpiresAt DateTime?
+  scope                 String?
+  password              String?
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+
+  @@index([userId])
+  @@map("account")
+}
+
+model Verification {
+  id         String   @id
+  identifier String
+  value      String
+  expiresAt  DateTime
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@index([identifier])
+  @@map("verification")
+}
+
+// ─────────────────────────────────── Cases ───────────────────────────────────
+
+enum CaseStatus {
+  SUBMITTED
+  NEEDS_FILES
+  IN_PLANNING
+  AWAITING_APPROVAL
+  CHANGES_REQUESTED
+  APPROVED
+  IN_PRODUCTION
+  SHIPPED
+  DELIVERED
+  CANCELLED
+}
+
+model Case {
+  id          String     @id @default(cuid())
+  /// Human readable, e.g. DN-2026-0001. Allocated via CaseNumberSequence.
+  caseNumber  String     @unique
+  /// Pseudonymous code chosen by the dentist. NEVER a patient name (GDPR).
+  patientCode String
+  status      CaseStatus @default(SUBMITTED)
+  surgeryDate DateTime?  @db.Date
+  notes       String?
+
+  dentistId     String
+  dentist       User         @relation(fields: [dentistId], references: [id], onDelete: Restrict)
+  guideTypeId   String
+  guideType     GuideType    @relation(fields: [guideTypeId], references: [id], onDelete: Restrict)
+  surgicalKitId String?
+  surgicalKit   SurgicalKit? @relation(fields: [surgicalKitId], references: [id], onDelete: Restrict)
+
+  implants CaseImplant[]
+  files    CaseFile[]
+  events   CaseEvent[]
+  messages CaseMessage[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([dentistId, createdAt(sort: Desc)])
+  @@index([dentistId, patientCode])
+  @@index([status, updatedAt(sort: Desc)])
+  @@index([guideTypeId])
+  @@index([surgicalKitId])
+  @@map("case")
+}
+
+/// Per-year counter backing caseNumber (DN-<year>-<0001>). Incremented atomically.
+model CaseNumberSequence {
+  year      Int @id
+  lastValue Int @default(0)
+
+  @@map("case_number_sequence")
+}
+
+/// One row per implant site.
+model CaseImplant {
+  id                 String         @id @default(cuid())
+  caseId             String
+  case               Case           @relation(fields: [caseId], references: [id], onDelete: Cascade)
+  /// FDI two-digit notation (11–48).
+  fdiTooth           Int
+  implantSystemId    String?
+  implantSystem      ImplantSystem? @relation(fields: [implantSystemId], references: [id], onDelete: Restrict)
+  /// Free text when the system is not in the catalog.
+  implantSystemOther String?
+  /// mm
+  diameter           Float
+  /// mm
+  length             Float
+  notes              String?
+
+  @@unique([caseId, fdiTooth])
+  @@index([implantSystemId])
+  @@map("case_implant")
+}
+
+enum CaseFileKind {
+  CBCT
+  INTRAORAL_SCAN
+  PHOTO
+  PLAN_REPORT
+  GUIDE_STL
+  OTHER
+}
+
+enum UploadStatus {
+  PENDING
+  UPLOADING
+  COMPLETED
+  FAILED
+  ABORTED
+}
+
+/// Object in the private R2 bucket. Accessed only through short-lived signed URLs.
+model CaseFile {
+  id           String       @id @default(cuid())
+  caseId       String
+  case         Case         @relation(fields: [caseId], references: [id], onDelete: Cascade)
+  kind         CaseFileKind
+  storageKey   String       @unique
+  fileName     String
+  /// BigInt: CBCT exports can exceed 2 GB. Convert to number/string before sending to the client.
+  sizeBytes    BigInt
+  mimeType     String
+  uploadStatus UploadStatus @default(PENDING)
+  /// S3 multipart UploadId while the upload is in progress.
+  uploadId     String?
+  uploadedById String
+  uploadedBy   User         @relation("CaseFileUploader", fields: [uploadedById], references: [id], onDelete: Restrict)
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime     @updatedAt
+
+  @@index([caseId, kind])
+  @@index([uploadedById])
+  @@index([uploadStatus, createdAt])
+  @@map("case_file")
+}
+
+enum CaseEventType {
+  CREATED
+  STATUS_CHANGED
+  FILE_ADDED
+  FILE_REMOVED
+  PLAN_APPROVED
+  CHANGES_REQUESTED
+  UPDATED
+}
+
+/// Status timeline + audit log. Append-only.
+model CaseEvent {
+  id         String        @id @default(cuid())
+  caseId     String
+  case       Case          @relation(fields: [caseId], references: [id], onDelete: Cascade)
+  type       CaseEventType
+  fromStatus CaseStatus?
+  toStatus   CaseStatus?
+  /// Null for system events.
+  actorId    String?
+  actor      User?         @relation(fields: [actorId], references: [id], onDelete: SetNull)
+  note       String?
+  metadata   Json?
+  createdAt  DateTime      @default(now())
+
+  @@index([caseId, createdAt])
+  @@index([actorId])
+  @@map("case_event")
+}
+
+/// Comment thread between the dentist and the lab on a case.
+model CaseMessage {
+  id        String    @id @default(cuid())
+  caseId    String
+  case      Case      @relation(fields: [caseId], references: [id], onDelete: Cascade)
+  authorId  String?
+  author    User?     @relation(fields: [authorId], references: [id], onDelete: SetNull)
+  body      String
+  /// When the other party read it.
+  readAt    DateTime?
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+
+  @@index([caseId, createdAt])
+  @@index([authorId])
+  @@map("case_message")
+}
+
+// ──────────────────────────── Editable catalogs ────────────────────────────
+
+model Service {
+  id          String   @id @default(cuid())
+  slug        String   @unique
+  /// { da, en }
+  title       Json
+  /// { da, en }
+  summary     Json?
+  /// { da, en }
+  description Json?
+  /// Minor units (øre). Null = "price on request".
+  priceAmount Int?
+  currency    String   @default("DKK")
+  /// { da, en } e.g. "per guide", "from"
+  priceNote   Json?
+  /// lucide-react icon name
+  icon        String?
+  published   Boolean  @default(true)
+  sortOrder   Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([published, sortOrder])
+  @@map("service")
+}
+
+model GuideType {
+  id          String   @id @default(cuid())
+  slug        String   @unique
+  /// { da, en }
+  name        Json
+  /// { da, en }
+  description Json?
+  /// Minor units (øre).
+  priceAmount Int?
+  currency    String   @default("DKK")
+  active      Boolean  @default(true)
+  sortOrder   Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  cases Case[]
+
+  @@index([active, sortOrder])
+  @@map("guide_type")
+}
+
+model ImplantSystem {
+  id        String   @id @default(cuid())
+  brand     String
+  line      String
+  /// Allowed diameters in mm.
+  diameters Float[]
+  /// Allowed lengths in mm.
+  lengths   Float[]
+  notes     String?
+  active    Boolean  @default(true)
+  sortOrder Int      @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  implants     CaseImplant[]
+  surgicalKits SurgicalKit[]
+
+  @@unique([brand, line])
+  @@index([active, brand])
+  @@map("implant_system")
+}
+
+model SurgicalKit {
+  id           String   @id @default(cuid())
+  name         String   @unique
+  manufacturer String?
+  /// { da, en }
+  description  Json?
+  active       Boolean  @default(true)
+  sortOrder    Int      @default(0)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  /// Systems this kit is compatible with.
+  implantSystems ImplantSystem[]
+  cases          Case[]
+
+  @@index([active, sortOrder])
+  @@map("surgical_kit")
+}
+
+model PortfolioCase {
+  id          String    @id @default(cuid())
+  slug        String    @unique
+  /// { da, en }
+  title       Json
+  /// { da, en }
+  summary     Json?
+  /// { da, en } long-form body
+  body        Json?
+  coverImage  String?
+  /// [{ "src": string, "alt": { "da": string, "en": string } }]
+  images      Json      @default("[]")
+  tags        String[]
+  published   Boolean   @default(false)
+  publishedAt DateTime?
+  sortOrder   Int       @default(0)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@index([published, sortOrder])
+  @@map("portfolio_case")
+}
+
+/// Key/value site content (contact info, hero text, ...). Values are JSON, translatable where needed.
+model SiteSetting {
+  key       String   @id
+  value     Json
+  updatedAt DateTime @updatedAt
+
+  @@map("site_setting")
+}

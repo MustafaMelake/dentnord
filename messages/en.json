@@ -1,0 +1,70 @@
+{
+  "metadata": {
+    "title": "Dentnord — Surgical guides for dental implants",
+    "description": "Digital implant planning and custom surgical guides, made in Denmark for dental clinics."
+  },
+  "common": {
+    "brand": "Dentnord",
+    "comingSoon": "This page is under construction.",
+    "loading": "Loading…"
+  },
+  "nav": {
+    "home": "Home",
+    "services": "Services",
+    "portfolio": "Cases",
+    "about": "About",
+    "contact": "Contact",
+    "portal": "Dentist portal",
+    "login": "Log in"
+  },
+  "localeSwitcher": {
+    "label": "Language",
+    "da": "Dansk",
+    "en": "English"
+  },
+  "home": {
+    "eyebrow": "Guided implant surgery",
+    "title": "Precise surgical guides, planned with you.",
+    "subtitle": "Dentnord plans implant cases and manufactures custom surgical guides for dental clinics."
+  },
+  "pages": {
+    "services": "Services",
+    "portfolio": "Cases",
+    "portfolioCase": "Case",
+    "about": "About",
+    "contact": "Contact"
+  },
+  "auth": {
+    "login": { "title": "Log in" },
+    "register": { "title": "Create a dentist account" },
+    "pendingApproval": {
+      "title": "Your account is awaiting approval",
+      "body": "We review every new dentist account. You will receive an email as soon as your account is approved."
+    }
+  },
+  "portal": {
+    "dashboard": { "title": "Dashboard" },
+    "cases": { "title": "Cases" },
+    "newCase": { "title": "New case" },
+    "caseDetail": { "title": "Case" },
+    "account": { "title": "Account" }
+  },
+  "notFound": {
+    "title": "Page not found",
+    "back": "Back to the front page"
+  },
+  "admin": {
+    "title": "Dentnord admin",
+    "comingSoon": "This section is under construction.",
+    "nav": {
+      "dashboard": "Dashboard",
+      "cases": "Cases",
+      "dentists": "Dentists",
+      "catalog": "Catalog",
+      "services": "Services",
+      "portfolio": "Portfolio",
+      "settings": "Settings"
+    },
+    "caseDetail": "Case"
+  }
+}
