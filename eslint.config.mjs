@@ -13,6 +13,8 @@ const eslintConfig = defineConfig([
     "next-env.d.ts",
     // Generated code
     "src/generated/**",
+    // Vendored Draco decoders (three.js)
+    "public/draco/**",
   ]),
 ]);
 

@@ -1,12 +1,16 @@
 {
+  "_review": true,
   "metadata": {
     "title": "Dentnord — Boreskabeloner til tandimplantater",
-    "description": "Digital implantatplanlægning og individuelle boreskabeloner, fremstillet i Danmark til tandklinikker."
+    "description": "Digital implantatplanlægning og individuelle boreskabeloner til tandklinikker, planlagt og printet i Danmark.",
+    "ogLocale": "da_DK"
   },
   "common": {
     "brand": "Dentnord",
     "comingSoon": "Siden er under opbygning.",
-    "loading": "Indlæser…"
+    "loading": "Indlæser…",
+    "skipToContent": "Spring til indhold",
+    "homeLink": "Dentnord, forside"
   },
   "nav": {
     "home": "Forside",
@@ -15,17 +19,194 @@
     "about": "Om os",
     "contact": "Kontakt",
     "portal": "Tandlægeportal",
-    "login": "Log ind"
+    "login": "Log ind",
+    "submitCase": "Indsend en case",
+    "main": "Hovedmenu",
+    "menu": "Menu",
+    "openMenu": "Åbn menu",
+    "closeMenu": "Luk menu"
   },
   "localeSwitcher": {
     "label": "Sprog",
     "da": "Dansk",
     "en": "English"
   },
+  "caseStatus": {
+    "SUBMITTED": "Indsendt",
+    "NEEDS_FILES": "Mangler filer",
+    "IN_PLANNING": "Planlægning",
+    "AWAITING_APPROVAL": "Afventer godkendelse",
+    "CHANGES_REQUESTED": "Ændringer ønsket",
+    "APPROVED": "Godkendt",
+    "IN_PRODUCTION": "Produktion",
+    "SHIPPED": "Afsendt",
+    "DELIVERED": "Leveret",
+    "CANCELLED": "Annulleret"
+  },
   "home": {
-    "eyebrow": "Guidet implantatkirurgi",
-    "title": "Præcise boreskabeloner, planlagt sammen med dig.",
-    "subtitle": "Dentnord planlægger implantatcases og fremstiller individuelle boreskabeloner til tandklinikker."
+    "meta": {
+      "title": "Dentnord — Præcise boreskabeloner til implantattandlæger",
+      "description": "Send din CBCT og intraorale scanning. Dentnord planlægger implantatpositionerne sammen med dig og leverer en printet boreskabelon med hylstre til din klinik."
+    },
+    "hero": {
+      "imageAlt": "Heltebillede: Dr. Hossam i arbejde",
+      "trust": "Brugt af {count} tandklinikker i Danmark",
+      "title": "Præcise boreskabeloner til implantattandlæger.",
+      "subtitle": "Send din CBCT og intraorale scanning. Vi planlægger implantatpositionerne sammen med dig og leverer en printet skabelon med hylstre direkte til klinikken.",
+      "primaryCta": "Indsend en case",
+      "secondaryCta": "Se ydelser",
+      "guideTypesLabel": "Skabelontyper",
+      "doctor": {
+        "name": "Dr. Hossam",
+        "role": "Tandlæge · implantatplanlægning",
+        "experience": "{years} års erfaring",
+        "photoAlt": "Foto: Dr. Hossam",
+        "link": "Om Dr. Hossam"
+      }
+    },
+    "workflow": {
+      "label": "Sådan foregår det",
+      "title": "Fra scanning til skabelon i fire trin",
+      "steps": {
+        "scans": {
+          "title": "Send dine scanninger",
+          "body": "Upload CBCT (DICOM) og intraorale scanninger (STL/PLY) sikkert i portalen."
+        },
+        "planning": {
+          "title": "Digital planlægning",
+          "body": "Vi planlægger implantatpositionerne protetisk med dit implantatsystem og dit kit."
+        },
+        "approve": {
+          "title": "Du godkender planen",
+          "body": "Gennemgå planen online, og godkend den eller bed om ændringer."
+        },
+        "shipped": {
+          "title": "Printet og afsendt",
+          "body": "Skabelonen printes, monteres med hylstre og sendes til din klinik."
+        }
+      }
+    },
+    "statement": "Præcision skal planlægges, ikke håbes på. Hver skabelon bygger på dine scanninger og en plan, du selv har gennemgået og godkendt, så operationen følger planen, og selve dagen byder på færre overraskelser.",
+    "services": {
+      "label": "Ydelser",
+      "title": "Planlægning og skabeloner til alle implantatcases",
+      "all": "Se alle ydelser",
+      "carousel": "Ydelser",
+      "previous": "Forrige ydelse",
+      "next": "Næste ydelse",
+      "imageAlt": "Foto: {title}",
+      "position": "{current} af {total}"
+    },
+    "portal": {
+      "label": "Portalen",
+      "title": "En case, du kan følge fra scanning til levering",
+      "intro": "Sådan ser din tandlægeportal ud: alle cases, filer og beslutninger samlet ét sted.",
+      "newCase": {
+        "caption": "Illustration af portalen: valg af skabelontype til en ny case.",
+        "title": "Ny case",
+        "step": "Trin 2 af 4",
+        "guideType": "Skabelontype",
+        "patientCode": "Patientkode",
+        "continue": "Fortsæt"
+      },
+      "caseStatus": {
+        "caption": "Illustration af portalen: statusforløbet for case DN-2026-0014, som afventer din godkendelse.",
+        "title": "Case DN-2026-0014",
+        "note": "Planen er klar. Gennemgå implantatpositionerne, og godkend.",
+        "updated": "Opdateret i dag"
+      },
+      "estimate": {
+        "caption": "Illustration af portalen: et prisoverslag med linjer. Priserne er pladsholdere.",
+        "title": "Prisoverslag",
+        "badge": "Eksempel",
+        "planning": "Digital implantatplanlægning",
+        "guide": "Boreskabelon, tandstøttet",
+        "sleeves": "Hylstre × 3",
+        "total": "I alt",
+        "price": "[pris]",
+        "note": "Ekskl. moms"
+      }
+    },
+    "guide3d": {
+      "label": "I 3D",
+      "title": "Se skabelonen, før den bliver printet",
+      "body": "Træk for at dreje en boreskabelon: en gennemsigtig resinbue med metalhylstre ved de planlagte implantatpositioner. Planlagt digitalt, printet i eget laboratorium.",
+      "cta": "Indsend en case",
+      "viewerLabel": "Interaktiv 3D-model af en boreskabelon. Træk for at dreje.",
+      "poster": "3D-visning af en boreskabelon"
+    },
+    "about": {
+      "label": "Om os",
+      "title": "Planlagt af en tandlæge, til tandlæger",
+      "cta": "Kontakt Dr. Hossam",
+      "portraitAlt": "Portræt: Dr. Hossam",
+      "badge": "Dr. Hossam · [titel/uddannelse]",
+      "expertiseLabel": "Kompetenceområder",
+      "expertise": {
+        "single": { "title": "Enkelttandsimplantater", "tag": "Tandstøttet" },
+        "fullArch": { "title": "Helkæbe", "tag": "Stabelbare skabeloner" },
+        "bone": { "title": "Knoglestøttede skabeloner", "tag": "Knogleforankret" },
+        "planning": { "title": "Kun planlægning", "tag": "Plan + rapport" }
+      },
+      "bio": "[Kort præsentation af Dr. Hossam – afventer]",
+      "facts": {
+        "experience": { "label": "Erfaring", "value": "[X] år" },
+        "location": { "label": "Baseret i", "value": "[By], Danmark" },
+        "languages": { "label": "Sprog", "value": "[Sprog]" }
+      }
+    },
+    "technology": {
+      "label": "Teknologi",
+      "title": "Digitalt fra scanning til hylster",
+      "intro": "Planlægning, print og efterbehandling under samme tag, så intet går tabt mellem trinene.",
+      "features": {
+        "planning": {
+          "title": "Digital planlægning",
+          "body": "Protetisk drevet implantatplanlægning ud fra din CBCT og intraorale scanning."
+        },
+        "printing": {
+          "title": "3D-print i eget laboratorium",
+          "body": "Skabelonerne printes og efterbehandles i vores eget laboratorium."
+        },
+        "sleeves": {
+          "title": "Kompatible hylstre",
+          "body": "Hylstre, der passer til dit implantatsystem og dit kirurgiske kit."
+        }
+      },
+      "imageAlt": "Foto: 3D-printeren i Dentnords laboratorium",
+      "stats": {
+        "guides": "Leverede skabeloner",
+        "turnaround": "Typisk leveringstid",
+        "turnaroundUnit": "arbejdsdage",
+        "systems": "Implantatsystemer i kataloget"
+      }
+    },
+    "testimonials": {
+      "label": "Udtalelser",
+      "title": "Det siger tandlægerne",
+      "quote": "[Udtalelse {n} fra en tandlæge – afventer]",
+      "author": "[Navn, klinik – afventer]",
+      "previous": "Forrige udtalelse",
+      "next": "Næste udtalelse",
+      "position": "Udtalelse {current} af {total}"
+    },
+    "cta": {
+      "title": "Klar til at sende din første case?",
+      "body": "Opret en tandlægekonto, upload dine scanninger, og få en plan til gennemsyn.",
+      "primary": "Indsend en case",
+      "secondary": "Kontakt os"
+    }
+  },
+  "footer": {
+    "tagline": "Boreskabeloner til tandimplantater, planlagt og printet i Danmark.",
+    "explore": "Udforsk",
+    "contact": "Kontakt",
+    "language": "Sprog",
+    "email": "E-mail",
+    "phone": "Telefon",
+    "address": "Adresse",
+    "cvr": "CVR {cvr}",
+    "rights": "© {year} Dentnord"
   },
   "pages": {
     "services": "Ydelser",

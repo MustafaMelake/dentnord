@@ -70,11 +70,34 @@ prisma/schema.prisma, seed.ts
 - Catalog rows referenced by cases are deactivated (`active = false`), not deleted.
 - Case numbers come from `allocateCaseNumber(tx)` inside the create transaction (`DN-YYYY-NNNN`).
 - `CaseFile.sizeBytes` is BigInt: convert it before passing to client components.
-- Design tokens live in `src/app/globals.css` (`:root` raw values → `@theme`). Fonts are set only in
-  `src/lib/fonts.ts` (`font-display`, `font-sans`, `font-mono`). Type scale: `text-display-{sm…2xl}`,
-  `text-lead`, `text-eyebrow`.
-- Three.js scenes are client-only (`next/dynamic` with `ssr: false`).
+- **No invented facts** in copy: stats, prices, names, reviews use `[placeholder]`s, listed in
+  `docs/content-todo.md`. Photos use `PlaceholderImage` (same props as `next/image`).
 - Windows/PowerShell dev machine: keep scripts cross-platform.
+
+## Design system
+
+- **Tokens** (`src/app/globals.css` `@theme`): `canvas`, `surface`, `surface-2`, `ink`, `ink-muted`,
+  `line`, `brand`, `brand-deep`, `brand-soft`, `brand-ice`. Use these in marketing UI. shadcn's
+  semantic slots (`background`, `primary`, …) derive from them; shadcn `accent` is a **neutral grey**,
+  not the brand. Radii: `rounded-card` (16px UI), `rounded-media` / `rounded-media-lg` (28/32px images),
+  `rounded-full` pills. Type: `text-display-{sm…2xl}`, `text-lead`, `text-label`; `font-mono` for
+  index labels. Width: `max-w-page` (1440) via `<Container>`. Fonts: Geist + Geist Mono (`src/lib/fonts.ts`).
+- **`cn` from `@/lib/utils` only** (configured with our custom font sizes). shadcn's CLI writes
+  `import { cn } from "cn"` into new components: change it to `@/lib/utils`.
+- **Components:** `components/shared/` (Button/ButtonLink/ArrowCircle pills, Container, SectionLabel/
+  SectionHeading, Chip, StatusBadge, PlaceholderImage, LocaleSwitcher) and `components/marketing/`
+  (SiteHeader, SiteFooter, Logo, `home/*` sections). Portal/admin use shadcn `components/ui/*`.
+- **Motion** (`components/motion/`, `motion/react`): Reveal/RevealItem, SplitText, FadeIn (CSS, for
+  above the fold), ScrollWords, Parallax, Counter, MagneticButton, SmoothScroll (Lenis, in the
+  marketing layout only). Springs, 0.4–0.8s, subtle. Every animated element gets `data-motion`, so
+  `prefers-reduced-motion` and no-JS show the final state (globals.css + `<noscript>`).
+- **Header over the home hero** is pure CSS (`data-over-hero` + the `over-hero:` variant). Don't use
+  `usePathname` in layout-level client components: it suspends on routes with unknown params.
+- **3D** (`components/three/`): always through `<GuideViewerLazy>` (dynamic, client-only, mounts in view,
+  pauses off-screen, poster fallback). Real model: `public/models/guide.glb` (see README there);
+  Draco decoders are self-hosted in `public/draco/`.
+- **Marketing data** comes from cached queries (`server/queries/catalog.ts`, `site-settings.ts`, with
+  `"use cache"` + `cacheTag`). Admin mutations must `revalidateTag()` the matching tag.
 
 ## Database (Neon)
 

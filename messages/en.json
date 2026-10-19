@@ -1,12 +1,15 @@
 {
   "metadata": {
     "title": "Dentnord — Surgical guides for dental implants",
-    "description": "Digital implant planning and custom surgical guides, made in Denmark for dental clinics."
+    "description": "Digital implant planning and custom surgical guides for dental clinics, planned and printed in Denmark.",
+    "ogLocale": "en_GB"
   },
   "common": {
     "brand": "Dentnord",
     "comingSoon": "This page is under construction.",
-    "loading": "Loading…"
+    "loading": "Loading…",
+    "skipToContent": "Skip to content",
+    "homeLink": "Dentnord, home"
   },
   "nav": {
     "home": "Home",
@@ -15,17 +18,194 @@
     "about": "About",
     "contact": "Contact",
     "portal": "Dentist portal",
-    "login": "Log in"
+    "login": "Log in",
+    "submitCase": "Submit a case",
+    "main": "Main navigation",
+    "menu": "Menu",
+    "openMenu": "Open menu",
+    "closeMenu": "Close menu"
   },
   "localeSwitcher": {
     "label": "Language",
     "da": "Dansk",
     "en": "English"
   },
+  "caseStatus": {
+    "SUBMITTED": "Submitted",
+    "NEEDS_FILES": "Needs files",
+    "IN_PLANNING": "Planning",
+    "AWAITING_APPROVAL": "Awaiting approval",
+    "CHANGES_REQUESTED": "Changes requested",
+    "APPROVED": "Approved",
+    "IN_PRODUCTION": "Production",
+    "SHIPPED": "Shipped",
+    "DELIVERED": "Delivered",
+    "CANCELLED": "Cancelled"
+  },
   "home": {
-    "eyebrow": "Guided implant surgery",
-    "title": "Precise surgical guides, planned with you.",
-    "subtitle": "Dentnord plans implant cases and manufactures custom surgical guides for dental clinics."
+    "meta": {
+      "title": "Dentnord — Precise surgical guides for implant dentists",
+      "description": "Send your CBCT and intraoral scan. Dentnord plans the implant positions with you and delivers a printed, sleeve-ready surgical guide to your clinic."
+    },
+    "hero": {
+      "imageAlt": "Hero photo: Dr. Hossam at work",
+      "trust": "Trusted by {count} dental clinics in Denmark",
+      "title": "Precise surgical guides for implant dentists.",
+      "subtitle": "Send your CBCT and intraoral scan. We plan the implant positions with you and deliver a printed, sleeve-ready guide to your clinic.",
+      "primaryCta": "Submit a case",
+      "secondaryCta": "Explore services",
+      "guideTypesLabel": "Guide types",
+      "doctor": {
+        "name": "Dr. Hossam",
+        "role": "Dentist · implant planning",
+        "experience": "{years} years of experience",
+        "photoAlt": "Photo: Dr. Hossam",
+        "link": "About Dr. Hossam"
+      }
+    },
+    "workflow": {
+      "label": "How it works",
+      "title": "From scan to guide in four steps",
+      "steps": {
+        "scans": {
+          "title": "Send your scans",
+          "body": "Upload CBCT (DICOM) and intraoral scans (STL/PLY) securely in the portal."
+        },
+        "planning": {
+          "title": "Digital planning",
+          "body": "We plan the implant positions prosthetically, with your implant system and kit."
+        },
+        "approve": {
+          "title": "You approve the plan",
+          "body": "Review the plan online, then approve it or ask for changes."
+        },
+        "shipped": {
+          "title": "Printed & shipped",
+          "body": "Your guide is printed, fitted with sleeves and shipped to your clinic."
+        }
+      }
+    },
+    "statement": "Precision is planned, not hoped for. Every guide starts from your scans and a plan you have reviewed and approved, so the surgery follows the plan and the day itself holds fewer surprises.",
+    "services": {
+      "label": "Services",
+      "title": "Planning and guides for every implant case",
+      "all": "See all services",
+      "carousel": "Services",
+      "previous": "Previous service",
+      "next": "Next service",
+      "imageAlt": "Photo: {title}",
+      "position": "{current} of {total}"
+    },
+    "portal": {
+      "label": "The portal",
+      "title": "A case you can follow, from scan to delivery",
+      "intro": "This is your dentist portal: every case, file and decision in one place.",
+      "newCase": {
+        "caption": "Illustration of the portal: choosing a guide type for a new case.",
+        "title": "New case",
+        "step": "Step 2 of 4",
+        "guideType": "Guide type",
+        "patientCode": "Patient code",
+        "continue": "Continue"
+      },
+      "caseStatus": {
+        "caption": "Illustration of the portal: the status timeline of case DN-2026-0014, currently awaiting your approval.",
+        "title": "Case DN-2026-0014",
+        "note": "The plan is ready. Review the implant positions and approve.",
+        "updated": "Updated today"
+      },
+      "estimate": {
+        "caption": "Illustration of the portal: an estimate with line items. Prices are placeholders.",
+        "title": "Estimate",
+        "badge": "Example",
+        "planning": "Digital implant planning",
+        "guide": "Surgical guide, tooth-supported",
+        "sleeves": "Guide sleeves × 3",
+        "total": "Total",
+        "price": "[price]",
+        "note": "Excl. VAT"
+      }
+    },
+    "guide3d": {
+      "label": "In 3D",
+      "title": "See the guide before it's printed",
+      "body": "Drag to rotate a surgical guide: a translucent resin arch with metal sleeves at the planned implant positions. Planned digitally, printed in-house.",
+      "cta": "Submit a case",
+      "viewerLabel": "Interactive 3D model of a surgical guide. Drag to rotate.",
+      "poster": "3D preview of a surgical guide"
+    },
+    "about": {
+      "label": "About",
+      "title": "Planned by a dentist, for dentists",
+      "cta": "Contact Dr. Hossam",
+      "portraitAlt": "Portrait: Dr. Hossam",
+      "badge": "Dr. Hossam · [credentials]",
+      "expertiseLabel": "Areas of expertise",
+      "expertise": {
+        "single": { "title": "Single implants", "tag": "Tooth-supported" },
+        "fullArch": { "title": "Full-arch", "tag": "Stackable guides" },
+        "bone": { "title": "Bone-supported guides", "tag": "Bone-anchored" },
+        "planning": { "title": "Planning only", "tag": "Plan + report" }
+      },
+      "bio": "[Short bio of Dr. Hossam — pending]",
+      "facts": {
+        "experience": { "label": "Experience", "value": "[X] years" },
+        "location": { "label": "Based in", "value": "[City], Denmark" },
+        "languages": { "label": "Languages", "value": "[Languages]" }
+      }
+    },
+    "technology": {
+      "label": "Technology",
+      "title": "Digital from scan to sleeve",
+      "intro": "Planning, printing and finishing under one roof, so nothing gets lost between steps.",
+      "features": {
+        "planning": {
+          "title": "Digital planning",
+          "body": "Prosthetically driven implant planning from your CBCT and intraoral scan."
+        },
+        "printing": {
+          "title": "In-house 3D printing",
+          "body": "Guides are printed and post-processed in our own lab."
+        },
+        "sleeves": {
+          "title": "Sleeve compatibility",
+          "body": "Sleeves matched to your implant system and surgical kit."
+        }
+      },
+      "imageAlt": "Photo: the 3D printer in the Dentnord lab",
+      "stats": {
+        "guides": "Guides delivered",
+        "turnaround": "Typical turnaround",
+        "turnaroundUnit": "working days",
+        "systems": "Implant systems in our catalog"
+      }
+    },
+    "testimonials": {
+      "label": "Testimonials",
+      "title": "What dentists say",
+      "quote": "[Testimonial {n} from a dentist — pending]",
+      "author": "[Name, clinic — pending]",
+      "previous": "Previous testimonial",
+      "next": "Next testimonial",
+      "position": "Testimonial {current} of {total}"
+    },
+    "cta": {
+      "title": "Ready to send your first case?",
+      "body": "Create a dentist account, upload your scans and get a plan to review.",
+      "primary": "Submit a case",
+      "secondary": "Contact us"
+    }
+  },
+  "footer": {
+    "tagline": "Surgical guides for dental implants, planned and printed in Denmark.",
+    "explore": "Explore",
+    "contact": "Contact",
+    "language": "Language",
+    "email": "Email",
+    "phone": "Phone",
+    "address": "Address",
+    "cvr": "CVR {cvr}",
+    "rights": "© {year} Dentnord"
   },
   "pages": {
     "services": "Services",

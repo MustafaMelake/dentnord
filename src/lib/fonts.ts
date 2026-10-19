@@ -1,17 +1,13 @@
-import { Geist_Mono, Inter, Schibsted_Grotesk } from "next/font/google";
+import { Geist, Geist_Mono } from "next/font/google";
 
-// Swap typefaces here only. Components use the Tailwind utilities `font-display`, `font-sans`
-// and `font-mono`, which globals.css maps onto these CSS variables.
+// Swap typefaces here only. Components use the Tailwind utilities `font-sans` / `font-display`
+// (Geist) and `font-mono` (Geist Mono, for small index labels like "01" and "Services /").
+// The `latin` subset covers Danish (æ ø å). next/font self-hosts the files, so visitors never
+// request anything from Google.
 
-const display = Schibsted_Grotesk({
+const sans = Geist({
   subsets: ["latin"],
-  variable: "--ff-display",
-  display: "swap",
-});
-
-const body = Inter({
-  subsets: ["latin"],
-  variable: "--ff-body",
+  variable: "--ff-sans",
   display: "swap",
 });
 
@@ -21,4 +17,4 @@ const mono = Geist_Mono({
   display: "swap",
 });
 
-export const fontVariables = [display.variable, body.variable, mono.variable].join(" ");
+export const fontVariables = [sans.variable, mono.variable].join(" ");

@@ -3,3 +3,4 @@ src/generated/
 prisma/migrations/
 .next/
 AGENTS.md
+public/draco/

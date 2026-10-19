@@ -4,81 +4,168 @@
 
 @custom-variant dark (&:is(.dark *));
 
+/* Site header sitting transparently over the home hero (page has [data-over-hero], not yet scrolled).
+   Pure CSS, so the header needs no pathname hook and prerenders on every route. */
+@custom-variant over-hero (&:where(body:has([data-over-hero]) [data-site-header]:not([data-scrolled]), body:has([data-over-hero]) [data-site-header]:not([data-scrolled]) *));
+
 /*
- * Dentnord design tokens: premium, clean, Scandinavian-clinical.
- * To retheme, edit the raw values in :root (and .dark). Everything else is derived.
+ * Dentnord design tokens: calm clinical blue on cool off-white.
+ *
+ * 1. Brand palette (@theme below): the source of truth. Use these in marketing UI:
+ *    bg-canvas, bg-surface, bg-surface-2, text-ink, text-ink-muted, border-line,
+ *    bg-brand, bg-brand-deep, bg-brand-soft, bg-brand-ice.
+ * 2. shadcn/ui semantic slots (:root): derived from the palette, used by components/ui.
+ *    shadcn's `accent` is deliberately a NEUTRAL grey (menu hovers), not the brand blue.
+ * Contrast (WCAG): ink-muted (#546577) passes 4.5:1 on canvas, surface, surface-2, brand-ice
+ * and brand-soft. The original #5A6B7C failed on brand-soft (4.31:1).
  * Fonts are set in src/lib/fonts.ts.
  */
 
+@theme {
+  /* Brand palette */
+  --color-canvas: #f4f7fa;
+  --color-surface: #ffffff;
+  --color-surface-2: #eaf0f6;
+  --color-ink: #0b1b2b;
+  --color-ink-muted: #546577;
+  --color-line: #dce4ec;
+  --color-brand: #1e5aa8;
+  --color-brand-deep: #0f2e4c;
+  --color-brand-soft: #d6e6f5;
+  --color-brand-ice: #eef5fc;
+
+  /* Shape: UI cards 16px, image cards 28–32px, pills fully round */
+  --radius-card: 1rem;
+  --radius-media: 1.75rem;
+  --radius-media-lg: 2rem;
+
+  /* Motion: spring-like ease for CSS transitions (hover lifts, image zoom) */
+  --ease-spring: cubic-bezier(0.16, 1, 0.3, 1);
+
+  /* Layout */
+  --container-page: 90rem; /* 1440px */
+
+  /* Display scale: big, regular weight, tight tracking. text-display-{sm…2xl} */
+  --text-display-2xl: clamp(2.25rem, 0.49rem + 7.24vw, 7rem);
+  --text-display-2xl--line-height: 0.98;
+  --text-display-2xl--letter-spacing: -0.04em;
+  --text-display-2xl--font-weight: 400;
+  --text-display-xl: clamp(2.5rem, 1.3rem + 4.4vw, 5.5rem);
+  --text-display-xl--line-height: 1;
+  --text-display-xl--letter-spacing: -0.035em;
+  --text-display-xl--font-weight: 400;
+  --text-display-lg: clamp(2rem, 1.35rem + 2.4vw, 3.75rem);
+  --text-display-lg--line-height: 1.02;
+  --text-display-lg--letter-spacing: -0.03em;
+  --text-display-lg--font-weight: 400;
+  --text-display-md: clamp(1.625rem, 1.15rem + 1.9vw, 3rem);
+  --text-display-md--line-height: 1.12;
+  --text-display-md--letter-spacing: -0.03em;
+  --text-display-md--font-weight: 400;
+  --text-display-sm: clamp(1.25rem, 1.05rem + 0.8vw, 1.75rem);
+  --text-display-sm--line-height: 1.15;
+  --text-display-sm--letter-spacing: -0.02em;
+  --text-display-sm--font-weight: 500;
+
+  /* Body extras */
+  --text-lead: clamp(1.0625rem, 1rem + 0.3vw, 1.25rem);
+  --text-lead--line-height: 1.55;
+  --text-label: 0.75rem;
+  --text-label--line-height: 1.2;
+  --text-label--letter-spacing: 0.02em;
+
+  /* Above-the-fold entrances (CSS, run before hydration) */
+  --animate-word-rise: word-rise 0.9s var(--ease-spring) both;
+  --animate-fade-rise: fade-rise 0.9s var(--ease-spring) both;
+
+  @keyframes fade-rise {
+    from {
+      opacity: 0;
+      transform: translateY(24px);
+      filter: blur(6px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+      filter: blur(0);
+    }
+  }
+
+  @keyframes word-rise {
+    from {
+      transform: translateY(105%);
+    }
+    to {
+      transform: translateY(0);
+    }
+  }
+}
+
 :root {
-  /* Surfaces & text: cool off-white paper with deep blue-grey ink */
-  --background: oklch(0.985 0.003 240);
-  --foreground: oklch(0.21 0.018 250);
-  --muted: oklch(0.955 0.005 240);
-  --muted-foreground: oklch(0.5 0.015 250);
-  --border: oklch(0.905 0.006 240);
+  --background: var(--color-canvas);
+  --foreground: var(--color-ink);
+  --card: var(--color-surface);
+  --card-foreground: var(--color-ink);
+  --popover: var(--color-surface);
+  --popover-foreground: var(--color-ink);
+  --primary: var(--color-brand);
+  --primary-foreground: var(--color-surface);
+  --secondary: var(--color-surface-2);
+  --secondary-foreground: var(--color-ink);
+  --muted: var(--color-surface-2);
+  --muted-foreground: var(--color-ink-muted);
+  /* Neutral grey for menu/list hovers. Not the brand colour. */
+  --accent: #eef1f4;
+  --accent-foreground: var(--color-ink);
+  --destructive: #c2362b;
+  --border: var(--color-line);
+  --input: var(--color-line);
+  --ring: var(--color-brand);
 
-  /* Accent: calm Nordic fjord blue */
-  --accent: oklch(0.52 0.085 230);
-  --accent-foreground: oklch(0.985 0.003 240);
+  --chart-1: var(--color-brand);
+  --chart-2: #4f86c6;
+  --chart-3: var(--color-brand-deep);
+  --chart-4: #8fb4dd;
+  --chart-5: var(--color-ink-muted);
 
-  /* shadcn/ui semantic slots, derived from the above */
-  --card: oklch(1 0 0);
-  --card-foreground: var(--foreground);
-  --popover: oklch(1 0 0);
-  --popover-foreground: var(--foreground);
-  --primary: var(--foreground);
-  --primary-foreground: var(--background);
-  --secondary: var(--muted);
-  --secondary-foreground: var(--foreground);
-  --destructive: oklch(0.577 0.2 27);
-  --input: var(--border);
-  --ring: oklch(0.52 0.085 230 / 60%);
+  --sidebar: var(--color-surface);
+  --sidebar-foreground: var(--color-ink);
+  --sidebar-primary: var(--color-brand);
+  --sidebar-primary-foreground: var(--color-surface);
+  --sidebar-accent: #eef1f4;
+  --sidebar-accent-foreground: var(--color-ink);
+  --sidebar-border: var(--color-line);
+  --sidebar-ring: var(--color-brand);
 
-  --chart-1: oklch(0.52 0.085 230);
-  --chart-2: oklch(0.62 0.07 200);
-  --chart-3: oklch(0.45 0.05 260);
-  --chart-4: oklch(0.72 0.05 230);
-  --chart-5: oklch(0.35 0.03 250);
-
-  --sidebar: oklch(0.975 0.004 240);
-  --sidebar-foreground: var(--foreground);
-  --sidebar-primary: var(--foreground);
-  --sidebar-primary-foreground: var(--background);
-  --sidebar-accent: var(--muted);
-  --sidebar-accent-foreground: var(--foreground);
-  --sidebar-border: var(--border);
-  --sidebar-ring: var(--ring);
-
-  /* Shape: one base radius, scaled below */
-  --radius: 0.625rem;
+  --radius: 1rem;
 }
 
 .dark {
-  --background: oklch(0.17 0.012 250);
-  --foreground: oklch(0.96 0.004 240);
-  --muted: oklch(0.24 0.014 250);
-  --muted-foreground: oklch(0.7 0.012 250);
-  --border: oklch(1 0 0 / 10%);
-  --accent: oklch(0.68 0.09 225);
-  --accent-foreground: oklch(0.17 0.012 250);
-  --card: oklch(0.2 0.013 250);
-  --popover: oklch(0.2 0.013 250);
-  --destructive: oklch(0.7 0.19 22);
-  --input: oklch(1 0 0 / 15%);
-  --ring: oklch(0.68 0.09 225 / 60%);
-  --sidebar: oklch(0.2 0.013 250);
+  --background: #08131f;
+  --foreground: #e8eef5;
+  --card: #0f2e4c;
+  --card-foreground: #e8eef5;
+  --popover: #0f2e4c;
+  --popover-foreground: #e8eef5;
+  --primary: #8fb4dd;
+  --primary-foreground: #08131f;
+  --secondary: #16324f;
+  --secondary-foreground: #e8eef5;
+  --muted: #16324f;
+  --muted-foreground: #a9b8c8;
+  --accent: #1b3653;
+  --accent-foreground: #e8eef5;
+  --destructive: #ef7f74;
+  --border: rgb(255 255 255 / 0.1);
+  --input: rgb(255 255 255 / 0.15);
+  --ring: #8fb4dd;
+  --sidebar: #0f2e4c;
 }
 
 @theme inline {
-  /* Colors */
+  /* shadcn/ui semantic colours */
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --color-muted: var(--muted);
-  --color-muted-foreground: var(--muted-foreground);
-  --color-accent: var(--accent);
-  --color-accent-foreground: var(--accent-foreground);
-  --color-border: var(--border);
   --color-card: var(--card);
   --color-card-foreground: var(--card-foreground);
   --color-popover: var(--popover);
@@ -87,7 +174,12 @@
   --color-primary-foreground: var(--primary-foreground);
   --color-secondary: var(--secondary);
   --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
   --color-destructive: var(--destructive);
+  --color-border: var(--border);
   --color-input: var(--input);
   --color-ring: var(--ring);
   --color-chart-1: var(--chart-1);
@@ -105,45 +197,19 @@
   --color-sidebar-ring: var(--sidebar-ring);
 
   /* Fonts (variables come from src/lib/fonts.ts) */
-  --font-sans: var(--ff-body), ui-sans-serif, system-ui, sans-serif;
-  --font-display: var(--ff-display), var(--ff-body), ui-sans-serif, sans-serif;
+  --font-sans: var(--ff-sans), ui-sans-serif, system-ui, sans-serif;
+  --font-display: var(--ff-sans), ui-sans-serif, system-ui, sans-serif;
   --font-heading: var(--font-display);
   --font-mono: var(--ff-mono), ui-monospace, monospace;
 
-  /* Radii */
-  --radius-sm: calc(var(--radius) * 0.6);
-  --radius-md: calc(var(--radius) * 0.8);
+  /* shadcn radii (UI components) */
+  --radius-sm: calc(var(--radius) * 0.5);
+  --radius-md: calc(var(--radius) * 0.75);
   --radius-lg: var(--radius);
-  --radius-xl: calc(var(--radius) * 1.4);
-  --radius-2xl: calc(var(--radius) * 1.8);
-  --radius-3xl: calc(var(--radius) * 2.2);
-  --radius-4xl: calc(var(--radius) * 2.6);
-}
-
-@theme {
-  /* Display type scale (fluid). Use as text-display-2xl … text-display-sm. */
-  --text-display-2xl: clamp(3rem, 1.6rem + 5.6vw, 6.5rem);
-  --text-display-2xl--line-height: 0.98;
-  --text-display-2xl--letter-spacing: -0.035em;
-  --text-display-xl: clamp(2.5rem, 1.5rem + 4vw, 5rem);
-  --text-display-xl--line-height: 1.02;
-  --text-display-xl--letter-spacing: -0.03em;
-  --text-display-lg: clamp(2rem, 1.4rem + 2.4vw, 3.5rem);
-  --text-display-lg--line-height: 1.06;
-  --text-display-lg--letter-spacing: -0.025em;
-  --text-display-md: clamp(1.625rem, 1.3rem + 1.3vw, 2.5rem);
-  --text-display-md--line-height: 1.12;
-  --text-display-md--letter-spacing: -0.02em;
-  --text-display-sm: clamp(1.375rem, 1.2rem + 0.7vw, 1.875rem);
-  --text-display-sm--line-height: 1.2;
-  --text-display-sm--letter-spacing: -0.015em;
-
-  /* Body extras (Tailwind's text-xs … text-xl stay available) */
-  --text-lead: clamp(1.125rem, 1.05rem + 0.35vw, 1.375rem);
-  --text-lead--line-height: 1.55;
-  --text-eyebrow: 0.75rem;
-  --text-eyebrow--line-height: 1;
-  --text-eyebrow--letter-spacing: 0.14em;
+  --radius-xl: calc(var(--radius) * 1.25);
+  --radius-2xl: calc(var(--radius) * 1.5);
+  --radius-3xl: calc(var(--radius) * 1.75);
+  --radius-4xl: calc(var(--radius) * 2);
 }
 
 @layer base {
@@ -154,18 +220,68 @@
     @apply font-sans;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
   }
   body {
     @apply bg-background text-foreground;
+    /* 15px on phones → 17px on large screens */
+    font-size: clamp(0.9375rem, 0.9rem + 0.18vw, 1.0625rem);
+    line-height: 1.6;
   }
   h1,
   h2,
   h3,
   h4 {
-    @apply font-display;
+    @apply font-display text-balance;
+    /* Danish compounds ("implantattandlæger") don't fit narrow screens without hyphenation. */
+    hyphens: auto;
+    overflow-wrap: break-word;
+  }
+  @media (min-width: 40rem) {
+    h1,
+    h2,
+    h3,
+    h4 {
+      hyphens: manual;
+    }
+  }
+  ::selection {
+    background: var(--color-brand-soft);
+    color: var(--color-ink);
+  }
+  a:focus-visible,
+  button:focus-visible,
+  [tabindex]:focus-visible {
+    outline: 2px solid var(--color-brand);
+    outline-offset: 3px;
   }
   button:not(:disabled),
   [role="button"]:not(:disabled) {
     cursor: pointer;
+  }
+}
+
+/*
+ * Motion safety net. Animated elements carry `data-motion`. Under reduced motion (and without JS,
+ * see the <noscript> in app/[locale]/layout.tsx) they render in their final state, regardless of
+ * any inline styles set by motion.
+ */
+@media (prefers-reduced-motion: reduce) {
+  [data-motion] {
+    opacity: 1 !important;
+    transform: none !important;
+    filter: none !important;
+    clip-path: none !important;
+  }
+  [data-motion="words"] * {
+    color: inherit !important;
+  }
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
   }
 }
