@@ -55,6 +55,8 @@
     "zod": "^4.6.7"
   },
   "devDependencies": {
+    "@neon/config": "^1.9.2",
+    "@neon/env": "^1.6.3",
     "@tailwindcss/turbopack": "^4",
     "@types/node": "^20",
     "@types/react": "^19",

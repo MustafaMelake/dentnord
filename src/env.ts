@@ -4,7 +4,10 @@ import { z } from "zod";
 export const env = createEnv({
   server: {
     NODE_ENV: z.enum(["development", "test", "production"]).default("development"),
+    // Neon pooled connection (-pooler host). Used by the app at runtime (src/lib/db.ts).
     DATABASE_URL: z.url(),
+    // Neon direct (unpooled) connection. Read only by the Prisma CLI via prisma.config.ts.
+    DIRECT_URL: z.url().optional(),
     BETTER_AUTH_SECRET: z.string().min(32),
     BETTER_AUTH_URL: z.url(),
     R2_ACCOUNT_ID: z.string().min(1),

@@ -18,7 +18,7 @@ implants**. The audience is **dentists, not patients**.
 Next.js 16 (App Router, Turbopack, `cacheComponents`, `src/`) · React 19 · TypeScript (strict) ·
 Tailwind CSS v4 + shadcn/ui (radix-nova, `cn` package) · lucide-react · gsap + @gsap/react · lenis ·
 motion · three + @react-three/fiber + drei · next-intl 4 · Prisma 7 (`prisma-client` generator,
-`@prisma/adapter-pg`) on PostgreSQL (Neon, EU) · Better Auth (email+password, Prisma adapter) ·
+`@prisma/adapter-pg`) on PostgreSQL (Neon, Frankfurt) · Better Auth (email+password, Prisma adapter) ·
 zod 4 + react-hook-form · Cloudflare R2 (EU jurisdiction) via @aws-sdk/client-s3 + presigner ·
 Uppy (core/dashboard/aws-s3 multipart) · Resend + react-email · @tanstack/react-table ·
 @t3-oss/env-nextjs · ESLint + Prettier (tailwind plugin) · pnpm.
@@ -75,6 +75,20 @@ prisma/schema.prisma, seed.ts
   `text-lead`, `text-eyebrow`.
 - Three.js scenes are client-only (`next/dynamic` with `ssr: false`).
 - Windows/PowerShell dev machine: keep scripts cross-platform.
+
+## Database (Neon)
+
+- Project `dentnord-eu` (`small-river-39570877`), region **aws-eu-central-1 (Frankfurt)**, Postgres 18,
+  default branch `production`. Linked via `.neon` (gitignored); policy in `neon.ts`.
+  Don't use the older London project `aged-flower-65703337`: it is outside the EU.
+- `DATABASE_URL` = **pooled** (`-pooler`), used by the app through `@prisma/adapter-pg` (node-postgres,
+  Node runtime everywhere). `DIRECT_URL` = **unpooled**, used only by the Prisma CLI via
+  `prisma.config.ts` (Prisma 7 has no `directUrl` in schema.prisma). Never run migrations over the pooler.
+- `neon deploy` / `neon env pull` rewrite `DATABASE_URL`, `DATABASE_URL_UNPOOLED` and `NEON_BRANCH` in
+  `.env`. If credentials change, copy `DATABASE_URL_UNPOOLED` into `DIRECT_URL`.
+- Connection strings go through `withVerifiedSsl()` (`src/lib/pg-url.ts`) to pin `sslmode=verify-full`.
+- Schema changes: `pnpm db:migrate` (creates + applies a migration). Test risky migrations on a Neon
+  branch first (`neon checkout <name> --create`).
 
 ## Commands
 

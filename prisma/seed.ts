@@ -15,13 +15,16 @@ import { PrismaPg } from "@prisma/adapter-pg";
 import { hashPassword } from "better-auth/crypto";
 
 import { PrismaClient } from "../src/generated/prisma/client";
+import { withVerifiedSsl } from "../src/lib/pg-url";
 
 if (existsSync(".env")) process.loadEnvFile(".env");
 
 const databaseUrl = process.env.DATABASE_URL;
 if (!databaseUrl) throw new Error("DATABASE_URL is not set");
 
-const db = new PrismaClient({ adapter: new PrismaPg({ connectionString: databaseUrl }) });
+const db = new PrismaClient({
+  adapter: new PrismaPg({ connectionString: withVerifiedSsl(databaseUrl) }),
+});
 
 const EXAMPLE = "EXAMPLE — verify before going live.";
 const t = (da: string, en: string) => ({ da, en });
