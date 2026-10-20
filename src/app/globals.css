@@ -2,6 +2,9 @@
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
 
+@custom-variant hover (&:hover);
+@custom-variant group-hover (.group:hover &);
+
 @custom-variant dark (&:is(.dark *));
 
 /* Site header sitting transparently over the home hero (page has [data-over-hero], not yet scrolled).
