@@ -4,3 +4,6 @@ prisma/migrations/
 .next/
 AGENTS.md
 public/draco/
+
+/test-results
+/playwright-report

@@ -17,7 +17,9 @@
     "db:seed": "prisma db seed",
     "db:studio": "prisma studio",
     "auth:generate": "pnpm dlx auth@1.7.10 generate --config scripts/auth-schema.config.ts --adapter prisma --dialect postgresql --output prisma/schema.prisma -y && prisma format",
-    "postinstall": "prisma generate"
+    "postinstall": "prisma generate",
+    "test:unit": "node --import tsx --test \"tests/unit/**/*.test.ts\"",
+    "test:e2e": "playwright test"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.1152.0",
@@ -58,6 +60,7 @@
   "devDependencies": {
     "@neon/config": "^1.9.2",
     "@neon/env": "^1.6.3",
+    "@playwright/test": "^1.64.1",
     "@tailwindcss/turbopack": "^4",
     "@types/node": "^20",
     "@types/react": "^19",
