@@ -58,6 +58,7 @@ model User {
   caseEvents    CaseEvent[]
   caseMessages  CaseMessage[]
   auditEntries  AuditLog[]
+  mediaUploads  MediaAsset[]
 
   @@index([role, dentistStatus])
   @@map("user")
@@ -127,6 +128,13 @@ enum AuditAction {
   DENTIST_APPROVED
   DENTIST_REJECTED
   DENTIST_REACTIVATED
+  // Admin content management (targetType = model name or "setting:<key>")
+  CONTENT_CREATED
+  CONTENT_UPDATED
+  CONTENT_DELETED
+  CONTENT_ARCHIVED
+  CONTENT_REORDERED
+  MEDIA_UPLOADED
 }
 
 /// Who did what, when. Append-only. `targetId` has no foreign key, so entries outlive their target.
@@ -320,8 +328,8 @@ model CaseMessage {
 // ──────────────────────────── Editable catalogs ────────────────────────────
 
 model Service {
-  id          String   @id @default(cuid())
-  slug        String   @unique
+  id          String      @id @default(cuid())
+  slug        String      @unique
   /// { da, en }
   title       Json
   /// { da, en }
@@ -330,17 +338,22 @@ model Service {
   description Json?
   /// Minor units (øre). Null = "price on request".
   priceAmount Int?
-  currency    String   @default("DKK")
-  /// { da, en } e.g. "per guide", "from"
+  /// Show the price as "from <price>".
+  priceFrom   Boolean     @default(false)
+  currency    String      @default("DKK")
+  /// { da, en } e.g. "per guide", "excl. VAT"
   priceNote   Json?
   /// lucide-react icon name
   icon        String?
-  published   Boolean  @default(true)
-  sortOrder   Int      @default(0)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  imageId     String?
+  image       MediaAsset? @relation(fields: [imageId], references: [id], onDelete: SetNull)
+  published   Boolean     @default(true)
+  sortOrder   Int         @default(0)
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
 
   @@index([published, sortOrder])
+  @@index([imageId])
   @@map("service")
 }
 
@@ -359,7 +372,8 @@ model GuideType {
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
-  cases Case[]
+  cases          Case[]
+  portfolioCases PortfolioCase[]
 
   @@index([active, sortOrder])
   @@map("guide_type")
@@ -407,26 +421,84 @@ model SurgicalKit {
 }
 
 model PortfolioCase {
-  id          String    @id @default(cuid())
-  slug        String    @unique
+  id           String           @id @default(cuid())
+  slug         String           @unique
   /// { da, en }
-  title       Json
+  title        Json
   /// { da, en }
-  summary     Json?
+  summary      Json?
   /// { da, en } long-form body
-  body        Json?
-  coverImage  String?
-  /// [{ "src": string, "alt": { "da": string, "en": string } }]
-  images      Json      @default("[]")
-  tags        String[]
-  published   Boolean   @default(false)
-  publishedAt DateTime?
-  sortOrder   Int       @default(0)
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
+  body         Json?
+  guideTypeId  String?
+  guideType    GuideType?       @relation(fields: [guideTypeId], references: [id], onDelete: SetNull)
+  implantCount Int?
+  /// Gallery, in order. The first image is the cover.
+  images       PortfolioImage[]
+  tags         String[]
+  published    Boolean          @default(false)
+  publishedAt  DateTime?
+  sortOrder    Int              @default(0)
+  createdAt    DateTime         @default(now())
+  updatedAt    DateTime         @updatedAt
 
   @@index([published, sortOrder])
+  @@index([guideTypeId])
   @@map("portfolio_case")
+}
+
+model PortfolioImage {
+  id        String        @id @default(cuid())
+  caseId    String
+  case      PortfolioCase @relation(fields: [caseId], references: [id], onDelete: Cascade)
+  mediaId   String
+  media     MediaAsset    @relation(fields: [mediaId], references: [id], onDelete: Restrict)
+  /// { da, en }
+  caption   Json?
+  sortOrder Int           @default(0)
+
+  @@index([caseId, sortOrder])
+  @@index([mediaId])
+  @@map("portfolio_image")
+}
+
+/// Quote from a dentist. Can only be published with written consent (also a DB CHECK constraint).
+model Testimonial {
+  id         String   @id @default(cuid())
+  /// { da, en }
+  quote      Json
+  authorName String
+  clinic     String?
+  consent    Boolean  @default(false)
+  published  Boolean  @default(false)
+  sortOrder  Int      @default(0)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@index([published, sortOrder])
+  @@map("testimonial")
+}
+
+/// Public image in the R2 media bucket (R2_MEDIA_BUCKET), served from R2_MEDIA_PUBLIC_URL.
+model MediaAsset {
+  id           String   @id @default(cuid())
+  key          String   @unique
+  url          String
+  width        Int
+  height       Int
+  contentType  String
+  sizeBytes    Int
+  /// { da, en } — required
+  alt          Json
+  uploadedById String?
+  uploadedBy   User?    @relation(fields: [uploadedById], references: [id], onDelete: SetNull)
+  createdAt    DateTime @default(now())
+
+  services        Service[]
+  portfolioImages PortfolioImage[]
+
+  @@index([createdAt(sort: Desc)])
+  @@index([uploadedById])
+  @@map("media_asset")
 }
 
 /// Key/value site content (contact info, hero text, ...). Values are JSON, translatable where needed.
