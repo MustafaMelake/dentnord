@@ -2,6 +2,7 @@ import createIntlMiddleware from "next-intl/middleware";
 import { NextResponse, type NextRequest } from "next/server";
 
 import { routing } from "@/i18n/routing";
+import { ADMIN_HINT_COOKIE } from "@/lib/admin-hint";
 import { auth } from "@/lib/auth";
 
 // Next 16 `proxy` (formerly middleware), Node.js runtime.
@@ -37,6 +38,21 @@ async function freshSession(request: NextRequest) {
   return { session: response, setCookies: headers.getSetCookie() };
 }
 
+/** Hint cookie for the public "missing content" markers (see lib/admin-hint.ts). */
+function withAdminHint(response: NextResponse, isAdmin: boolean) {
+  if (isAdmin) {
+    response.cookies.set(ADMIN_HINT_COOKIE, "1", {
+      path: "/",
+      sameSite: "lax",
+      secure: process.env.NODE_ENV === "production",
+      maxAge: 60 * 60 * 24 * 7,
+    });
+  } else {
+    response.cookies.delete(ADMIN_HINT_COOKIE);
+  }
+  return response;
+}
+
 function withCookies(response: NextResponse, setCookies: string[]) {
   for (const cookie of setCookies) response.headers.append("set-cookie", cookie);
   return response;
@@ -47,10 +63,17 @@ export async function proxy(request: NextRequest) {
   const requested = `${pathname}${search}`;
 
   if (pathname === "/admin" || pathname.startsWith("/admin/")) {
-    const session = await cachedSession(request);
-    if (!session) return redirectTo(request, "/en/login", requested);
-    if (session.user.role !== "ADMIN") return redirectTo(request, "/");
-    return NextResponse.next();
+    const cached = await cachedSession(request);
+    if (cached?.user.role === "ADMIN") return withAdminHint(NextResponse.next(), true);
+
+    // Not an admin according to the (possibly stale) cookie cache: ask the DB before denying, so a
+    // freshly promoted admin isn't bounced to the home page for up to 5 minutes.
+    const { session, setCookies } = await freshSession(request);
+    if (!session) return withCookies(redirectTo(request, "/en/login", requested), setCookies);
+    if (session.user.role !== "ADMIN") {
+      return withAdminHint(withCookies(redirectTo(request, "/"), setCookies), false);
+    }
+    return withAdminHint(withCookies(NextResponse.next(), setCookies), true);
   }
 
   const portal = PORTAL_PATH.exec(pathname);

@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 
+import { clearAdminHint } from "@/lib/admin-hint";
 import { hardNavigate } from "@/lib/hard-navigate";
 import { signOut } from "@/lib/auth-client";
 
@@ -13,6 +14,7 @@ export function useLogout(loginPath: string) {
   const [pending, setPending] = useState(false);
   async function logout() {
     setPending(true);
+    clearAdminHint();
     try {
       await signOut();
     } finally {
