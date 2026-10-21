@@ -49,7 +49,6 @@
       "description": "Send din CBCT og intraorale scanning. Dentnord planlægger implantatpositionerne sammen med dig og leverer en printet boreskabelon med hylstre til din klinik."
     },
     "hero": {
-      "imageAlt": "Heltebillede: Dr. Hossam i arbejde",
       "trust": "Brugt af {count} tandklinikker i Danmark",
       "title": "Præcise boreskabeloner til implantattandlæger.",
       "subtitle": "Send din CBCT og intraorale scanning. Vi planlægger implantatpositionerne sammen med dig og leverer en printet skabelon med hylstre direkte til klinikken.",
@@ -57,11 +56,9 @@
       "secondaryCta": "Se ydelser",
       "guideTypesLabel": "Skabelontyper",
       "doctor": {
-        "name": "Dr. Hossam",
         "role": "Tandlæge · implantatplanlægning",
         "experience": "{years} års erfaring",
-        "photoAlt": "Foto: Dr. Hossam",
-        "link": "Om Dr. Hossam"
+        "link": "Om {name}"
       }
     },
     "workflow": {
@@ -94,7 +91,6 @@
       "carousel": "Ydelser",
       "previous": "Forrige ydelse",
       "next": "Næste ydelse",
-      "imageAlt": "Foto: {title}",
       "position": "{current} af {total}"
     },
     "portal": {
@@ -116,14 +112,14 @@
         "updated": "Opdateret i dag"
       },
       "estimate": {
-        "caption": "Illustration af portalen: et prisoverslag med linjer. Priserne er pladsholdere.",
+        "caption": "Illustration af portalen: et prisoverslag med linjer.",
         "title": "Prisoverslag",
         "badge": "Eksempel",
         "planning": "Digital implantatplanlægning",
         "guide": "Boreskabelon, tandstøttet",
         "sleeves": "Hylstre × 3",
         "total": "I alt",
-        "price": "[pris]",
+        "price": "—",
         "note": "Ekskl. moms"
       }
     },
@@ -138,43 +134,23 @@
     "about": {
       "label": "Om os",
       "title": "Planlagt af en tandlæge, til tandlæger",
-      "cta": "Kontakt Dr. Hossam",
-      "portraitAlt": "Portræt: Dr. Hossam",
-      "badge": "Dr. Hossam · [titel/uddannelse]",
+      "cta": "Kontakt {name}",
       "expertiseLabel": "Kompetenceområder",
-      "expertise": {
-        "single": {
-          "title": "Enkelttandsimplantater",
-          "tag": "Tandstøttet"
-        },
-        "fullArch": {
-          "title": "Helkæbe",
-          "tag": "Stabelbare skabeloner"
-        },
-        "bone": {
-          "title": "Knoglestøttede skabeloner",
-          "tag": "Knogleforankret"
-        },
-        "planning": {
-          "title": "Kun planlægning",
-          "tag": "Plan + rapport"
-        }
-      },
-      "bio": "[Kort præsentation af Dr. Hossam – afventer]",
       "facts": {
         "experience": {
           "label": "Erfaring",
-          "value": "[X] år"
+          "value": "{years} år"
         },
         "location": {
           "label": "Baseret i",
-          "value": "[By], Danmark"
+          "value": "{city}, Danmark"
         },
         "languages": {
-          "label": "Sprog",
-          "value": "[Sprog]"
+          "label": "Sprog"
         }
-      }
+      },
+      "ctaGeneric": "Kontakt os",
+      "bioFallback": "Dentnord planlægger boreskabeloner til tandimplantater sammen med de tandlæger, der indsætter dem."
     },
     "technology": {
       "label": "Teknologi",
@@ -194,7 +170,6 @@
           "body": "Hylstre, der passer til dit implantatsystem og dit kirurgiske kit."
         }
       },
-      "imageAlt": "Foto: 3D-printeren i Dentnords laboratorium",
       "stats": {
         "guides": "Leverede skabeloner",
         "turnaround": "Typisk leveringstid",
@@ -205,8 +180,6 @@
     "testimonials": {
       "label": "Udtalelser",
       "title": "Det siger tandlægerne",
-      "quote": "[Udtalelse {n} fra en tandlæge – afventer]",
-      "author": "[Navn, klinik – afventer]",
       "previous": "Forrige udtalelse",
       "next": "Næste udtalelse",
       "position": "Udtalelse {current} af {total}"
@@ -432,7 +405,6 @@
     "cvrInvalid": "Et dansk CVR-nummer har 8 cifre."
   },
   "legal": {
-    "placeholder": "[Juridisk tekst mangler: Dentnord offentliggør siden før lancering.]",
     "terms": {
       "title": "Vilkår",
       "intro": "De vilkår, der gælder for tandlægekonti og bestillinger via Dentnord-portalen."
@@ -440,7 +412,8 @@
     "privacy": {
       "title": "Privatlivspolitik",
       "intro": "Sådan behandler Dentnord personoplysninger om tandlæger og klinikker, der bruger portalen."
-    }
+    },
+    "comingSoon": "Kommer snart."
   },
   "emails": {
     "greeting": "Hej {name}",
@@ -488,5 +461,19 @@
     "submitting": "Skifter…",
     "changed": "Adgangskoden er ændret. Andre enheder er logget ud.",
     "wrongCurrent": "Den nuværende adgangskode er forkert."
+  },
+  "portfolio": {
+    "label": "Cases",
+    "title": "Udvalgte cases",
+    "intro": "Et udvalg af guidede implantatcases, planlagt sammen med den behandlende tandlæge.",
+    "comingSoonTitle": "Cases kommer snart",
+    "comingSoonBody": "Vi er ved at forberede case-eksempler. Kontakt os gerne, hvis du vil se eksempler i mellemtiden.",
+    "contactCta": "Kontakt os",
+    "implants": "{count, plural, one {# implantat} other {# implantater}}",
+    "back": "Alle cases",
+    "factsLabel": "Case-detaljer",
+    "galleryLabel": "Billeder",
+    "ctaTitle": "Planlægger du en lignende case?",
+    "cta": "Indsend en case"
   }
 }

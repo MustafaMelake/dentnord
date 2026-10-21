@@ -4,9 +4,11 @@ import { getTranslations } from "next-intl/server";
 import NextLink from "next/link";
 import { Suspense } from "react";
 
+import { ContentChecklistCard } from "@/components/admin/content-checklist";
 import { ShellPageHeader } from "@/components/shared/app-shell/app-shell";
 import { PageSkeleton } from "@/components/shared/app-shell/page-skeleton";
 import { buttonStyles } from "@/components/shared/button";
+import { Skeleton } from "@/components/ui/skeleton";
 import { countDentistsByStatus } from "@/server/queries/admin-dentists";
 
 export const metadata: Metadata = { title: "Dashboard" };
@@ -18,6 +20,9 @@ export default async function AdminDashboardPage() {
       <ShellPageHeader title={t("title")} intro={t("intro")} />
       <Suspense fallback={<PageSkeleton />}>
         <Overview />
+      </Suspense>
+      <Suspense fallback={<Skeleton className="h-72 rounded-card" />}>
+        <ContentChecklistCard />
       </Suspense>
     </>
   );

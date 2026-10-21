@@ -48,7 +48,6 @@
       "description": "Send your CBCT and intraoral scan. Dentnord plans the implant positions with you and delivers a printed, sleeve-ready surgical guide to your clinic."
     },
     "hero": {
-      "imageAlt": "Hero photo: Dr. Hossam at work",
       "trust": "Trusted by {count} dental clinics in Denmark",
       "title": "Precise surgical guides for implant dentists.",
       "subtitle": "Send your CBCT and intraoral scan. We plan the implant positions with you and deliver a printed, sleeve-ready guide to your clinic.",
@@ -56,11 +55,9 @@
       "secondaryCta": "Explore services",
       "guideTypesLabel": "Guide types",
       "doctor": {
-        "name": "Dr. Hossam",
         "role": "Dentist · implant planning",
         "experience": "{years} years of experience",
-        "photoAlt": "Photo: Dr. Hossam",
-        "link": "About Dr. Hossam"
+        "link": "About {name}"
       }
     },
     "workflow": {
@@ -93,7 +90,6 @@
       "carousel": "Services",
       "previous": "Previous service",
       "next": "Next service",
-      "imageAlt": "Photo: {title}",
       "position": "{current} of {total}"
     },
     "portal": {
@@ -115,14 +111,14 @@
         "updated": "Updated today"
       },
       "estimate": {
-        "caption": "Illustration of the portal: an estimate with line items. Prices are placeholders.",
+        "caption": "Illustration of the portal: an estimate with line items.",
         "title": "Estimate",
         "badge": "Example",
         "planning": "Digital implant planning",
         "guide": "Surgical guide, tooth-supported",
         "sleeves": "Guide sleeves × 3",
         "total": "Total",
-        "price": "[price]",
+        "price": "—",
         "note": "Excl. VAT"
       }
     },
@@ -137,43 +133,23 @@
     "about": {
       "label": "About",
       "title": "Planned by a dentist, for dentists",
-      "cta": "Contact Dr. Hossam",
-      "portraitAlt": "Portrait: Dr. Hossam",
-      "badge": "Dr. Hossam · [credentials]",
+      "cta": "Contact {name}",
       "expertiseLabel": "Areas of expertise",
-      "expertise": {
-        "single": {
-          "title": "Single implants",
-          "tag": "Tooth-supported"
-        },
-        "fullArch": {
-          "title": "Full-arch",
-          "tag": "Stackable guides"
-        },
-        "bone": {
-          "title": "Bone-supported guides",
-          "tag": "Bone-anchored"
-        },
-        "planning": {
-          "title": "Planning only",
-          "tag": "Plan + report"
-        }
-      },
-      "bio": "[Short bio of Dr. Hossam — pending]",
       "facts": {
         "experience": {
           "label": "Experience",
-          "value": "[X] years"
+          "value": "{years} years"
         },
         "location": {
           "label": "Based in",
-          "value": "[City], Denmark"
+          "value": "{city}, Denmark"
         },
         "languages": {
-          "label": "Languages",
-          "value": "[Languages]"
+          "label": "Languages"
         }
-      }
+      },
+      "ctaGeneric": "Contact us",
+      "bioFallback": "Dentnord plans surgical guides for dental implants together with the dentists who place them."
     },
     "technology": {
       "label": "Technology",
@@ -193,7 +169,6 @@
           "body": "Sleeves matched to your implant system and surgical kit."
         }
       },
-      "imageAlt": "Photo: the 3D printer in the Dentnord lab",
       "stats": {
         "guides": "Guides delivered",
         "turnaround": "Typical turnaround",
@@ -204,8 +179,6 @@
     "testimonials": {
       "label": "Testimonials",
       "title": "What dentists say",
-      "quote": "[Testimonial {n} from a dentist — pending]",
-      "author": "[Name, clinic — pending]",
       "previous": "Previous testimonial",
       "next": "Next testimonial",
       "position": "Testimonial {current} of {total}"
@@ -511,7 +484,13 @@
       "audit": {
         "DENTIST_APPROVED": "Approved",
         "DENTIST_REJECTED": "Rejected",
-        "DENTIST_REACTIVATED": "Re-activated"
+        "DENTIST_REACTIVATED": "Re-activated",
+        "CONTENT_CREATED": "Created",
+        "CONTENT_UPDATED": "Updated",
+        "CONTENT_DELETED": "Deleted",
+        "CONTENT_ARCHIVED": "Archived",
+        "CONTENT_REORDERED": "Reordered",
+        "MEDIA_UPLOADED": "Image uploaded"
       },
       "errors": {
         "invalid": "That request wasn't valid.",
@@ -527,6 +506,358 @@
       "password": {
         "title": "Password",
         "description": "Changing your password signs you out on all other devices."
+      }
+    },
+    "validation": {
+      "required": "This field is required.",
+      "requiredOneLanguage": "Fill in at least one language.",
+      "tooLong": "This is too long.",
+      "wholeNumber": "Enter a whole number, or leave it empty.",
+      "tooLarge": "That number is too large.",
+      "priceRequired": "Enter a price, or choose “Price on request”.",
+      "priceInvalid": "Enter a price in kroner, e.g. 1 250,00.",
+      "numberInvalid": "Enter a number.",
+      "outOfRange": "One of the values is outside the allowed range.",
+      "twoDecimals": "Use at most two decimals.",
+      "tooMany": "Too many items.",
+      "consentRequired": "Tick “Written consent received” before publishing.",
+      "slugInvalid": "Use lowercase letters, numbers and hyphens, e.g. full-arch-aalborg.",
+      "slugTaken": "Another case already uses this address.",
+      "emailInvalid": "Enter a valid email address.",
+      "phoneInvalid": "Enter a valid phone number, e.g. +45 12 34 56 78.",
+      "cvrInvalid": "A CVR number has 8 digits.",
+      "imageType": "Use a JPG, PNG, WebP or AVIF image.",
+      "imageTooLarge": "Images can be at most 10 MB.",
+      "duplicateSystem": "This brand and line already exist.",
+      "imageRejected": "The uploaded file wasn't accepted. Try again with a JPG, PNG, WebP or AVIF under 10 MB."
+    },
+    "errors": {
+      "invalid": "Some values aren't valid. Check the highlighted fields.",
+      "conflict": "That conflicts with an existing entry. Check the highlighted fields.",
+      "notFound": "This item no longer exists. Refresh the page.",
+      "notAllowed": "That isn't allowed.",
+      "notConfigured": "Image uploads are not configured.",
+      "generic": "Something went wrong. Please try again."
+    },
+    "form": {
+      "optional": "optional",
+      "missingTranslation": "{lang} translation missing",
+      "danish": "Danish",
+      "english": "English",
+      "priceOnRequest": "Price on request",
+      "amount": "Price",
+      "amountHint": "In kroner, e.g. 1 250,00. Shown with “kr.” on the site.",
+      "priceFrom": "“From” price",
+      "priceFromHint": "Shows the price as “from 1.250 kr.”",
+      "chipInvalid": "Enter a number, e.g. 3,75.",
+      "chipPlaceholder": "Type a value and press Enter",
+      "removeValue": "Remove {value}",
+      "unsaved": "Unsaved changes",
+      "allSaved": "All changes saved",
+      "saving": "Saving…",
+      "save": "Save changes",
+      "saved": "Saved. The website is updated.",
+      "leaveWarning": "You have unsaved changes. Leave without saving?"
+    },
+    "list": {
+      "moved": "{item} moved to position {position} of {total}.",
+      "position": "Position {position} of {total}",
+      "handle": "Reorder {item}",
+      "handleHint": "Drag, or use the arrow keys, to reorder",
+      "reordered": "Order saved.",
+      "example": "Example",
+      "draft": "Draft",
+      "archived": "Archived",
+      "flagOn": "{flag}: on",
+      "flagOff": "{flag}: off",
+      "edit": "Edit {item}",
+      "archive": "Archive",
+      "delete": "Delete",
+      "archiveTitle": "Archive “{item}”?",
+      "deleteTitle": "Delete “{item}”?",
+      "archiveBody": "{count, plural, one {# case uses it} other {# cases use it}}, so it can't be deleted. Archiving hides it from the site and from new cases; existing cases keep it.",
+      "deleteBody": "This can't be undone.",
+      "cancel": "Cancel",
+      "archived_toast": "Archived.",
+      "deleted_toast": "Deleted.",
+      "exampleBanner": "These are example entries — edit or archive them. ({count, plural, one {# left} other {# left}})",
+      "dismiss": "Dismiss"
+    },
+    "media": {
+      "notConfigured": "Image uploads not configured.",
+      "altPreview": "Alt text: {alt}",
+      "none": "No image chosen. The site shows a neutral background until there is one.",
+      "replace": "Replace image",
+      "choose": "Choose image",
+      "editAlt": "Edit alt text",
+      "remove": "Remove",
+      "dialogTitle": "Choose an image",
+      "dialogDescription": "Upload a new image, or pick one you uploaded before.",
+      "tabUpload": "Upload new",
+      "tabLibrary": "Uploaded images",
+      "loading": "Loading…",
+      "libraryEmpty": "No images uploaded yet.",
+      "errorType": "Use a JPG, PNG, WebP or AVIF image.",
+      "errorSize": "Images can be at most 10 MB.",
+      "errorRead": "This image couldn't be read. Try another file.",
+      "errorAlt": "Describe the image in both Danish and English.",
+      "errorUpload": "The upload failed. Please try again.",
+      "uploaded": "Image uploaded.",
+      "file": "Image file",
+      "fileHint": "JPG, PNG, WebP or AVIF, at most 10 MB. Use only images you have the rights to.",
+      "uploading": "Uploading…",
+      "upload": "Upload",
+      "alt": "Alt text (required)",
+      "altHint": "Describe what the image shows, for screen readers and search engines.",
+      "editAltDescription": "The alt text is used wherever this image appears.",
+      "altSaved": "Alt text saved.",
+      "saveAlt": "Save alt text"
+    },
+    "services": {
+      "pageTitle": "Services",
+      "intro": "Services shown on the website. Drag to reorder.",
+      "new": "New service",
+      "onRequest": "Price on request",
+      "from": "from",
+      "published": "Published",
+      "empty": "No services yet.",
+      "back": "All services",
+      "exampleNotice": "This is an example entry from the initial setup. Rewrite the texts (or unpublish it) before relying on it.",
+      "sectionContent": "Content",
+      "title": "Title",
+      "summary": "Short description",
+      "summaryHint": "One or two sentences, shown in lists.",
+      "description": "Long description",
+      "sectionPrice": "Price",
+      "priceDescription": "Stored in øre, shown in kroner.",
+      "price": "Price",
+      "priceNote": "Price note",
+      "priceNoteHint": "E.g. “excl. VAT” or “per guide”.",
+      "sectionImage": "Image",
+      "image": "Photo",
+      "sectionVisibility": "Visibility",
+      "publishedHint": "Shown on the website.",
+      "create": "Create service"
+    },
+    "catalog": {
+      "pageTitle": "Catalog",
+      "intro": "Guide types, implant systems and surgical kits that dentists choose from.",
+      "guideTypes": "Guide types",
+      "implantSystems": "Implant systems",
+      "surgicalKits": "Surgical kits",
+      "guideTypesIntro": "Shown on the website and when dentists submit a case.",
+      "addGuideType": "Add guide type",
+      "editGuideType": "Edit guide type",
+      "active": "Active",
+      "empty": "Nothing here yet.",
+      "implantSystemsIntro": "Brands and lines with their allowed diameters and lengths (mm).",
+      "addImplantSystem": "Add implant system",
+      "editImplantSystem": "Edit implant system",
+      "surgicalKitsIntro": "Guided surgery kits and the implant systems they work with.",
+      "addSurgicalKit": "Add surgical kit",
+      "editSurgicalKit": "Edit surgical kit",
+      "compatibleCount": "{count, plural, =0 {no compatible systems} one {# compatible system} other {# compatible systems}}",
+      "name": "Name",
+      "description": "Description",
+      "guideTypeActiveHint": "Shown on the website and offered in new cases.",
+      "brand": "Brand",
+      "line": "Line",
+      "diameters": "Diameters",
+      "lengths": "Lengths",
+      "chipsHint": "In mm. Type a value and press Enter, e.g. 3,75.",
+      "implantActiveHint": "Offered in new cases.",
+      "kitName": "Kit name",
+      "compatibleSystems": "Compatible implant systems",
+      "kitActiveHint": "Offered in new cases."
+    },
+    "testimonials": {
+      "intro": "Quotes from dentists. Only publish with written consent.",
+      "add": "Add testimonial",
+      "edit": "Edit testimonial",
+      "published": "Published",
+      "empty": "No testimonials yet. The section stays hidden on the website until one is published.",
+      "needsConsent": "Can be published once written consent is received.",
+      "noConsent": "No consent",
+      "dialogDescription": "Use the dentist's own words. Never publish without their written consent.",
+      "quote": "Quote",
+      "authorName": "Dentist's name",
+      "clinic": "Clinic",
+      "consent": "Written consent received",
+      "consentHint": "The dentist agreed in writing to their name, clinic and quote being shown.",
+      "publishedHint": "Shown on the home page."
+    },
+    "settings": {
+      "pageTitle": "Site content",
+      "intro": "Texts, numbers and photos on the public website. Empty fields are hidden on the site.",
+      "tabs": {
+        "numbers": "Numbers",
+        "contact": "Contact",
+        "doctor": "About the doctor",
+        "testimonials": "Testimonials",
+        "images": "Photos",
+        "accounts": "Accounts",
+        "legal": "Legal"
+      },
+      "numbers": {
+        "title": "Numbers",
+        "description": "Shown on the home page. Leave a field empty to hide that number.",
+        "clinics": {
+          "label": "Clinics",
+          "hint": "“Trusted by … dental clinics in Denmark”"
+        },
+        "yearsExperience": {
+          "label": "Years of experience",
+          "hint": "On the doctor's card and in About."
+        },
+        "guidesDelivered": {
+          "label": "Guides delivered",
+          "hint": "In the Technology section."
+        },
+        "turnaroundDays": {
+          "label": "Typical turnaround (working days)",
+          "hint": "In the Technology section."
+        }
+      },
+      "contact": {
+        "title": "Contact details",
+        "description": "Shown in the footer and used for questions from dentists.",
+        "email": "Email",
+        "phone": "Phone",
+        "address": "Address",
+        "cvr": "CVR number",
+        "cvrHint": "8 digits."
+      },
+      "doctor": {
+        "profileTitle": "Profile",
+        "profileDescription": "Shown in the About section and on the doctor's card on the home page.",
+        "name": "Name",
+        "city": "City",
+        "credentials": "Credentials",
+        "credentialsHint": "E.g. “Dentist, cand.odont.” Shown next to the name.",
+        "bio": "Short bio",
+        "bioHint": "2–3 sentences. Until it's filled in, the site shows a neutral line.",
+        "languages": "Languages",
+        "languagesHint": "E.g. “Danish, English, Arabic”.",
+        "photosTitle": "Photos",
+        "photosDescription": "Portrait for the About section and a small photo for the card in the hero.",
+        "portrait": "Portrait",
+        "cardPhoto": "Small card photo",
+        "cardPhotoHint": "Shown at 72 × 72 px; a square crop works best.",
+        "expertiseTitle": "Areas of expertise",
+        "expertiseDescription": "The numbered list in the About section. Drag to reorder.",
+        "untitled": "Untitled row",
+        "rowTitle": "Title",
+        "rowTag": "Tag",
+        "removeRow": "Remove row {n}",
+        "addRow": "Add row"
+      },
+      "accounts": {
+        "title": "Dentist accounts",
+        "description": "Shown to dentists waiting for approval.",
+        "reviewDays": "Review time (working days)",
+        "reviewDaysHint": "“We review new accounts within … working days.” Leave empty to hide the sentence."
+      },
+      "legal": {
+        "title": "Terms and Privacy policy",
+        "description": "Shown on /terms and /privacy, and linked from the sign-up form. An empty page shows “Coming soon”.",
+        "terms": "Terms",
+        "privacy": "Privacy policy",
+        "markdownHint": "Markdown: “## Heading”, “**bold**”, “- list item”, “[link text](https://…)”. HTML is not allowed."
+      },
+      "images": {
+        "title": "Photos",
+        "description": "Large photos on the home page.",
+        "hero": "Hero photo",
+        "heroHint": "Full-width behind the headline; text is white on top, so a calm, darker photo works best.",
+        "technology": "Technology photo",
+        "technologyHint": "E.g. the 3D printer in the lab."
+      }
+    },
+    "portfolio": {
+      "pageTitle": "Portfolio",
+      "intro": "Case studies shown at /portfolio. Drag to reorder.",
+      "new": "New case",
+      "published": "Published",
+      "empty": "No cases yet. The website shows “Cases coming soon” until one is published.",
+      "imageCount": "{count, plural, =0 {no images} one {# image} other {# images}}",
+      "back": "All cases",
+      "consentNote": "Use only images with patient consent; no names or faces.",
+      "sectionCase": "Case",
+      "title": "Title",
+      "slug": "Web address",
+      "slugHint": "dentnord.vercel.app/en/portfolio/{slug}",
+      "summary": "Summary",
+      "guideType": "Guide type",
+      "noGuideType": "— None —",
+      "archived": "archived",
+      "implantCount": "Number of implants",
+      "sectionGallery": "Images",
+      "galleryDescription": "The first image is the cover. Drag to reorder.",
+      "image": "Image",
+      "captionCover": "Caption (cover image)",
+      "caption": "Caption",
+      "removeImage": "Remove image {n}",
+      "addImage": "Add an image",
+      "firstIsCover": "The first image becomes the cover.",
+      "sectionVisibility": "Visibility",
+      "publishedHint": "Shown on the website.",
+      "create": "Create case"
+    },
+    "content": {
+      "missing": "Missing: {field}",
+      "checklistTitle": "Content checklist",
+      "checklistIntro": "What's still missing on the public website. Empty items are hidden from visitors.",
+      "checklistProgress": "{done} of {total} done",
+      "checklistComplete": "Everything is filled in.",
+      "checklistDone": "{count, plural, one {# item done} other {# items done}}",
+      "detail": {
+        "servicesWithoutImage": "{count, plural, one {# published service has no photo} other {# published services have no photo}}",
+        "exampleRows": "{count, plural, one {# example entry left} other {# example entries left}}",
+        "translationMissing": "{count, plural, one {# translation missing} other {# translations missing}}"
+      },
+      "fields": {
+        "stats": {
+          "clinics": "Number of clinics",
+          "yearsExperience": "Years of experience",
+          "guidesDelivered": "Guides delivered",
+          "turnaroundDays": "Typical turnaround"
+        },
+        "contact": {
+          "email": "Contact email",
+          "phone": "Phone number",
+          "address": "Address (Danish and English)",
+          "cvr": "CVR number"
+        },
+        "doctor": {
+          "name": "Doctor's name",
+          "credentials": "Doctor's credentials (Danish and English)",
+          "bio": "Doctor's bio (Danish and English)",
+          "city": "City",
+          "languages": "Languages spoken (Danish and English)",
+          "expertise": "Areas of expertise",
+          "portrait": "Doctor's portrait",
+          "cardPhoto": "Small photo for the hero card"
+        },
+        "images": {
+          "hero": "Hero photo",
+          "technology": "Technology photo"
+        },
+        "services": {
+          "images": "Photos for every service",
+          "examples": "Replace the example services"
+        },
+        "catalog": {
+          "examples": "Check the example catalog entries"
+        },
+        "testimonials": "At least one testimonial (with consent)",
+        "portfolio": "At least one portfolio case",
+        "accounts": {
+          "reviewDays": "Review time for new accounts"
+        },
+        "legal": {
+          "terms": "Terms (Danish and English)",
+          "privacy": "Privacy policy (Danish and English)"
+        }
       }
     }
   },
@@ -548,7 +879,6 @@
     "cvrInvalid": "A Danish CVR number has 8 digits."
   },
   "legal": {
-    "placeholder": "[Legal text pending: Dentnord will publish this page before launch.]",
     "terms": {
       "title": "Terms",
       "intro": "The terms that apply to dentist accounts and orders placed through the Dentnord portal."
@@ -556,7 +886,8 @@
     "privacy": {
       "title": "Privacy policy",
       "intro": "How Dentnord processes personal data about dentists and clinics using the portal."
-    }
+    },
+    "comingSoon": "Coming soon."
   },
   "emails": {
     "greeting": "Hi {name},",
@@ -604,5 +935,19 @@
     "submitting": "Changing…",
     "changed": "Password changed. Other devices have been signed out.",
     "wrongCurrent": "The current password is incorrect."
+  },
+  "portfolio": {
+    "label": "Cases",
+    "title": "Selected cases",
+    "intro": "A selection of guided implant cases, planned together with the treating dentist.",
+    "comingSoonTitle": "Cases coming soon",
+    "comingSoonBody": "We're preparing case studies. In the meantime, get in touch if you'd like to see examples.",
+    "contactCta": "Contact us",
+    "implants": "{count, plural, one {# implant} other {# implants}}",
+    "back": "All cases",
+    "factsLabel": "Case details",
+    "galleryLabel": "Images",
+    "ctaTitle": "Planning a similar case?",
+    "cta": "Submit a case"
   }
 }
