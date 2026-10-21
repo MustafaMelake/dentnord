@@ -381,12 +381,7 @@
       },
       "password": {
         "title": "Password",
-        "description": "Changing your password signs you out on all other devices.",
-        "current": "Current password",
-        "submit": "Change password",
-        "submitting": "Changing…",
-        "changed": "Password changed. Other devices have been signed out.",
-        "wrongCurrent": "The current password is incorrect."
+        "description": "Changing your password signs you out on all other devices."
       },
       "sessions": {
         "title": "Sign out everywhere",
@@ -434,7 +429,8 @@
       "openMenu": "Open menu",
       "viewSite": "View website",
       "logout": "Log out",
-      "pendingBadge": "{count} pending"
+      "pendingBadge": "{count} pending",
+      "account": "Account"
     },
     "caseDetail": "Case",
     "dashboard": {
@@ -523,6 +519,15 @@
         "invalidState": "This account changed in the meantime. The page has been refreshed; try again.",
         "generic": "Something went wrong. Please try again."
       }
+    },
+    "account": {
+      "title": "Account",
+      "intro": "Your admin account.",
+      "signedInAs": "Signed in as {email}",
+      "password": {
+        "title": "Password",
+        "description": "Changing your password signs you out on all other devices."
+      }
     }
   },
   "dentistStatus": {
@@ -592,5 +597,12 @@
       "cta": "Choose a new password",
       "ignore": "If you didn't ask for this, you can ignore this email. Your password stays the same."
     }
+  },
+  "changePassword": {
+    "current": "Current password",
+    "submit": "Change password",
+    "submitting": "Changing…",
+    "changed": "Password changed. Other devices have been signed out.",
+    "wrongCurrent": "The current password is incorrect."
   }
 }

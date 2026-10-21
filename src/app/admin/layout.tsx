@@ -100,6 +100,7 @@ async function AdminAccount() {
       subtitle={session.user.email}
       email={session.user.email}
       menuLabel={t("label")}
+      account={{ href: "/admin/account", label: t("account") }}
       logoutLabel={t("logout")}
       loginPath="/en/login"
     />

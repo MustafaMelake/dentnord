@@ -382,12 +382,7 @@
       },
       "password": {
         "title": "Adgangskode",
-        "description": "Når du skifter adgangskode, logges du ud på alle andre enheder.",
-        "current": "Nuværende adgangskode",
-        "submit": "Skift adgangskode",
-        "submitting": "Skifter…",
-        "changed": "Adgangskoden er ændret. Andre enheder er logget ud.",
-        "wrongCurrent": "Den nuværende adgangskode er forkert."
+        "description": "Når du skifter adgangskode, logges du ud på alle andre enheder."
       },
       "sessions": {
         "title": "Log ud overalt",
@@ -486,5 +481,12 @@
       "cta": "Vælg ny adgangskode",
       "ignore": "Har du ikke bedt om dette, kan du se bort fra e-mailen. Din adgangskode forbliver den samme."
     }
+  },
+  "changePassword": {
+    "current": "Nuværende adgangskode",
+    "submit": "Skift adgangskode",
+    "submitting": "Skifter…",
+    "changed": "Adgangskoden er ændret. Andre enheder er logget ud.",
+    "wrongCurrent": "Den nuværende adgangskode er forkert."
   }
 }

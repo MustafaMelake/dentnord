@@ -164,3 +164,43 @@ test("logged-out users are sent to login with `next`, and land there after loggi
 
   await user.context.close();
 });
+
+test("the admin can change their own password from the admin area", async ({ browser }) => {
+  const own = createUser({ label: "admin-pw", role: "ADMIN", name: "Pia Password" });
+  const newPassword = "e2e-New-Admin-Password-456";
+
+  const main = await newUser(browser);
+  const other = await newUser(browser); // a second device
+  for (const { page } of [main, other]) {
+    await login(page, own.email, own.password);
+    await expect(page).toHaveURL(/\/admin/);
+  }
+
+  // Reached from the account menu in the sidebar.
+  await main.page.getByRole("button", { name: "Admin" }).click();
+  await main.page.getByRole("menuitem", { name: "Account" }).click();
+  await expect(main.page).toHaveURL(/\/admin\/account$/);
+
+  await main.page.getByLabel("Current password").fill(own.password);
+  await main.page.getByLabel("New password").fill(newPassword);
+  await main.page.getByLabel("Repeat password").fill(newPassword);
+  await main.page.getByRole("button", { name: "Change password" }).click();
+  await expect(
+    main.page.getByText("Password changed. Other devices have been signed out."),
+  ).toBeVisible();
+
+  // This device stays signed in; the other one is signed out.
+  await main.page.goto("/admin/dentists");
+  await expect(main.page).toHaveURL(/\/admin\/dentists$/);
+  await other.page.goto("/admin/dentists");
+  await expect(other.page).toHaveURL(/\/en\/login/);
+
+  // Old password no longer works, the new one does.
+  await login(other.page, own.email, own.password);
+  await expect(other.page.getByText("Incorrect email or password.")).toBeVisible();
+  await login(other.page, own.email, newPassword);
+  await expect(other.page).toHaveURL(/\/admin/);
+
+  await main.context.close();
+  await other.context.close();
+});

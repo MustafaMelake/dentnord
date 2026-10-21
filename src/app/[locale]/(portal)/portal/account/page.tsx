@@ -2,11 +2,8 @@ import type { Metadata } from "next";
 import { getLocale, getTranslations } from "next-intl/server";
 import { Suspense, type ReactNode } from "react";
 
-import {
-  ChangePasswordForm,
-  ProfileForm,
-  SignOutEverywhere,
-} from "@/components/portal/account-forms";
+import { ChangePasswordForm } from "@/components/auth/change-password-form";
+import { ProfileForm, SignOutEverywhere } from "@/components/portal/account-forms";
 import { ShellPageHeader } from "@/components/shared/app-shell/app-shell";
 import { PageSkeleton } from "@/components/shared/app-shell/page-skeleton";
 import { COUNTRIES, DEFAULT_COUNTRY, type ProfileInput } from "@/lib/validation/auth";
