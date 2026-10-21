@@ -21,7 +21,8 @@ motion · three + @react-three/fiber + drei · next-intl 4 · Prisma 7 (`prisma-
 `@prisma/adapter-pg`) on PostgreSQL (Neon, Frankfurt) · Better Auth (email+password, Prisma adapter) ·
 zod 4 + react-hook-form · Cloudflare R2 (EU jurisdiction) via @aws-sdk/client-s3 + presigner ·
 Uppy (core/dashboard/aws-s3 multipart) · Resend + react-email · @tanstack/react-table ·
-@t3-oss/env-nextjs · ESLint + Prettier (tailwind plugin) · pnpm.
+react-markdown (no raw HTML) · @t3-oss/env-nextjs · ESLint + Prettier (tailwind plugin) · pnpm ·
+@playwright/test (dev).
 
 **Do not add dependencies outside this list without asking the user first.**
 
@@ -34,7 +35,7 @@ src/app/admin/               root layout #2 (English, no locale segment)
 src/app/api/                 auth/[...all] (Better Auth), uploads/* (presign + multipart)
 src/proxy.ts                 Next 16 "proxy" (formerly middleware): auth gate + next-intl routing
 src/components/              ui/ (shadcn, generated) marketing/ portal/ admin/ three/ shared/
-src/lib/                     db, auth, auth-options, auth-client, storage (R2), email, fonts, utils
+src/lib/                     db, auth*, r2 + storage (cases) + media-storage, email, price, validation/, utils
 src/server/actions/          "use server" mutations
 src/server/queries/          reads; session.ts = auth Data Access Layer (requireAdmin, requireApprovedDentist)
 src/server/services/         business logic (case-number, upload-guard, …)
@@ -70,8 +71,10 @@ prisma/schema.prisma, seed.ts
 - Catalog rows referenced by cases are deactivated (`active = false`), not deleted.
 - Case numbers come from `allocateCaseNumber(tx)` inside the create transaction (`DN-YYYY-NNNN`).
 - `CaseFile.sizeBytes` is BigInt: convert it before passing to client components.
-- **No invented facts** in copy: stats, prices, names, reviews use `[placeholder]`s, listed in
-  `docs/content-todo.md`. Photos use `PlaceholderImage` (same props as `next/image`).
+- **No invented facts** in copy. Stats, prices, names, reviews, photos come from the admin; anything
+  not filled in is **hidden** on the public site, never shown as `[X]`. Render
+  `<Missing field="…" />` in its place: an admin-only marker (see "Content management" below).
+  Images go through `SiteImage` (next/image, or a decorative gradient while none is uploaded).
 - Windows/PowerShell dev machine: keep scripts cross-platform.
 
 ## Design system
@@ -96,8 +99,10 @@ prisma/schema.prisma, seed.ts
 - **3D** (`components/three/`): always through `<GuideViewerLazy>` (dynamic, client-only, mounts in view,
   pauses off-screen, poster fallback). Real model: `public/models/guide.glb` (see README there);
   Draco decoders are self-hosted in `public/draco/`.
-- **Marketing data** comes from cached queries (`server/queries/catalog.ts`, `site-settings.ts`, with
-  `"use cache"` + `cacheTag`). Admin mutations must `revalidateTag()` the matching tag.
+- **Marketing data** comes from cached queries (`server/queries/catalog.ts`, `content.ts`, `media.ts`,
+  `site-settings.ts`, with `"use cache"` + `cacheTag(TAGS.…)` from `server/cache-tags.ts`). Admin Server
+  Actions call `updateTag()` with the matching tag after every write (read-your-own-writes), so the
+  public site updates on the next request without a deploy.
 
 ## Database (Neon)
 
@@ -159,6 +164,42 @@ prisma/schema.prisma, seed.ts
   sent via Resend when `RESEND_API_KEY` is a real key, otherwise logged to the console (links redacted in
   production builds). Always queued with `sendInBackground` (Next `after()`); a failed email never fails
   the action.
+
+## Content management (admin)
+
+- Pages: `/admin/services` (+ `[id]`, `new`), `/admin/catalog` (guide types, implant systems, kits),
+  `/admin/portfolio` (+ `[id]`, `new`), `/admin/settings` (numbers, contact, doctor, testimonials,
+  photos, accounts, legal), and the dashboard's **Content checklist** (`server/queries/content-checklist.ts`).
+- Every admin mutation goes through `runAdminAction(schema, input, handler)`
+  (`server/services/admin-action.ts`): `requireAdmin()` FIRST (so a direct POST of the action id by a
+  non-admin never reaches validation or the DB), then the same zod schema as the form
+  (`lib/validation/admin.ts`), then the handler, which writes an `AuditLog` row in the same transaction
+  (`recordAudit`, before/after summary) and calls `updateTag`. List operations (reorder, publish/active,
+  delete-or-archive) are shared in `server/services/content-admin.ts`.
+- Admin forms: react-hook-form + `zodResolver(schema, undefined, { raw: true })` (the action re-parses
+  the raw input), building blocks in `components/admin/form-kit.tsx` (bilingual fields with a
+  missing-translation marker, kroner price input, mm chip input, save bar, unsaved-changes warning),
+  `sortable-list.tsx` (motion Reorder, keyboard ↑/↓), `image-picker.tsx`. Don't pass functions from
+  server pages to these client components; constants shared with server pages live in plain modules
+  (e.g. `components/admin/tabs.ts`), since a `"use client"` module's exports are only references there.
+- Prices: the admin types kroner ("1 250,00"); `lib/price.ts` parses/formats; the DB stores øre.
+- Site settings are `SiteSetting` JSON rows (`stats`, `contact`, `doctor`, `accounts`, `legal`,
+  `images`), normalised by the getters in `server/queries/site-settings.ts`.
+- "Missing content" registry: `lib/content-fields.ts` (field → admin link; labels in
+  `admin.content.fields`). Public pages render `<Missing field>` (server) / `<MissingMarker>` (client);
+  it shows only when the `dn_admin` hint cookie is set (`lib/admin-hint.ts`, set by the proxy after a
+  DB-checked admin visit to /admin, cleared on logout). It's not a security boundary: it only reveals
+  which public fields are empty, and the static pages stay identical for everyone.
+- Seeded catalog rows contain "EXAMPLE"/"EKSEMPEL" (`looksLikeExample`): flagged in the admin and
+  counted by the checklist until edited.
+- Testimonials: publishing needs consent (form, action and a DB `CHECK` constraint).
+- **Media** (public images): R2 bucket `R2_MEDIA_BUCKET` (public read) served from
+  `R2_MEDIA_PUBLIC_URL` (also allowed for next/image in `next.config.ts`, read at build time). Admin asks
+  `createMediaUpload` for a presigned PUT (type + length signed; jpg/png/webp/avif ≤ 10 MB) → browser
+  PUTs directly → `finalizeMediaUpload` HEADs the object, re-checks type/size against an HMAC upload
+  token, and records a `MediaAsset` (alt text in da + en required). Without real R2 credentials or a
+  public URL (`lib/r2.ts`, `lib/media-storage.ts`), the picker shows "Image uploads not configured".
+  Case files stay in the private `R2_CASES_BUCKET` (`lib/storage.ts`).
 
 ## Commands
 

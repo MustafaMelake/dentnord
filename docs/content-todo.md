@@ -1,80 +1,32 @@
 # Content to collect from Dr. Hossam
 
-Everything below is a **placeholder** on the website today. Nothing was invented: no stats,
-prices, names or reviews. Send this list to the doctor, then replace each item where noted.
+**The source of truth is now the admin dashboard:** `/admin/dashboard` → **Content checklist**. It lists
+every piece of public content that is still missing, links straight to the field, and shows a
+completion percentage. Everything is edited in the admin (Services, Catalog, Portfolio, Settings);
+nothing needs a deploy.
 
-## Numbers (home page)
+On the public site, anything not filled in is **hidden** from visitors. Logged-in admins see a small
+dashed "Missing: …" marker in its place (on the same public pages), linking to the admin field.
 
-Edit as the `stats` **SiteSetting** (JSON). A missing or `null` field shows `[X]`.
+What still lives outside the admin:
 
-| Field                   | Shown as                                       | Where                 |
-| ----------------------- | ---------------------------------------------- | --------------------- |
-| `stats.clinics`         | "Trusted by **[X]** dental clinics in Denmark" | Hero, trust line      |
-| `stats.yearsExperience` | "**[X]** years of experience"                  | Hero, Dr. Hossam card |
-| `stats.guidesDelivered` | "Guides delivered: **[X]**" (count-up)         | Technology, stat card |
-| `stats.turnaroundDays`  | "Typical turnaround: **[X]** working days"     | Technology, stat card |
+## Copy in `messages/*.json` (needs a code change)
 
-Example value: `{ "clinics": 40, "yearsExperience": 12, "guidesDelivered": 900, "turnaroundDays": 5 }`
-
-> "Implant systems in our catalog" is **not** a placeholder. It counts the active rows in the
-> ImplantSystem catalog, which currently holds the seeded **EXAMPLE** data (8 systems).
-
-## Contact (footer)
-
-Edit the `contact` **SiteSetting**: `email` is already set (info.dentnord@gmail.com).
-
-- [ ] `phone`: currently shows `[phone]`
-- [ ] `address` (`{ "da": "...", "en": "..." }`): currently shows `[address]`
-- [ ] `cvr` (CVR number): currently shows `CVR [CVR]`
-
-## Dentist accounts
-
-- [ ] **Review time**: the `accounts` **SiteSetting** `reviewDays` (number). The pending-approval page says
-      "We review new accounts within **[X]** working days" until it is set. Example: `{ "reviewDays": 2 }`
-- [ ] **Terms** (`/terms`) and **Privacy policy** (`/privacy`): legal text from Dentnord. Both pages show
-      `[Legal text pending …]` today, and the sign-up consent checkbox links to them (the acceptance time
-      is stored on the user). Must be published before real dentists register.
-
-## About Dr. Hossam (`messages/*.json` → `home.about`)
-
-- [ ] Credentials / title for the portrait badge: `Dr. Hossam · [credentials]`
-- [ ] Short bio (2–3 sentences): `[Short bio of Dr. Hossam — pending]`
-- [ ] Years of experience: `[X] years`
-- [ ] City: `[City], Denmark`
-- [ ] Languages: `[Languages]`
-- [ ] Confirm the four expertise rows and their tags (Single implants · Tooth-supported,
-      Full-arch · Stackable guides, Bone-supported guides · Bone-anchored, Planning only · Plan + report)
-
-## Testimonials (`home.testimonials`, 3 slots)
-
-- [ ] 3 quotes from dentists **with written consent**, plus name and clinic for each.
-      Currently `[Testimonial N from a dentist — pending]` / `[Name, clinic — pending]`.
-
-## Prices
-
-- [ ] Real price list. The portal-preview "Estimate" card shows `[price]` for every line.
-- [ ] The Service and GuideType catalogs hold **EXAMPLE** prices from the seed. Replace them in
-      the admin dashboard (the services carousel doesn't show prices yet).
-
-## Photos (`PlaceholderImage` → `next/image`, one-line swap each)
-
-| Placeholder label                         | Component                                                                                    |
-| ----------------------------------------- | -------------------------------------------------------------------------------------------- |
-| Hero photo: Dr. Hossam at work            | `components/marketing/home/hero.tsx`                                                         |
-| Photo: Dr. Hossam (small, hero card)      | `components/marketing/home/hero.tsx`                                                         |
-| Photo: {service title} (one per service)  | `components/marketing/home/services-carousel.tsx` (move to a `Service.image` field)          |
-| Portrait: Dr. Hossam                      | `components/marketing/home/about.tsx`                                                        |
-| Photo: the 3D printer in the Dentnord lab | `components/marketing/home/technology.tsx`                                                   |
-| Avatars in the hero trust line (3)        | `components/marketing/home/hero.tsx` (gradient circles; replace with clinic logos or remove) |
+- [ ] **Danish copy** (`messages/da.json`, flagged `"_review": true`): review by a native speaker.
+- [ ] Claims to confirm with the doctor: "printed in-house / in our own lab", "planned and printed in
+      Denmark", "sleeves matched to your implant system and kit", the 4-step workflow, and the doctor's
+      role line on the hero card ("Dentist · implant planning").
+- [ ] Services, About and Contact pages: content still to come (they show "under construction").
 
 ## 3D model
 
-- [ ] The doctor's surgical guide STL → `public/models/guide.glb`. See `public/models/README.md`
-      for the conversion command. Until then the site shows a procedural placeholder guide.
+- [ ] The doctor's surgical guide STL → `public/models/guide.glb`. See `public/models/README.md` for
+      the conversion command. Until then the site shows a procedural placeholder guide.
 
-## Copy review
+## Notes
 
-- [ ] **Danish copy** (`messages/da.json`, flagged `"_review": true`): needs review by a native speaker.
-- [ ] Claims to confirm with the doctor: "printed in-house / in our own lab", "planned and
-      printed in Denmark", "sleeves matched to your implant system and kit", and the 4-step workflow.
-- [ ] Portfolio, Services, About and Contact pages: content still to come.
+- The catalog (services, guide types, implant systems, kits) starts with **example** rows from the
+  seed. The admin flags them ("Example") and the checklist counts them until they are edited or
+  archived. Example prices are not shown on the public site.
+- Testimonials can only be published with the dentist's written consent (enforced in the form, the
+  server and the database).
