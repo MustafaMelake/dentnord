@@ -96,7 +96,15 @@ export async function SiteFooter() {
 
       <Container className="flex flex-wrap items-center justify-between gap-3 border-t border-line py-6 font-mono text-label text-ink-muted">
         <span>{t("rights", { year })}</span>
-        <span>{t("cvr", { cvr: contact?.cvr || "[CVR]" })}</span>
+        <span className="flex flex-wrap items-center gap-x-5 gap-y-2">
+          <Link href="/terms" className="underline-offset-4 hover:text-ink hover:underline">
+            {t("terms")}
+          </Link>
+          <Link href="/privacy" className="underline-offset-4 hover:text-ink hover:underline">
+            {t("privacy")}
+          </Link>
+          <span>{t("cvr", { cvr: contact?.cvr || "[CVR]" })}</span>
+        </span>
       </Container>
     </footer>
   );

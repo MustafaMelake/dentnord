@@ -142,16 +142,37 @@
       "badge": "Dr. Hossam · [credentials]",
       "expertiseLabel": "Areas of expertise",
       "expertise": {
-        "single": { "title": "Single implants", "tag": "Tooth-supported" },
-        "fullArch": { "title": "Full-arch", "tag": "Stackable guides" },
-        "bone": { "title": "Bone-supported guides", "tag": "Bone-anchored" },
-        "planning": { "title": "Planning only", "tag": "Plan + report" }
+        "single": {
+          "title": "Single implants",
+          "tag": "Tooth-supported"
+        },
+        "fullArch": {
+          "title": "Full-arch",
+          "tag": "Stackable guides"
+        },
+        "bone": {
+          "title": "Bone-supported guides",
+          "tag": "Bone-anchored"
+        },
+        "planning": {
+          "title": "Planning only",
+          "tag": "Plan + report"
+        }
       },
       "bio": "[Short bio of Dr. Hossam — pending]",
       "facts": {
-        "experience": { "label": "Experience", "value": "[X] years" },
-        "location": { "label": "Based in", "value": "[City], Denmark" },
-        "languages": { "label": "Languages", "value": "[Languages]" }
+        "experience": {
+          "label": "Experience",
+          "value": "[X] years"
+        },
+        "location": {
+          "label": "Based in",
+          "value": "[City], Denmark"
+        },
+        "languages": {
+          "label": "Languages",
+          "value": "[Languages]"
+        }
       }
     },
     "technology": {
@@ -205,29 +226,193 @@
     "phone": "Phone",
     "address": "Address",
     "cvr": "CVR {cvr}",
-    "rights": "© {year} Dentnord"
+    "rights": "© {year} Dentnord",
+    "terms": "Terms",
+    "privacy": "Privacy policy"
   },
   "pages": {
     "services": "Services",
     "portfolio": "Cases",
     "portfolioCase": "Case",
     "about": "About",
-    "contact": "Contact"
+    "contact": "Contact",
+    "terms": "Terms",
+    "privacy": "Privacy policy"
   },
   "auth": {
-    "login": { "title": "Log in" },
-    "register": { "title": "Create a dentist account" },
+    "login": {
+      "title": "Log in",
+      "intro": "Log in to your Dentnord dentist account.",
+      "forgot": "Forgot password?",
+      "submit": "Log in",
+      "submitting": "Logging in…",
+      "noAccount": "New to Dentnord?",
+      "register": "Create a dentist account",
+      "resetDone": "Your password has been changed. Log in with your new password.",
+      "signedOut": "You have been signed out on all devices."
+    },
+    "register": {
+      "title": "Create a dentist account",
+      "intro": "Dentnord works with dental clinics only. We review every new account before you can submit cases.",
+      "sections": {
+        "you": "You",
+        "clinic": "Your clinic",
+        "preferences": "Preferences"
+      },
+      "name": "Full name",
+      "clinicName": "Clinic name",
+      "phone": "Phone",
+      "country": "Country",
+      "address": "Clinic address",
+      "cvr": "CVR / VAT number",
+      "optional": "optional",
+      "preferredLocale": "Language for emails",
+      "acceptTerms": "I accept the <terms>Terms</terms> and the <privacy>Privacy policy</privacy>.",
+      "submit": "Create account",
+      "submitting": "Creating account…",
+      "haveAccount": "Already have an account?",
+      "login": "Log in"
+    },
     "pendingApproval": {
       "title": "Your account is awaiting approval",
-      "body": "We review every new dentist account. You will receive an email as soon as your account is approved."
-    }
+      "body": "We review every new dentist account. You will receive an email as soon as your account is approved.",
+      "label": "Account status",
+      "signedInAs": "Signed in as {email}",
+      "reviewTime": "We review new accounts within {days} working days.",
+      "steps": {
+        "registered": "Account created",
+        "review": "Dentnord reviews your details",
+        "access": "You get access to the portal"
+      },
+      "contact": "Questions? Write to us at <mail>{email}</mail>.",
+      "rejectedTitle": "Your account is not active",
+      "rejectedBody": "Your account was not approved, or has been disabled. If you think this is a mistake, contact us.",
+      "approvedTitle": "Your account is approved",
+      "approvedBody": "You have full access to the dentist portal.",
+      "openPortal": "Open the portal",
+      "logout": "Log out"
+    },
+    "shell": {
+      "backToSite": "Back to the website",
+      "panelLabel": "Dentist portal",
+      "panelTitle": "Every case, file and decision in one place.",
+      "points": {
+        "upload": "Upload CBCT and intraoral scans securely",
+        "approve": "Review and approve every plan",
+        "follow": "Follow each case through to delivery"
+      }
+    },
+    "errors": {
+      "generic": "Something went wrong. Please try again.",
+      "network": "We couldn't reach the server. Check your connection and try again.",
+      "rateLimited": "Too many attempts. Please wait a minute and try again.",
+      "invalidCredentials": "Incorrect email or password.",
+      "accountRejected": "This account is not active, so you can't log in. If you think this is a mistake, contact us at {email}.",
+      "registrationFailed": "We couldn't create an account with these details. If you already have an account, log in or reset your password.",
+      "invalidRegistration": "Some details are missing or invalid. Check the form and try again."
+    },
+    "fields": {
+      "email": "Email",
+      "password": "Password",
+      "newPassword": "New password",
+      "confirmPassword": "Repeat password",
+      "passwordHint": "At least 10 characters."
+    },
+    "forgotPassword": {
+      "title": "Reset your password",
+      "intro": "Enter the email you registered with and we'll send you a link to choose a new password.",
+      "submit": "Send reset link",
+      "submitting": "Sending…",
+      "sentTitle": "Check your email",
+      "sentBody": "If an account exists for {email}, we've sent a link to reset your password. The link is valid for one hour.",
+      "backToLogin": "Back to log in"
+    },
+    "resetPassword": {
+      "title": "Choose a new password",
+      "intro": "Your new password signs you out on all other devices.",
+      "submit": "Save new password",
+      "submitting": "Saving…",
+      "invalidTitle": "This link has expired",
+      "invalidBody": "Password reset links are valid for one hour and can be used once. Request a new one.",
+      "requestNew": "Request a new link"
+    },
+    "logout": "Log out"
   },
   "portal": {
-    "dashboard": { "title": "Dashboard" },
-    "cases": { "title": "Cases" },
-    "newCase": { "title": "New case" },
-    "caseDetail": { "title": "Case" },
-    "account": { "title": "Account" }
+    "dashboard": {
+      "title": "Dashboard",
+      "welcome": "Welcome, {name}",
+      "welcomeBody": "This is your Dentnord portal. Submit cases, follow their status and approve plans here.",
+      "newCase": "New case",
+      "casesLabel": "Your cases",
+      "casesCount": "{count, plural, =0 {No cases yet} one {# case} other {# cases}}",
+      "viewCases": "View cases",
+      "emptyTitle": "No cases yet",
+      "emptyBody": "Send your CBCT and intraoral scan, choose the implant sites and guide type, and we'll plan the case with you.",
+      "emptyCta": "Submit your first case"
+    },
+    "cases": {
+      "title": "Cases",
+      "intro": "All cases you have submitted to Dentnord.",
+      "emptyTitle": "No cases yet",
+      "emptyBody": "Cases you submit appear here with their status.",
+      "emptyCta": "Submit your first case"
+    },
+    "newCase": {
+      "title": "New case",
+      "intro": "Case submission is being built.",
+      "comingSoonTitle": "Coming soon",
+      "comingSoonBody": "Soon you can upload CBCT (DICOM) and intraoral scans (STL/PLY), mark implant sites and choose a guide type here."
+    },
+    "caseDetail": {
+      "title": "Case"
+    },
+    "account": {
+      "title": "Account",
+      "intro": "Your clinic details, password and sessions.",
+      "profile": {
+        "title": "Clinic profile",
+        "description": "Used on your cases and invoices.",
+        "email": "Email",
+        "emailNote": "To change your email, contact Dentnord.",
+        "save": "Save changes",
+        "saving": "Saving…",
+        "saved": "Profile saved."
+      },
+      "password": {
+        "title": "Password",
+        "description": "Changing your password signs you out on all other devices.",
+        "current": "Current password",
+        "submit": "Change password",
+        "submitting": "Changing…",
+        "changed": "Password changed. Other devices have been signed out.",
+        "wrongCurrent": "The current password is incorrect."
+      },
+      "sessions": {
+        "title": "Sign out everywhere",
+        "description": "Ends every session on every device, including this one.",
+        "button": "Sign out of all devices",
+        "confirmTitle": "Sign out of all devices?",
+        "confirmBody": "You will need to log in again on every device, including this one.",
+        "confirm": "Sign out everywhere",
+        "cancel": "Cancel"
+      }
+    },
+    "nav": {
+      "label": "Portal",
+      "dashboard": "Dashboard",
+      "cases": "Cases",
+      "newCase": "New case",
+      "account": "Account",
+      "menu": "Menu",
+      "openMenu": "Open menu",
+      "website": "Website"
+    },
+    "userMenu": {
+      "label": "Account menu",
+      "account": "Account",
+      "logout": "Log out"
+    }
   },
   "notFound": {
     "title": "Page not found",
@@ -243,8 +428,169 @@
       "catalog": "Catalog",
       "services": "Services",
       "portfolio": "Portfolio",
-      "settings": "Settings"
+      "settings": "Settings",
+      "label": "Admin",
+      "menu": "Menu",
+      "openMenu": "Open menu",
+      "viewSite": "View website",
+      "logout": "Log out",
+      "pendingBadge": "{count} pending"
     },
-    "caseDetail": "Case"
+    "caseDetail": "Case",
+    "dashboard": {
+      "title": "Dashboard",
+      "intro": "What needs your attention.",
+      "pendingTitle": "Pending approvals",
+      "pendingBody": "{count, plural, =0 {No dentists are waiting for approval.} one {# dentist is waiting for approval.} other {# dentists are waiting for approval.}}",
+      "review": "Review dentists",
+      "approvedLabel": "Approved dentists",
+      "rejectedLabel": "Rejected dentists"
+    },
+    "dentists": {
+      "title": "Dentists",
+      "intro": "Approve new dentist accounts and manage existing ones.",
+      "tabsLabel": "Filter by status",
+      "searchLabel": "Search dentists",
+      "searchPlaceholder": "Search name, clinic or email",
+      "search": "Search",
+      "clear": "Clear",
+      "columns": {
+        "dentist": "Dentist",
+        "clinic": "Clinic",
+        "country": "Country",
+        "registered": "Registered",
+        "reviewed": "Reviewed",
+        "actions": "Actions"
+      },
+      "empty": "No dentists here.",
+      "emptySearch": "No dentists match “{query}”.",
+      "view": "View",
+      "back": "All dentists",
+      "detail": {
+        "account": "Account",
+        "clinic": "Clinic",
+        "name": "Full name",
+        "email": "Email",
+        "phone": "Phone",
+        "clinicName": "Clinic name",
+        "address": "Address",
+        "country": "Country",
+        "cvr": "CVR / VAT",
+        "language": "Email language",
+        "registered": "Registered",
+        "termsAccepted": "Accepted Terms and Privacy policy",
+        "reviewed": "Last reviewed",
+        "cases": "Cases",
+        "sessions": "Active sessions",
+        "rejectionReason": "Rejection reason",
+        "history": "History",
+        "historyEmpty": "No admin actions yet.",
+        "by": "by {email}",
+        "none": "–",
+        "languages": {
+          "da": "Danish",
+          "en": "English"
+        }
+      },
+      "actions": {
+        "approve": "Approve",
+        "reject": "Reject",
+        "disable": "Disable",
+        "reactivate": "Re-activate",
+        "cancel": "Cancel",
+        "working": "Saving…",
+        "approveTitle": "Approve {name}?",
+        "approveBody": "They can log in to the portal and submit cases. We'll email them.",
+        "rejectTitle": "Reject {name}?",
+        "rejectBody": "They can't log in. We'll email them, with your reason if you give one.",
+        "disableTitle": "Disable {name}?",
+        "disableBody": "They're signed out on every device immediately and can't log in. We'll email them, with your reason if you give one.",
+        "reasonLabel": "Reason (optional, included in the email)",
+        "reactivateTitle": "Re-activate {name}?",
+        "reactivateBody": "The account becomes approved again and they can log in. We'll email them.",
+        "approved": "{name} approved.",
+        "rejected": "{name} rejected.",
+        "reactivated": "{name} re-activated."
+      },
+      "audit": {
+        "DENTIST_APPROVED": "Approved",
+        "DENTIST_REJECTED": "Rejected",
+        "DENTIST_REACTIVATED": "Re-activated"
+      },
+      "errors": {
+        "invalid": "That request wasn't valid.",
+        "notFound": "This dentist no longer exists.",
+        "invalidState": "This account changed in the meantime. The page has been refreshed; try again.",
+        "generic": "Something went wrong. Please try again."
+      }
+    }
+  },
+  "dentistStatus": {
+    "PENDING": "Pending",
+    "APPROVED": "Approved",
+    "REJECTED": "Rejected"
+  },
+  "validation": {
+    "required": "This field is required.",
+    "tooLong": "This is too long.",
+    "emailInvalid": "Enter a valid email address.",
+    "passwordTooShort": "Use at least 10 characters.",
+    "passwordTooLong": "Use at most 128 characters.",
+    "passwordsDontMatch": "The passwords don't match.",
+    "passwordUnchanged": "Choose a password different from your current one.",
+    "termsRequired": "Please accept the Terms and the Privacy policy.",
+    "phoneInvalid": "Enter a valid phone number, e.g. +45 12 34 56 78.",
+    "cvrInvalid": "A Danish CVR number has 8 digits."
+  },
+  "legal": {
+    "placeholder": "[Legal text pending: Dentnord will publish this page before launch.]",
+    "terms": {
+      "title": "Terms",
+      "intro": "The terms that apply to dentist accounts and orders placed through the Dentnord portal."
+    },
+    "privacy": {
+      "title": "Privacy policy",
+      "intro": "How Dentnord processes personal data about dentists and clinics using the portal."
+    }
+  },
+  "emails": {
+    "greeting": "Hi {name},",
+    "footer": "Dentnord · Surgical guides for dental implants. You receive this email because of your Dentnord account.",
+    "linkFallback": "If the button doesn't work, copy this link into your browser:",
+    "dentistRegistered": {
+      "subject": "New dentist registration: {clinic}",
+      "preview": "A new dentist account is waiting for approval.",
+      "heading": "New dentist registration",
+      "body": "A dentist has created an account and is waiting for approval.",
+      "name": "Name",
+      "clinic": "Clinic",
+      "email": "Email",
+      "phone": "Phone",
+      "country": "Country",
+      "cta": "Review in admin"
+    },
+    "accountApproved": {
+      "subject": "Your Dentnord account is approved",
+      "preview": "You can now submit cases in the Dentnord portal.",
+      "heading": "Your account is approved",
+      "body": "You now have access to the Dentnord portal, where you can submit cases, follow their status and approve plans.",
+      "cta": "Open the portal"
+    },
+    "accountRejected": {
+      "subject": "About your Dentnord account",
+      "preview": "Your Dentnord account is not active.",
+      "heading": "Your account is not active",
+      "body": "We're unable to activate your Dentnord account at this time.",
+      "reasonLabel": "Reason",
+      "contact": "If you have questions, write to us at {email}."
+    },
+    "passwordReset": {
+      "subject": "Reset your Dentnord password",
+      "preview": "Choose a new password for your Dentnord account.",
+      "heading": "Reset your password",
+      "body": "We received a request to reset the password for your Dentnord account. The link is valid for one hour.",
+      "cta": "Choose a new password",
+      "ignore": "If you didn't ask for this, you can ignore this email. Your password stays the same."
+    }
   }
 }

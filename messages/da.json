@@ -143,16 +143,37 @@
       "badge": "Dr. Hossam · [titel/uddannelse]",
       "expertiseLabel": "Kompetenceområder",
       "expertise": {
-        "single": { "title": "Enkelttandsimplantater", "tag": "Tandstøttet" },
-        "fullArch": { "title": "Helkæbe", "tag": "Stabelbare skabeloner" },
-        "bone": { "title": "Knoglestøttede skabeloner", "tag": "Knogleforankret" },
-        "planning": { "title": "Kun planlægning", "tag": "Plan + rapport" }
+        "single": {
+          "title": "Enkelttandsimplantater",
+          "tag": "Tandstøttet"
+        },
+        "fullArch": {
+          "title": "Helkæbe",
+          "tag": "Stabelbare skabeloner"
+        },
+        "bone": {
+          "title": "Knoglestøttede skabeloner",
+          "tag": "Knogleforankret"
+        },
+        "planning": {
+          "title": "Kun planlægning",
+          "tag": "Plan + rapport"
+        }
       },
       "bio": "[Kort præsentation af Dr. Hossam – afventer]",
       "facts": {
-        "experience": { "label": "Erfaring", "value": "[X] år" },
-        "location": { "label": "Baseret i", "value": "[By], Danmark" },
-        "languages": { "label": "Sprog", "value": "[Sprog]" }
+        "experience": {
+          "label": "Erfaring",
+          "value": "[X] år"
+        },
+        "location": {
+          "label": "Baseret i",
+          "value": "[By], Danmark"
+        },
+        "languages": {
+          "label": "Sprog",
+          "value": "[Sprog]"
+        }
       }
     },
     "technology": {
@@ -206,32 +227,264 @@
     "phone": "Telefon",
     "address": "Adresse",
     "cvr": "CVR {cvr}",
-    "rights": "© {year} Dentnord"
+    "rights": "© {year} Dentnord",
+    "terms": "Vilkår",
+    "privacy": "Privatlivspolitik"
   },
   "pages": {
     "services": "Ydelser",
     "portfolio": "Cases",
     "portfolioCase": "Case",
     "about": "Om os",
-    "contact": "Kontakt"
+    "contact": "Kontakt",
+    "terms": "Vilkår",
+    "privacy": "Privatlivspolitik"
   },
   "auth": {
-    "login": { "title": "Log ind" },
-    "register": { "title": "Opret tandlægekonto" },
+    "login": {
+      "title": "Log ind",
+      "intro": "Log ind på din Dentnord-tandlægekonto.",
+      "forgot": "Glemt adgangskode?",
+      "submit": "Log ind",
+      "submitting": "Logger ind…",
+      "noAccount": "Ny hos Dentnord?",
+      "register": "Opret en tandlægekonto",
+      "resetDone": "Din adgangskode er ændret. Log ind med din nye adgangskode.",
+      "signedOut": "Du er logget ud på alle enheder."
+    },
+    "register": {
+      "title": "Opret tandlægekonto",
+      "intro": "Dentnord samarbejder kun med tandklinikker. Vi gennemgår alle nye konti, før du kan indsende cases.",
+      "sections": {
+        "you": "Dig",
+        "clinic": "Din klinik",
+        "preferences": "Indstillinger"
+      },
+      "name": "Fulde navn",
+      "clinicName": "Klinikkens navn",
+      "phone": "Telefon",
+      "country": "Land",
+      "address": "Klinikkens adresse",
+      "cvr": "CVR-/momsnummer",
+      "optional": "valgfrit",
+      "preferredLocale": "Sprog i e-mails",
+      "acceptTerms": "Jeg accepterer <terms>vilkårene</terms> og <privacy>privatlivspolitikken</privacy>.",
+      "submit": "Opret konto",
+      "submitting": "Opretter konto…",
+      "haveAccount": "Har du allerede en konto?",
+      "login": "Log ind"
+    },
     "pendingApproval": {
       "title": "Din konto afventer godkendelse",
-      "body": "Vi gennemgår alle nye tandlægekonti. Du modtager en e-mail, så snart din konto er godkendt."
-    }
+      "body": "Vi gennemgår alle nye tandlægekonti. Du modtager en e-mail, så snart din konto er godkendt.",
+      "label": "Kontostatus",
+      "signedInAs": "Logget ind som {email}",
+      "reviewTime": "Vi gennemgår nye konti inden for {days} hverdage.",
+      "steps": {
+        "registered": "Konto oprettet",
+        "review": "Dentnord gennemgår dine oplysninger",
+        "access": "Du får adgang til portalen"
+      },
+      "contact": "Spørgsmål? Skriv til os på <mail>{email}</mail>.",
+      "rejectedTitle": "Din konto er ikke aktiv",
+      "rejectedBody": "Din konto blev ikke godkendt eller er blevet deaktiveret. Kontakt os, hvis du mener, det er en fejl.",
+      "approvedTitle": "Din konto er godkendt",
+      "approvedBody": "Du har fuld adgang til tandlægeportalen.",
+      "openPortal": "Åbn portalen",
+      "logout": "Log ud"
+    },
+    "shell": {
+      "backToSite": "Tilbage til hjemmesiden",
+      "panelLabel": "Tandlægeportal",
+      "panelTitle": "Alle cases, filer og beslutninger samlet ét sted.",
+      "points": {
+        "upload": "Upload CBCT og intraorale scanninger sikkert",
+        "approve": "Gennemgå og godkend hver plan",
+        "follow": "Følg hver case helt frem til levering"
+      }
+    },
+    "errors": {
+      "generic": "Noget gik galt. Prøv igen.",
+      "network": "Vi kunne ikke få forbindelse til serveren. Tjek din forbindelse, og prøv igen.",
+      "rateLimited": "For mange forsøg. Vent et minut, og prøv igen.",
+      "invalidCredentials": "Forkert e-mail eller adgangskode.",
+      "accountRejected": "Kontoen er ikke aktiv, så du kan ikke logge ind. Hvis du mener, det er en fejl, så kontakt os på {email}.",
+      "registrationFailed": "Vi kunne ikke oprette en konto med disse oplysninger. Har du allerede en konto, så log ind eller nulstil din adgangskode.",
+      "invalidRegistration": "Nogle oplysninger mangler eller er ugyldige. Tjek formularen, og prøv igen."
+    },
+    "fields": {
+      "email": "E-mail",
+      "password": "Adgangskode",
+      "newPassword": "Ny adgangskode",
+      "confirmPassword": "Gentag adgangskode",
+      "passwordHint": "Mindst 10 tegn."
+    },
+    "forgotPassword": {
+      "title": "Nulstil din adgangskode",
+      "intro": "Skriv den e-mail, du er registreret med, så sender vi et link, hvor du kan vælge en ny adgangskode.",
+      "submit": "Send link",
+      "submitting": "Sender…",
+      "sentTitle": "Tjek din e-mail",
+      "sentBody": "Hvis der findes en konto for {email}, har vi sendt et link til at nulstille adgangskoden. Linket er gyldigt i en time.",
+      "backToLogin": "Tilbage til log ind"
+    },
+    "resetPassword": {
+      "title": "Vælg en ny adgangskode",
+      "intro": "Din nye adgangskode logger dig ud på alle andre enheder.",
+      "submit": "Gem ny adgangskode",
+      "submitting": "Gemmer…",
+      "invalidTitle": "Linket er udløbet",
+      "invalidBody": "Links til nulstilling er gyldige i en time og kan kun bruges én gang. Bed om et nyt.",
+      "requestNew": "Bed om et nyt link"
+    },
+    "logout": "Log ud"
   },
   "portal": {
-    "dashboard": { "title": "Oversigt" },
-    "cases": { "title": "Cases" },
-    "newCase": { "title": "Ny case" },
-    "caseDetail": { "title": "Case" },
-    "account": { "title": "Konto" }
+    "dashboard": {
+      "title": "Oversigt",
+      "welcome": "Velkommen, {name}",
+      "welcomeBody": "Dette er din Dentnord-portal. Her indsender du cases, følger deres status og godkender planer.",
+      "newCase": "Ny case",
+      "casesLabel": "Dine cases",
+      "casesCount": "{count, plural, =0 {Ingen cases endnu} one {# case} other {# cases}}",
+      "viewCases": "Se cases",
+      "emptyTitle": "Ingen cases endnu",
+      "emptyBody": "Send din CBCT og intraorale scanning, vælg implantatpositioner og skabelontype, så planlægger vi casen sammen med dig.",
+      "emptyCta": "Indsend din første case"
+    },
+    "cases": {
+      "title": "Cases",
+      "intro": "Alle cases, du har indsendt til Dentnord.",
+      "emptyTitle": "Ingen cases endnu",
+      "emptyBody": "Cases, du indsender, vises her med deres status.",
+      "emptyCta": "Indsend din første case"
+    },
+    "newCase": {
+      "title": "Ny case",
+      "intro": "Indsendelse af cases er under udvikling.",
+      "comingSoonTitle": "Kommer snart",
+      "comingSoonBody": "Snart kan du her uploade CBCT (DICOM) og intraorale scanninger (STL/PLY), markere implantatpositioner og vælge skabelontype."
+    },
+    "caseDetail": {
+      "title": "Case"
+    },
+    "account": {
+      "title": "Konto",
+      "intro": "Dine klinikoplysninger, adgangskode og sessioner.",
+      "profile": {
+        "title": "Klinikprofil",
+        "description": "Bruges på dine cases og fakturaer.",
+        "email": "E-mail",
+        "emailNote": "Kontakt Dentnord for at ændre din e-mail.",
+        "save": "Gem ændringer",
+        "saving": "Gemmer…",
+        "saved": "Profilen er gemt."
+      },
+      "password": {
+        "title": "Adgangskode",
+        "description": "Når du skifter adgangskode, logges du ud på alle andre enheder.",
+        "current": "Nuværende adgangskode",
+        "submit": "Skift adgangskode",
+        "submitting": "Skifter…",
+        "changed": "Adgangskoden er ændret. Andre enheder er logget ud.",
+        "wrongCurrent": "Den nuværende adgangskode er forkert."
+      },
+      "sessions": {
+        "title": "Log ud overalt",
+        "description": "Afslutter alle sessioner på alle enheder, også denne.",
+        "button": "Log ud på alle enheder",
+        "confirmTitle": "Log ud på alle enheder?",
+        "confirmBody": "Du skal logge ind igen på alle enheder, også denne.",
+        "confirm": "Log ud overalt",
+        "cancel": "Annuller"
+      }
+    },
+    "nav": {
+      "label": "Portal",
+      "dashboard": "Oversigt",
+      "cases": "Cases",
+      "newCase": "Ny case",
+      "account": "Konto",
+      "menu": "Menu",
+      "openMenu": "Åbn menu",
+      "website": "Hjemmeside"
+    },
+    "userMenu": {
+      "label": "Kontomenu",
+      "account": "Konto",
+      "logout": "Log ud"
+    }
   },
   "notFound": {
     "title": "Siden blev ikke fundet",
     "back": "Tilbage til forsiden"
+  },
+  "dentistStatus": {
+    "PENDING": "Afventer",
+    "APPROVED": "Godkendt",
+    "REJECTED": "Afvist"
+  },
+  "validation": {
+    "required": "Feltet skal udfyldes.",
+    "tooLong": "Teksten er for lang.",
+    "emailInvalid": "Indtast en gyldig e-mailadresse.",
+    "passwordTooShort": "Brug mindst 10 tegn.",
+    "passwordTooLong": "Brug højst 128 tegn.",
+    "passwordsDontMatch": "Adgangskoderne er ikke ens.",
+    "passwordUnchanged": "Vælg en anden adgangskode end din nuværende.",
+    "termsRequired": "Du skal acceptere vilkårene og privatlivspolitikken.",
+    "phoneInvalid": "Indtast et gyldigt telefonnummer, f.eks. +45 12 34 56 78.",
+    "cvrInvalid": "Et dansk CVR-nummer har 8 cifre."
+  },
+  "legal": {
+    "placeholder": "[Juridisk tekst mangler: Dentnord offentliggør siden før lancering.]",
+    "terms": {
+      "title": "Vilkår",
+      "intro": "De vilkår, der gælder for tandlægekonti og bestillinger via Dentnord-portalen."
+    },
+    "privacy": {
+      "title": "Privatlivspolitik",
+      "intro": "Sådan behandler Dentnord personoplysninger om tandlæger og klinikker, der bruger portalen."
+    }
+  },
+  "emails": {
+    "greeting": "Hej {name}",
+    "footer": "Dentnord · Boreskabeloner til tandimplantater. Du modtager denne e-mail på grund af din Dentnord-konto.",
+    "linkFallback": "Virker knappen ikke, så kopiér dette link ind i din browser:",
+    "dentistRegistered": {
+      "subject": "Ny tandlægeregistrering: {clinic}",
+      "preview": "En ny tandlægekonto afventer godkendelse.",
+      "heading": "Ny tandlægeregistrering",
+      "body": "En tandlæge har oprettet en konto og afventer godkendelse.",
+      "name": "Navn",
+      "clinic": "Klinik",
+      "email": "E-mail",
+      "phone": "Telefon",
+      "country": "Land",
+      "cta": "Gennemgå i admin"
+    },
+    "accountApproved": {
+      "subject": "Din Dentnord-konto er godkendt",
+      "preview": "Du kan nu indsende cases i Dentnord-portalen.",
+      "heading": "Din konto er godkendt",
+      "body": "Du har nu adgang til Dentnord-portalen, hvor du kan indsende cases, følge deres status og godkende planer.",
+      "cta": "Åbn portalen"
+    },
+    "accountRejected": {
+      "subject": "Om din Dentnord-konto",
+      "preview": "Din Dentnord-konto er ikke aktiv.",
+      "heading": "Din konto er ikke aktiv",
+      "body": "Vi kan desværre ikke aktivere din Dentnord-konto på nuværende tidspunkt.",
+      "reasonLabel": "Begrundelse",
+      "contact": "Har du spørgsmål, så skriv til os på {email}."
+    },
+    "passwordReset": {
+      "subject": "Nulstil din Dentnord-adgangskode",
+      "preview": "Vælg en ny adgangskode til din Dentnord-konto.",
+      "heading": "Nulstil din adgangskode",
+      "body": "Vi har modtaget en anmodning om at nulstille adgangskoden til din Dentnord-konto. Linket er gyldigt i en time.",
+      "cta": "Vælg ny adgangskode",
+      "ignore": "Har du ikke bedt om dette, kan du se bort fra e-mailen. Din adgangskode forbliver den samme."
+    }
   }
 }

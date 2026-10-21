@@ -9,6 +9,7 @@ import { auth } from "@/lib/auth";
 // Data Access Layer for auth. The proxy does an optimistic (cookie-cached) check; these helpers are the
 // authoritative check against the DB and must guard every protected layout, page, action and route.
 // With Cache Components, call them only inside a <Suspense> boundary (they read request headers).
+// `cache()` dedupes the DB lookup within one request, so layout + page checking twice costs one query.
 
 export const getSession = cache(async () =>
   auth.api.getSession({
@@ -17,6 +18,16 @@ export const getSession = cache(async () =>
   }),
 );
 
+export type AuthSession = NonNullable<Awaited<ReturnType<typeof getSession>>>;
+
+/** Any signed-in user, else the login page. */
+export async function requireUser(locale: string) {
+  const session = await getSession();
+  if (!session) redirect(`/${locale}/login`);
+  return session;
+}
+
+/** ADMIN only. Signed-out users go to login; anyone else gets a 404 (the admin isn't advertised). */
 export async function requireAdmin() {
   const session = await getSession();
   if (!session) redirect("/en/login?next=/admin");
@@ -24,12 +35,11 @@ export async function requireAdmin() {
   return session;
 }
 
+/** An APPROVED dentist. Admins go to /admin, pending (or rejected) dentists to the status page. */
 export async function requireApprovedDentist(locale: string) {
   const session = await getSession();
   if (!session) redirect(`/${locale}/login`);
   if (session.user.role !== "DENTIST") redirect("/admin");
-  if (session.user.dentistStatus !== "APPROVED") {
-    redirect(`/${locale}/pending-approval`);
-  }
+  if (session.user.dentistStatus !== "APPROVED") redirect(`/${locale}/pending-approval`);
   return session;
 }

@@ -25,6 +25,11 @@ export type StatsSetting = {
   turnaroundDays?: number | null;
 };
 
+/** Dentist account settings. `reviewDays` missing/null → "[X]" on the pending-approval page. */
+export type AccountsSetting = {
+  reviewDays?: number | null;
+};
+
 async function getSetting<T>(key: string): Promise<T | null> {
   "use cache";
   cacheTag(SITE_SETTINGS_TAG, `${SITE_SETTINGS_TAG}:${key}`);
@@ -35,6 +40,7 @@ async function getSetting<T>(key: string): Promise<T | null> {
 
 export const getContactSetting = () => getSetting<ContactSetting>("contact");
 export const getStatsSetting = () => getSetting<StatsSetting>("stats");
+export const getAccountsSetting = () => getSetting<AccountsSetting>("accounts");
 
 /** Cached so the footer can prerender (Cache Components forbids `new Date()` in a static shell). */
 export async function getCurrentYear() {
