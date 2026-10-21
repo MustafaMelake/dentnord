@@ -61,3 +61,18 @@ export const getAudit = (targetId: string) =>
   );
 
 export const cleanupE2EUsers = () => run<{ removed: number }>("cleanup").removed;
+
+export const createService = (slug: string, title: string) =>
+  run<{ id: string }>("createService", { slug, title });
+
+export const getService = (id: string) =>
+  run<{ title: { da: string; en: string }; published: boolean } | null>("getService", { id });
+
+export const getSetting = (key: string) =>
+  run<Record<string, unknown> | null>("getSetting", { key });
+
+export const getTestimonials = (authorPrefix: string) =>
+  run<{ id: string; authorName: string; consent: boolean; published: boolean }[]>(
+    "getTestimonials",
+    { authorPrefix },
+  );

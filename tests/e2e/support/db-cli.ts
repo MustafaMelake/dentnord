@@ -85,19 +85,67 @@ const ops = {
     });
   },
 
-  /** Deletes every e2e user (sessions/accounts cascade) and the audit entries about them. */
+  /** A published test service (slug "e2e-…"), appended to the list. */
+  async createService({ slug, title }: { slug: string; title: string }) {
+    if (!slug.startsWith(E2E_EMAIL_PREFIX))
+      throw new Error("test services must use the e2e- prefix");
+    const max = await db.service.aggregate({ _max: { sortOrder: true } });
+    const s = await db.service.create({
+      data: {
+        slug,
+        title: { da: title, en: title },
+        published: true,
+        sortOrder: (max._max.sortOrder ?? 0) + 1,
+      },
+      select: { id: true },
+    });
+    return { id: s.id };
+  },
+
+  async getService({ id }: { id: string }) {
+    return db.service.findUnique({ where: { id }, select: { title: true, published: true } });
+  },
+
+  async getSetting({ key }: { key: string }) {
+    const row = await db.siteSetting.findUnique({ where: { key }, select: { value: true } });
+    return row?.value ?? null;
+  },
+
+  async getTestimonials({ authorPrefix }: { authorPrefix: string }) {
+    return db.testimonial.findMany({
+      where: { authorName: { startsWith: authorPrefix } },
+      select: { id: true, authorName: true, consent: true, published: true },
+    });
+  },
+
+  /** Deletes every e2e user (sessions/accounts cascade), e2e content, and the audit entries about them. */
   async cleanup() {
     const users = await db.user.findMany({
       where: { email: { startsWith: E2E_EMAIL_PREFIX } },
       select: { id: true },
     });
     const ids = users.map((u) => u.id);
-    if (ids.length > 0) {
-      await db.auditLog.deleteMany({
-        where: { OR: [{ targetType: "user", targetId: { in: ids } }, { actorId: { in: ids } }] },
-      });
-      await db.user.deleteMany({ where: { id: { in: ids } } });
-    }
+    const services = await db.service.findMany({
+      where: { slug: { startsWith: E2E_EMAIL_PREFIX } },
+      select: { id: true },
+    });
+    const testimonials = await db.testimonial.findMany({
+      where: { authorName: { startsWith: "E2E " } },
+      select: { id: true },
+    });
+    const contentIds = [...services, ...testimonials].map((r) => r.id);
+    await db.auditLog.deleteMany({
+      where: {
+        OR: [
+          { targetType: "user", targetId: { in: ids } },
+          { actorId: { in: ids } },
+          { targetId: { in: contentIds } },
+        ],
+      },
+    });
+    await db.service.deleteMany({ where: { id: { in: services.map((s) => s.id) } } });
+    await db.testimonial.deleteMany({ where: { id: { in: testimonials.map((t) => t.id) } } });
+    if (ids.length > 0) await db.user.deleteMany({ where: { id: { in: ids } } });
     return { removed: ids.length };
   },
 };

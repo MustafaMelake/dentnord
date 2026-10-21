@@ -61,7 +61,7 @@ test("register → pending → no portal → admin approves → portal opens", a
   // 4. Admin logs in and approves.
   const adminUser = await newUser(browser);
   await login(adminUser.page, admin.email, admin.password);
-  await expect(adminUser.page).toHaveURL(/\/admin(\/dashboard)?$/);
+  await expect(adminUser.page).toHaveURL(/\/admin\/dashboard$/);
   await adminUser.page.goto("/admin/dentists?status=pending");
   // Listed in the pending tab (desktop table row; the phone cards are hidden at this width).
   await expect(adminUser.page.getByRole("row").filter({ hasText: email })).toBeVisible();
@@ -94,7 +94,7 @@ test("a rejected dentist loses their session and can't log in again", async ({ b
 
   const adminUser = await newUser(browser);
   await login(adminUser.page, admin.email, admin.password);
-  await expect(adminUser.page).toHaveURL(/\/admin/);
+  await expect(adminUser.page).toHaveURL(/\/admin\/dashboard$/);
   await adminDecide(adminUser.page, dentist, "Disable", "Not a registered clinic");
   await expect(adminUser.page.getByText(`${dentist.name} rejected.`)).toBeVisible();
 
@@ -173,7 +173,7 @@ test("the admin can change their own password from the admin area", async ({ bro
   const other = await newUser(browser); // a second device
   for (const { page } of [main, other]) {
     await login(page, own.email, own.password);
-    await expect(page).toHaveURL(/\/admin/);
+    await expect(page).toHaveURL(/\/admin\/dashboard$/);
   }
 
   // Reached from the account menu in the sidebar.
@@ -199,7 +199,7 @@ test("the admin can change their own password from the admin area", async ({ bro
   await login(other.page, own.email, own.password);
   await expect(other.page.getByText("Incorrect email or password.")).toBeVisible();
   await login(other.page, own.email, newPassword);
-  await expect(other.page).toHaveURL(/\/admin/);
+  await expect(other.page).toHaveURL(/\/admin\/dashboard$/);
 
   await main.context.close();
   await other.context.close();
