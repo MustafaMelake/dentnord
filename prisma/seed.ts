@@ -8,6 +8,7 @@
  * Idempotent: rows are upserted by their unique keys, so existing rows are left as they are (catalog
  * rows are only created, never overwritten).
  * The admin user comes from ADMIN_EMAIL + SEED_ADMIN_PASSWORD. Their password is only set on first creation.
+ * Refuses to run against `production` unless SEED_ADMIN_PASSWORD is set in the shell (see seed-guard.ts).
  */
 import { existsSync } from "node:fs";
 
@@ -16,8 +17,17 @@ import { hashPassword } from "better-auth/crypto";
 
 import { PrismaClient } from "../src/generated/prisma/client";
 import { withVerifiedSsl } from "../src/lib/pg-url";
+import { seedRefusal } from "./seed-guard";
 
+// Snapshot the shell's variables before .env fills in the gaps (loadEnvFile never overrides them).
+const shellEnv = { ...process.env };
 if (existsSync(".env")) process.loadEnvFile(".env");
+
+const refusal = seedRefusal(shellEnv, process.env);
+if (refusal) {
+  console.error(`✗ ${refusal}`);
+  process.exit(1);
+}
 
 const databaseUrl = process.env.DATABASE_URL;
 if (!databaseUrl) throw new Error("DATABASE_URL is not set");
