@@ -10,7 +10,8 @@
  * The admin user comes from ADMIN_EMAIL + SEED_ADMIN_PASSWORD. Their password is only set on first creation.
  * Refuses to run against `production` unless SEED_ADMIN_PASSWORD is set in the shell (see seed-guard.ts).
  */
-import { existsSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
+import { parseEnv } from "node:util";
 
 import { PrismaPg } from "@prisma/adapter-pg";
 import { hashPassword } from "better-auth/crypto";
@@ -19,11 +20,12 @@ import { PrismaClient } from "../src/generated/prisma/client";
 import { withVerifiedSsl } from "../src/lib/pg-url";
 import { seedRefusal } from "./seed-guard";
 
-// Snapshot the shell's variables before .env fills in the gaps (loadEnvFile never overrides them).
-const shellEnv = { ...process.env };
+// The guard compares against the .env FILE, because `pnpm db:seed` (Prisma CLI) has usually loaded
+// .env into the environment already. loadEnvFile never overrides variables that are already set.
+const dotenv = existsSync(".env") ? parseEnv(readFileSync(".env", "utf8")) : {};
 if (existsSync(".env")) process.loadEnvFile(".env");
 
-const refusal = seedRefusal(shellEnv, process.env);
+const refusal = seedRefusal(process.env, dotenv);
 if (refusal) {
   console.error(`✗ ${refusal}`);
   process.exit(1);
@@ -31,6 +33,10 @@ if (refusal) {
 
 const databaseUrl = process.env.DATABASE_URL;
 if (!databaseUrl) throw new Error("DATABASE_URL is not set");
+// The target, without credentials: Neon endpoint id + declared branch.
+console.log(
+  `→ seeding NEON_BRANCH=${process.env.NEON_BRANCH ?? "?"} at ${new URL(databaseUrl).hostname.split(".")[0]}`,
+);
 
 const db = new PrismaClient({
   adapter: new PrismaPg({ connectionString: withVerifiedSsl(databaseUrl) }),

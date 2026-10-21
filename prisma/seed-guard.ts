@@ -2,29 +2,35 @@
  * Decides whether `pnpm db:seed` may run, before anything connects to a database.
  * Unit-tested in tests/unit/seed-guard.test.ts.
  *
- * `shell` is the environment as the process started (before .env is loaded); `merged` is after
- * `process.loadEnvFile(".env")`, which never overrides variables the shell already set.
+ * `env` is the effective environment; `dotenv` is the parsed contents of the .env FILE. Comparing with
+ * the file (not "what the shell set") matters: `pnpm db:seed` runs through the Prisma CLI, whose
+ * prisma.config.ts loads .env into the environment before the seed process even starts, so a .env value
+ * looks exactly like a shell value by the time the seed runs.
  *
- * 1. A shell-provided DATABASE_URL points somewhere other than .env, so the target branch must be
- *    declared in the shell too (NEON_BRANCH). Otherwise .env's NEON_BRANCH ("dev") would describe the
- *    wrong database and rule 2 couldn't fire.
- * 2. On `production`, SEED_ADMIN_PASSWORD must come from the shell. Falling back to .env would give the
- *    production admin the local dev password.
+ * 1. DATABASE_URL differs from .env's, so the target branch must be declared too: NEON_BRANCH must also
+ *    differ from .env's. Otherwise .env's NEON_BRANCH ("dev") would describe a database it isn't.
+ * 2. On `production`, SEED_ADMIN_PASSWORD must be set and must not be the .env value: that is the local
+ *    dev password and must never become the production admin's.
  */
 type Env = Record<string, string | undefined>;
 
-export function seedRefusal(shell: Env, merged: Env): string | null {
-  if (shell.DATABASE_URL && !shell.NEON_BRANCH) {
+export function seedRefusal(env: Env, dotenv: Env): string | null {
+  const urlOverridden = !!env.DATABASE_URL && env.DATABASE_URL !== dotenv.DATABASE_URL;
+  const branchDeclared = !!env.NEON_BRANCH && env.NEON_BRANCH !== dotenv.NEON_BRANCH;
+  if (urlOverridden && !branchDeclared) {
     return (
-      "DATABASE_URL is set in the shell but NEON_BRANCH isn't. Set NEON_BRANCH in the same shell " +
-      "(e.g. NEON_BRANCH=production) so the seed knows which branch it is writing to."
+      "DATABASE_URL is not the one in .env, but NEON_BRANCH still is. Set NEON_BRANCH in the same " +
+      "shell (e.g. NEON_BRANCH=production) so the seed knows which branch it is writing to."
     );
   }
-  if (merged.NEON_BRANCH === "production" && !shell.SEED_ADMIN_PASSWORD) {
-    return (
-      "Refusing to seed the production branch: SEED_ADMIN_PASSWORD must be set explicitly in the " +
-      "shell. It is never taken from .env for production (that would be the dev password)."
-    );
+  if (env.NEON_BRANCH === "production") {
+    const password = env.SEED_ADMIN_PASSWORD;
+    if (!password || password === dotenv.SEED_ADMIN_PASSWORD) {
+      return (
+        "Refusing to seed the production branch: set SEED_ADMIN_PASSWORD in this shell to the password " +
+        "you chose. The value from .env (the dev password) is never used for production."
+      );
+    }
   }
   return null;
 }

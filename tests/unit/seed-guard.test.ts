@@ -3,45 +3,46 @@ import { describe, it } from "node:test";
 
 import { seedRefusal } from "../../prisma/seed-guard";
 
-// `shell` = what the shell set; `merged` = after .env filled in the rest (shell values win).
+// `dotenv` = the .env file. The effective env is .env plus whatever the shell overrode — and it may
+// already contain every .env value (Prisma's CLI preloads .env before running the seed).
 const dotenv = {
   DATABASE_URL: "postgres://dev",
   NEON_BRANCH: "dev",
   SEED_ADMIN_PASSWORD: "dev-password-123",
 };
-const merge = (shell: Record<string, string>) => ({ ...dotenv, ...shell });
+const env = (overrides: Record<string, string> = {}) => ({ ...dotenv, ...overrides });
 
 describe("seedRefusal", () => {
   it("allows a plain local seed (everything from .env, dev branch)", () => {
-    assert.equal(seedRefusal({}, merge({})), null);
+    assert.equal(seedRefusal(env(), dotenv), null);
   });
 
-  it("refuses production when the password would come from .env", () => {
-    const shell = { DATABASE_URL: "postgres://prod", NEON_BRANCH: "production" };
-    assert.match(
-      seedRefusal(shell, merge(shell)) ?? "",
-      /SEED_ADMIN_PASSWORD must be set explicitly/,
-    );
+  it("refuses production when the password is the .env one, even if .env was preloaded", () => {
+    const e = env({ DATABASE_URL: "postgres://prod", NEON_BRANCH: "production" });
+    assert.match(seedRefusal(e, dotenv) ?? "", /SEED_ADMIN_PASSWORD/);
+  });
+
+  it("refuses production when no password is set at all", () => {
+    const e = { DATABASE_URL: "postgres://prod", NEON_BRANCH: "production" };
+    assert.match(seedRefusal(e, dotenv) ?? "", /SEED_ADMIN_PASSWORD/);
   });
 
   it("refuses production even when .env itself says production", () => {
-    const merged = { ...dotenv, NEON_BRANCH: "production" };
-    assert.match(seedRefusal({}, merged) ?? "", /production/);
+    const prodDotenv = { ...dotenv, NEON_BRANCH: "production" };
+    assert.match(seedRefusal({ ...prodDotenv }, prodDotenv) ?? "", /production/);
   });
 
-  it("allows production with a password set in the shell", () => {
-    const shell = {
+  it("allows production with a different password set in the shell", () => {
+    const e = env({
       DATABASE_URL: "postgres://prod",
       NEON_BRANCH: "production",
-      SEED_ADMIN_PASSWORD: "prod-password-123",
-    };
-    assert.equal(seedRefusal(shell, merge(shell)), null);
+      SEED_ADMIN_PASSWORD: "chosen-prod-password",
+    });
+    assert.equal(seedRefusal(e, dotenv), null);
   });
 
-  it("refuses a shell DATABASE_URL without a shell NEON_BRANCH (target unknown)", () => {
-    const shell = { DATABASE_URL: "postgres://prod" };
-    assert.match(seedRefusal(shell, merge(shell)) ?? "", /NEON_BRANCH/);
-    const withPassword = { ...shell, SEED_ADMIN_PASSWORD: "prod-password-123" };
-    assert.match(seedRefusal(withPassword, merge(withPassword)) ?? "", /NEON_BRANCH/);
+  it("refuses a DATABASE_URL override without a NEON_BRANCH override (target unknown)", () => {
+    const e = env({ DATABASE_URL: "postgres://prod", SEED_ADMIN_PASSWORD: "chosen-prod-password" });
+    assert.match(seedRefusal(e, dotenv) ?? "", /NEON_BRANCH/);
   });
 });
