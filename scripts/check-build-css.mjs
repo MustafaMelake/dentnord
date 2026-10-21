@@ -5,29 +5,35 @@
 // variables that fonts.ts no longer defined), with no brand colours and no new utilities. The build
 // itself passed. These checks would have failed it.
 //
-// For every prerendered page (both root layouts: [locale] and admin), using only that page's CSS:
+// Checks:
 //   1. fonts:    each variable declared in src/lib/fonts.ts is defined, and no font variable is
 //                referenced that fonts.ts doesn't declare.
 //   2. theme:    every theme variable the CSS uses (var(--color-*|--font-*|--radius-*|--text-*|
 //                --container-*)) is defined in that CSS.
-//   3. classes:  every class in the HTML has a matching selector (stale Tailwind output misses
-//                the utilities of new components).
+//   3. classes:  every class in a page's HTML has a matching selector in that page's CSS (stale
+//                Tailwind output misses the utilities of new components).
+//
+// Local build (default): 1+2 run over ALL emitted CSS, so an empty or broken build always fails.
+// 1–3 then run per prerendered page. Pages are found by content, not path: with a deployment
+// adapter (Vercel) Next writes them to .next/server/route-cache/<kind>/<hash>/$/<route>.html instead
+// of .next/server/app/<route>.html. /en and /da (fully static) are required; other pages, like the
+// /admin PPR shell, are checked when present. If the required pages can't be found on Vercel,
+// that is a warning (the CSS checks still apply); the post-deploy --url check is the final word.
 //
 // Usage:
-//   node scripts/check-build-css.mjs                 # checks .next after `next build` (part of pnpm build)
-//   node scripts/check-build-css.mjs --url <url>...  # checks live pages, e.g. after a deploy
+//   node scripts/check-build-css.mjs                 # after `next build` (part of pnpm build)
+//   node scripts/check-build-css.mjs --url <url>...  # live pages, e.g. after a deploy
 
 import { existsSync, readdirSync, readFileSync } from "node:fs";
-import { join, relative } from "node:path";
+import { basename, join, relative } from "node:path";
 
 const ROOT = process.cwd();
 const DIST = join(ROOT, ".next");
+const REQUIRED_ROUTES = ["/en", "/da"];
 
 // Class names that are hooks for JS/CSS selectors or libraries, not styles of their own.
 const NON_STYLE_CLASSES = new Set(["group", "peer", "dark", "light", "lenis", "lenis-smooth"]);
 const NON_STYLE_PATTERNS = [/^group\//, /^peer\//, /^lucide(-|$)/];
-// One prerendered page per root layout must be among the checked pages, so the check can't pass vacuously.
-const REQUIRED_PAGES = ["server/app/en.html", "server/app/admin.html"];
 
 const THEME_NAMESPACES = /var\((--(?:color|font|radius|text|container)-[\w-]+)\)/g;
 
@@ -44,16 +50,51 @@ const fontPrefix = fontVars[0].slice(0, fontVars[0].indexOf("-", 2) + 1);
 const urls = process.argv.includes("--url")
   ? process.argv.slice(process.argv.indexOf("--url") + 1)
   : [];
-const pages = urls.length > 0 ? await loadRemote(urls) : loadLocal();
 
 const errors = [];
-for (const page of pages) errors.push(...checkPage(page).map((e) => `${page.name}: ${e}`));
+const warnings = [];
+let checked;
+
+if (urls.length > 0) {
+  const pages = await loadRemote(urls);
+  for (const page of pages) errors.push(...checkPage(page).map((e) => `${page.name}: ${e}`));
+  checked = pages.map((p) => p.name);
+} else {
+  if (!existsSync(DIST)) fail([".next not found: run `next build` first."]);
+
+  const cssFiles = walk(join(DIST, "static")).filter((f) => f.endsWith(".css"));
+  if (cssFiles.length === 0) fail(["no .css files in .next/static: nothing was compiled."]);
+  const allCss = cssFiles.map((f) => readFileSync(f, "utf8")).join("\n");
+  errors.push(...checkCss(allCss).map((e) => `emitted CSS: ${e}`));
+
+  const pages = findPages(cssFiles);
+  for (const page of pages) errors.push(...checkPage(page).map((e) => `${page.name}: ${e}`));
+
+  const absent = REQUIRED_ROUTES.filter((r) => !pages.some((p) => p.name === r));
+  if (absent.length > 0) {
+    const msg = `prerendered pages not found for ${absent.join(", ")}: per-page class check skipped`;
+    (process.env.VERCEL ? warnings : errors).push(msg);
+  }
+  const names = pages.map((p) => p.name);
+  checked = [
+    `${cssFiles.length} CSS files`,
+    `${pages.length} pages`,
+    ...[...REQUIRED_ROUTES, "/admin"].filter((r) => names.includes(r)),
+  ];
+}
+
+for (const w of warnings) console.warn(`check-build-css: WARNING ${w}`);
 if (errors.length > 0) fail(errors);
-console.log(`check-build-css: OK (${pages.length} pages, fonts ${fontVars.join(", ")})`);
+console.log(`check-build-css: OK (fonts ${fontVars.join(", ")}; ${checked.join(", ")})`);
 
 // ---------------------------------------------------------------------------------------------
 
 function checkPage({ html, css }) {
+  if (!css) return ["links no stylesheet"];
+  return [...checkCss(css), ...checkClasses(html, css)];
+}
+
+function checkCss(css) {
   const out = [];
   const defined = new Set([...css.matchAll(/(--[\w-]+)\s*:/g)].map((m) => m[1]));
 
@@ -74,8 +115,11 @@ function checkPage({ html, css }) {
   for (const [, v] of css.matchAll(THEME_NAMESPACES)) if (!defined.has(v)) missingTheme.add(v);
   if (missingTheme.size > 0)
     out.push(`theme variables used but never defined: ${[...missingTheme].join(", ")}`);
+  return out;
+}
 
-  // 3. classes
+// 3. classes
+function checkClasses(html, css) {
   const classes = new Set();
   for (const [, attr] of html.matchAll(/\sclass="([^"]*)"/g)) {
     for (const c of decodeEntities(attr).split(/\s+/)) if (c) classes.add(c);
@@ -86,12 +130,10 @@ function checkPage({ html, css }) {
       !NON_STYLE_PATTERNS.some((p) => p.test(c)) &&
       !hasSelector(css, c),
   );
-  if (missing.length > 0) {
-    out.push(
-      `${missing.length} classes have no CSS rule (stale or unprocessed Tailwind output?): ${missing.slice(0, 12).join(" ")}${missing.length > 12 ? " …" : ""}`,
-    );
-  }
-  return out;
+  if (missing.length === 0) return [];
+  return [
+    `${missing.length} classes have no CSS rule (stale or unprocessed Tailwind output?): ${missing.slice(0, 12).join(" ")}${missing.length > 12 ? " …" : ""}`,
+  ];
 }
 
 function hasSelector(css, className) {
@@ -110,29 +152,40 @@ function cssEscape(s) {
     .replace(/^(-?)(\d)/, (_, dash, d) => `${dash}\\3${d} `);
 }
 
-function loadLocal() {
-  if (!existsSync(DIST)) fail([".next not found: run `next build` first."]);
-  // Only documents rendered by our root layouts (they put the font classes on <html>). Skips empty
-  // param templates like [locale]/about.html and Next's own error documents (<html id="__next_error__">).
-  const pages = walk(join(DIST, "server", "app"))
+// Prerendered documents rendered by our root layouts (they put the font classes on <html>), anywhere
+// under .next/server. Skips empty param templates and Next's own error documents.
+function findPages(cssFiles) {
+  const byName = new Map(cssFiles.map((f) => [basename(f), f]));
+  return walk(join(DIST, "server"))
     .filter((f) => f.endsWith(".html"))
     .map((file) => ({ file, html: readFileSync(file, "utf8") }))
-    .filter(({ html }) => /<html[^>]*\sclass="/.test(html));
-  const names = pages.map(({ file }) => relative(DIST, file).replaceAll("\\", "/"));
-  const absent = REQUIRED_PAGES.filter((p) => !names.includes(p));
-  if (absent.length > 0)
-    fail([`expected prerendered root-layout pages not found: ${absent.join(", ")}`]);
-  return pages.map(({ file, html }) => {
-    const css = stylesheetHrefs(html)
-      .map((href) => {
-        const path = join(DIST, decodeURIComponent(href.replace(/^\/_next\//, "").split("?")[0]));
-        if (!existsSync(path))
-          fail([`${relative(ROOT, file)} links ${href}, which is not in the build output`]);
-        return readFileSync(path, "utf8");
-      })
-      .join("\n");
-    return { name: relative(DIST, file).replaceAll("\\", "/"), html, css };
-  });
+    .filter(({ html }) => /<html[^>]*\sclass="/.test(html))
+    .map(({ file, html }) => {
+      const css = stylesheetHrefs(html)
+        .map((href) => {
+          const path = decodeURIComponent(new URL(href, "http://x").pathname);
+          const cssPath = [
+            join(DIST, path.replace(/^\/_next\//, "")),
+            byName.get(basename(path)),
+          ].find((f) => f && existsSync(f));
+          if (!cssPath)
+            errors.push(`${routeOf(file)}: links ${href}, which is not in the build output`);
+          return cssPath ? readFileSync(cssPath, "utf8") : "";
+        })
+        .join("\n");
+      return { name: routeOf(file), html, css };
+    });
+}
+
+// .next/server/app/en/about.html                              → /en/about
+// .next/server/route-cache/APP_PAGE/<hash>/$/en/about.html    → /en/about   (adapter builds)
+function routeOf(file) {
+  const rel = relative(join(DIST, "server"), file).replaceAll("\\", "/");
+  const route =
+    /^route-cache\/[^/]+\/[^/]+\/\$(\/.+)\.html$/.exec(rel)?.[1] ??
+    /^app(\/.+)\.html$/.exec(rel)?.[1] ??
+    `/${rel}`;
+  return route === "/index" ? "/" : route;
 }
 
 async function loadRemote(list) {
@@ -155,6 +208,7 @@ function stylesheetHrefs(html) {
 }
 
 function walk(dir) {
+  if (!existsSync(dir)) return [];
   return readdirSync(dir, { withFileTypes: true }).flatMap((e) =>
     e.isDirectory() ? walk(join(dir, e.name)) : [join(dir, e.name)],
   );
