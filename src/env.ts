@@ -10,10 +10,16 @@ export const env = createEnv({
     DIRECT_URL: z.url().optional(),
     BETTER_AUTH_SECRET: z.string().min(32),
     BETTER_AUTH_URL: z.url(),
-    R2_ACCOUNT_ID: z.string().min(1),
-    R2_ACCESS_KEY_ID: z.string().min(1),
-    R2_SECRET_ACCESS_KEY: z.string().min(1),
-    R2_BUCKET: z.string().min(1),
+    // Cloudflare R2 (EU jurisdiction). Optional: without real values, uploads report
+    // "not configured" (src/lib/r2.ts) instead of crashing.
+    R2_ACCOUNT_ID: z.string().optional(),
+    R2_ACCESS_KEY_ID: z.string().optional(),
+    R2_SECRET_ACCESS_KEY: z.string().optional(),
+    // Private bucket for case files (signed URLs only). Formerly R2_BUCKET.
+    R2_CASES_BUCKET: z.string().default("dentnord-cases"),
+    // Public-read bucket for site images, and the public URL it is served from.
+    R2_MEDIA_BUCKET: z.string().default("dentnord-media"),
+    R2_MEDIA_PUBLIC_URL: z.url().optional(),
     // Optional: without a real key, emails are logged to the console instead (src/lib/email.ts).
     RESEND_API_KEY: z.string().optional(),
     EMAIL_FROM: z.string().min(1),

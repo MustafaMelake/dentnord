@@ -27,7 +27,7 @@ function countryName(code: string | null | undefined, locale: string) {
 }
 
 async function contactEmail() {
-  return (await getContactSetting())?.email || env.ADMIN_EMAIL;
+  return (await getContactSetting()).email || env.ADMIN_EMAIL;
 }
 
 /** To ADMIN_EMAIL: a new dentist is waiting for review. */

@@ -8,14 +8,14 @@ import {
   GetObjectCommand,
   ListPartsCommand,
   PutObjectCommand,
-  S3Client,
   UploadPartCommand,
 } from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 
 import { env } from "@/env";
+import { requireR2Client } from "@/lib/r2";
 
-// Cloudflare R2 (S3-compatible), bucket created with EU jurisdiction → `.eu.` endpoint.
+// Case files: private R2 bucket R2_CASES_BUCKET (EU jurisdiction), client in lib/r2.ts.
 // The bucket is private. The browser uploads directly via presigned URLs (files never pass through
 // Next.js), and downloads only through short-lived signed GET URLs.
 // The bucket needs a CORS rule allowing PUT from NEXT_PUBLIC_SITE_URL and exposing the `ETag` header.
@@ -23,19 +23,7 @@ import { env } from "@/env";
 export const SIGNED_URL_TTL_SECONDS = 5 * 60;
 export const UPLOAD_PART_URL_TTL_SECONDS = 15 * 60;
 
-export const s3 = new S3Client({
-  region: "auto",
-  endpoint: `https://${env.R2_ACCOUNT_ID}.eu.r2.cloudflarestorage.com`,
-  credentials: {
-    accessKeyId: env.R2_ACCESS_KEY_ID,
-    secretAccessKey: env.R2_SECRET_ACCESS_KEY,
-  },
-  // Newer SDKs add CRC32 checksums by default, which breaks browser uploads to presigned R2 URLs.
-  requestChecksumCalculation: "WHEN_REQUIRED",
-  responseChecksumValidation: "WHEN_REQUIRED",
-});
-
-const Bucket = env.R2_BUCKET;
+const Bucket = env.R2_CASES_BUCKET;
 
 /** cases/<caseId>/<kind>/<random>-<sanitised file name> */
 export function buildCaseFileKey(caseId: string, kind: string, fileName: string) {
@@ -49,15 +37,19 @@ export function buildCaseFileKey(caseId: string, kind: string, fileName: string)
 // ── Single-request upload (small files) ──────────────────────────────────────
 
 export function presignPutObject(key: string, contentType: string) {
-  return getSignedUrl(s3, new PutObjectCommand({ Bucket, Key: key, ContentType: contentType }), {
-    expiresIn: UPLOAD_PART_URL_TTL_SECONDS,
-  });
+  return getSignedUrl(
+    requireR2Client(),
+    new PutObjectCommand({ Bucket, Key: key, ContentType: contentType }),
+    {
+      expiresIn: UPLOAD_PART_URL_TTL_SECONDS,
+    },
+  );
 }
 
 // ── Multipart upload (large files, resumable; used by Uppy @uppy/aws-s3) ─────
 
 export async function createMultipartUpload(key: string, contentType: string) {
-  const res = await s3.send(
+  const res = await requireR2Client().send(
     new CreateMultipartUploadCommand({ Bucket, Key: key, ContentType: contentType }),
   );
   if (!res.UploadId) throw new Error("R2 did not return an UploadId");
@@ -66,7 +58,7 @@ export async function createMultipartUpload(key: string, contentType: string) {
 
 export function presignUploadPart(key: string, uploadId: string, partNumber: number) {
   return getSignedUrl(
-    s3,
+    requireR2Client(),
     new UploadPartCommand({ Bucket, Key: key, UploadId: uploadId, PartNumber: partNumber }),
     { expiresIn: UPLOAD_PART_URL_TTL_SECONDS },
   );
@@ -76,7 +68,7 @@ export async function listUploadParts(key: string, uploadId: string) {
   const parts: { PartNumber: number; Size: number; ETag: string }[] = [];
   let marker: string | undefined;
   do {
-    const res = await s3.send(
+    const res = await requireR2Client().send(
       new ListPartsCommand({ Bucket, Key: key, UploadId: uploadId, PartNumberMarker: marker }),
     );
     for (const p of res.Parts ?? []) {
@@ -94,7 +86,7 @@ export function completeMultipartUpload(
   uploadId: string,
   parts: { PartNumber: number; ETag: string }[],
 ) {
-  return s3.send(
+  return requireR2Client().send(
     new CompleteMultipartUploadCommand({
       Bucket,
       Key: key,
@@ -105,7 +97,9 @@ export function completeMultipartUpload(
 }
 
 export function abortMultipartUpload(key: string, uploadId: string) {
-  return s3.send(new AbortMultipartUploadCommand({ Bucket, Key: key, UploadId: uploadId }));
+  return requireR2Client().send(
+    new AbortMultipartUploadCommand({ Bucket, Key: key, UploadId: uploadId }),
+  );
 }
 
 // ── Download / delete ────────────────────────────────────────────────────────
@@ -113,7 +107,7 @@ export function abortMultipartUpload(key: string, uploadId: string) {
 /** Short-lived download URL. Always authorise the user against the case first. */
 export function presignGetObject(key: string, downloadFileName?: string) {
   return getSignedUrl(
-    s3,
+    requireR2Client(),
     new GetObjectCommand({
       Bucket,
       Key: key,
@@ -126,5 +120,5 @@ export function presignGetObject(key: string, downloadFileName?: string) {
 }
 
 export function deleteObject(key: string) {
-  return s3.send(new DeleteObjectCommand({ Bucket, Key: key }));
+  return requireR2Client().send(new DeleteObjectCommand({ Bucket, Key: key }));
 }
