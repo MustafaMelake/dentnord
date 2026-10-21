@@ -123,7 +123,8 @@ pnpm auth:generate     # after adding Better Auth plugins: merges auth tables in
 pnpm check:css [--url <page>…]   # shipped CSS matches source (fonts, theme vars, every class); runs in `pnpm build`
 ```
 
-`pnpm build` fails if the emitted CSS is stale or incomplete (`scripts/check-build-css.mjs`). Keep it in the
+`pnpm build` runs `prisma generate` itself: on Vercel a restored install cache skips `postinstall`, and the
+client in `src/generated/` is gitignored. It needs no database URL. `pnpm build` also fails if the emitted CSS is stale or incomplete (`scripts/check-build-css.mjs`). Keep it in the
 build script: Vercel runs `pnpm build`, so a bad build never replaces the live deployment. Turbopack's build
 cache is off in `next.config.ts` for the same reason. After a deploy, run
 `pnpm check:css --url https://dentnord.vercel.app/en https://dentnord.vercel.app/da` against production.

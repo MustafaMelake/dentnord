@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "next build && node scripts/check-build-css.mjs",
+    "build": "prisma generate && next build && node scripts/check-build-css.mjs",
     "check:css": "node scripts/check-build-css.mjs",
     "start": "next start",
     "lint": "eslint",
