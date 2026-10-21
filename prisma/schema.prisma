@@ -41,7 +41,15 @@ model User {
   phone           String?
   country         String?
   address         String?
+  /// CVR (Denmark) or VAT number. Optional.
+  cvr             String?
   preferredLocale String        @default("da")
+  /// When the dentist accepted the Terms and the Privacy policy at sign-up.
+  termsAcceptedAt DateTime?
+  /// Last approve / reject / re-activate by an admin.
+  reviewedAt      DateTime?
+  /// Reason given when the account was rejected (also sent in the email). Cleared on re-activation.
+  rejectionReason String?
 
   sessions      Session[]
   accounts      Account[]
@@ -49,6 +57,7 @@ model User {
   uploadedFiles CaseFile[]    @relation("CaseFileUploader")
   caseEvents    CaseEvent[]
   caseMessages  CaseMessage[]
+  auditEntries  AuditLog[]
 
   @@index([role, dentistStatus])
   @@map("user")
@@ -99,6 +108,45 @@ model Verification {
 
   @@index([identifier])
   @@map("verification")
+}
+
+/// Better Auth rate limiting (rateLimit.storage = "database"), shared across serverless instances.
+model RateLimit {
+  id          String @id
+  key         String @unique
+  count       Int
+  /// Epoch milliseconds.
+  lastRequest BigInt
+
+  @@map("rate_limit")
+}
+
+// ──────────────────────────────── Audit log ────────────────────────────────
+
+enum AuditAction {
+  DENTIST_APPROVED
+  DENTIST_REJECTED
+  DENTIST_REACTIVATED
+}
+
+/// Who did what, when. Append-only. `targetId` has no foreign key, so entries outlive their target.
+model AuditLog {
+  id         String      @id @default(cuid())
+  action     AuditAction
+  actorId    String?
+  actor      User?       @relation(fields: [actorId], references: [id], onDelete: SetNull)
+  /// Snapshot, so the entry stays readable if the actor is deleted.
+  actorEmail String
+  /// e.g. "user"
+  targetType String
+  targetId   String
+  metadata   Json?
+  createdAt  DateTime    @default(now())
+
+  @@index([targetType, targetId, createdAt(sort: Desc)])
+  @@index([actorId])
+  @@index([createdAt(sort: Desc)])
+  @@map("audit_log")
 }
 
 // ─────────────────────────────────── Cases ───────────────────────────────────

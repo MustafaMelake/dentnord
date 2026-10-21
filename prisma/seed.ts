@@ -229,6 +229,8 @@ async function seedSiteSettings() {
       address: t("", ""),
       cvr: "",
     },
+    // Shown on the pending-approval page: "we review new accounts within [X] working days".
+    accounts: { reviewDays: null },
     hero: {
       eyebrow: t("Guidet implantatkirurgi", "Guided implant surgery"),
       title: t(
