@@ -145,6 +145,13 @@ prisma/schema.prisma, seed.ts
 - Admin decisions (`server/services/dentist-review.ts`): approve / reject (= disable when approved) /
   re-activate, in one transaction with an `AuditLog` row; rejecting deletes all the dentist's sessions.
 - The admin user is created **only** by the seed (`ADMIN_EMAIL` + `SEED_ADMIN_PASSWORD`). No admin sign-up.
+  The admin changes their password at `/admin/account` (account menu); the dentist form is shared
+  (`components/auth/change-password-form.tsx`).
+- The seed refuses (`prisma/seed-guard.ts`) to run on `production` unless `SEED_ADMIN_PASSWORD` is set in
+  the shell, and refuses a shell `DATABASE_URL` without a shell `NEON_BRANCH`. Production seed:
+  `DATABASE_URL=<prod pooled> NEON_BRANCH=production SEED_ADMIN_PASSWORD=<chosen> pnpm db:seed`.
+- Local `.env` keeps `BETTER_AUTH_URL` / `NEXT_PUBLIC_SITE_URL` = `http://localhost:3000` (the trusted
+  origin); production values live in Vercel only. `pnpm test:e2e` pins them to localhost regardless.
 - Emails (`src/lib/email.ts`, templates in `src/emails/`, strings in `messages/*.json` → `emails`):
   sent via Resend when `RESEND_API_KEY` is a real key, otherwise logged to the console (links redacted in
   production builds). Always queued with `sendInBackground` (Next `after()`); a failed email never fails
