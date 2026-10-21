@@ -104,14 +104,51 @@ prisma/schema.prisma, seed.ts
 - Project `dentnord-eu` (`small-river-39570877`), region **aws-eu-central-1 (Frankfurt)**, Postgres 18,
   default branch `production`. Linked via `.neon` (gitignored); policy in `neon.ts`.
   Don't use the older London project `aged-flower-65703337`: it is outside the EU.
+- **Two branches, two environments:**
+  - **local = `dev`** (`.env`, `.neon` checked out to `dev`). Dev work, seeds and E2E tests write here.
+  - **production = `production`** (Vercel's env vars only). Nothing local points at it.
+  - Check before touching data: `NEON_BRANCH` in `.env` must say `dev`. The E2E helpers refuse `production`.
+- **Reset `dev`** to a fresh copy of production (drops all dev data, including test users):
+  `neon branches reset dev --parent --project-id small-river-39570877`, then `pnpm db:seed`
+  (and `pnpm exec prisma migrate deploy` if `dev` has migrations production doesn't yet). The endpoint
+  stays the same, so `.env` keeps working. `dev` was created with `neon branches create` (no TTL); don't
+  recreate it with `neon checkout dev --create`, which applies `neon.ts`'s 7-day expiry.
+- **Migrations:** create them locally with `pnpm db:migrate` (`prisma migrate dev`, against `dev` only).
+  Apply them to production with **`prisma migrate deploy`, never `migrate dev`** (which can reset data and
+  generate new migrations), using production's unpooled URL, before pushing code that needs them:
+  `DIRECT_URL="<production unpooled URL>" pnpm exec prisma migrate deploy`
+  (`neon connection-string production --project-id small-river-39570877` prints it; don't paste it into
+  files or logs).
 - `DATABASE_URL` = **pooled** (`-pooler`), used by the app through `@prisma/adapter-pg` (node-postgres,
   Node runtime everywhere). `DIRECT_URL` = **unpooled**, used only by the Prisma CLI via
   `prisma.config.ts` (Prisma 7 has no `directUrl` in schema.prisma). Never run migrations over the pooler.
 - `neon deploy` / `neon env pull` rewrite `DATABASE_URL`, `DATABASE_URL_UNPOOLED` and `NEON_BRANCH` in
   `.env`. If credentials change, copy `DATABASE_URL_UNPOOLED` into `DIRECT_URL`.
 - Connection strings go through `withVerifiedSsl()` (`src/lib/pg-url.ts`) to pin `sslmode=verify-full`.
-- Schema changes: `pnpm db:migrate` (creates + applies a migration). Test risky migrations on a Neon
-  branch first (`neon checkout <name> --create`).
+- Schema changes: `pnpm db:migrate` (creates + applies a migration on `dev`). Test risky migrations on
+  a throwaway branch first (`neon checkout <name> --create`, auto-expires after 7 days).
+
+## Auth & accounts
+
+- Better Auth, email + password. Sign-in / sign-up / password reset / change password run through the
+  `/api/auth` endpoints (browser `authClient`), because Better Auth's **rate limiting only applies to HTTP
+  requests**, not to `auth.api.*` calls from Server Actions. Rate-limit state lives in the `rate_limit`
+  table (works across serverless instances); enabled in production builds only.
+- Sign-up is validated server-side by `hooks.before` in `src/lib/auth.ts` with the same zod schema the form
+  uses (`src/lib/validation/auth.ts`); `databaseHooks` force `DENTIST` + `PENDING`, stamp
+  `termsAcceptedAt`, and refuse to create sessions for `REJECTED` dentists. `/update-user`,
+  `/change-email` and `/delete-user` are disabled; profile edits go through `server/actions/account.ts`.
+- Access: proxy (cookie cache, re-checks the DB before denying) → layout gate → every page/action via
+  `server/queries/session.ts` (`requireAdmin`, `requireApprovedDentist`). Dentist data goes through
+  `server/queries/dentist.ts` (`getDentistScope`, `ownCaseWhere`, `getOwnCase`): the dentist id always
+  comes from the session.
+- Admin decisions (`server/services/dentist-review.ts`): approve / reject (= disable when approved) /
+  re-activate, in one transaction with an `AuditLog` row; rejecting deletes all the dentist's sessions.
+- The admin user is created **only** by the seed (`ADMIN_EMAIL` + `SEED_ADMIN_PASSWORD`). No admin sign-up.
+- Emails (`src/lib/email.ts`, templates in `src/emails/`, strings in `messages/*.json` → `emails`):
+  sent via Resend when `RESEND_API_KEY` is a real key, otherwise logged to the console (links redacted in
+  production builds). Always queued with `sendInBackground` (Next `after()`); a failed email never fails
+  the action.
 
 ## Commands
 
@@ -121,7 +158,14 @@ pnpm lint | typecheck | format | format:check
 pnpm db:generate | db:migrate | db:push | db:seed | db:studio
 pnpm auth:generate     # after adding Better Auth plugins: merges auth tables into schema.prisma
 pnpm check:css [--url <page>…]   # shipped CSS matches source (fonts, theme vars, every class); runs in `pnpm build`
+pnpm test:unit         # node:test + tsx: zod schemas, redirect helpers (tests/unit)
+pnpm test:e2e          # Playwright vs a local production build on port 3000, DB = `dev` (tests/e2e)
+E2E_SKIP_BUILD=1 pnpm test:e2e   # reuse the existing .next build
 ```
+
+E2E tests create users with an `e2e-` email prefix and delete them (plus their audit rows) after each run.
+Each test context gets its own `x-forwarded-for`, so the rate limiter doesn't merge them (on Vercel the
+edge sets that header, so clients can't spoof it).
 
 `pnpm build` runs `prisma generate` itself: on Vercel a restored install cache skips `postinstall`, and the
 client in `src/generated/` is gitignored. It needs no database URL. `pnpm build` also fails if the emitted CSS is stale or incomplete (`scripts/check-build-css.mjs`). Keep it in the
@@ -129,4 +173,5 @@ build script: Vercel runs `pnpm build`, so a bad build never replaces the live d
 cache is off in `next.config.ts` for the same reason. After a deploy, run
 `pnpm check:css --url https://dentnord.vercel.app/en https://dentnord.vercel.app/da` against production.
 
-Before finishing work: `pnpm typecheck && pnpm lint && pnpm build`.
+Before finishing work: `pnpm typecheck && pnpm lint && pnpm format:check && pnpm test:unit && pnpm build`
+(and `pnpm test:e2e` when touching auth, the portal or the admin).

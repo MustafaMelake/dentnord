@@ -27,6 +27,14 @@ Edit the `contact` **SiteSetting**: `email` is already set (info.dentnord@gmail.
 - [ ] `address` (`{ "da": "...", "en": "..." }`): currently shows `[address]`
 - [ ] `cvr` (CVR number): currently shows `CVR [CVR]`
 
+## Dentist accounts
+
+- [ ] **Review time**: the `accounts` **SiteSetting** `reviewDays` (number). The pending-approval page says
+      "We review new accounts within **[X]** working days" until it is set. Example: `{ "reviewDays": 2 }`
+- [ ] **Terms** (`/terms`) and **Privacy policy** (`/privacy`): legal text from Dentnord. Both pages show
+      `[Legal text pending …]` today, and the sign-up consent checkbox links to them (the acceptance time
+      is stored on the user). Must be published before real dentists register.
+
 ## About Dr. Hossam (`messages/*.json` → `home.about`)
 
 - [ ] Credentials / title for the portrait badge: `Dr. Hossam · [credentials]`
