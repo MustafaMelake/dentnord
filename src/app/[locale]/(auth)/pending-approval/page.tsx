@@ -45,7 +45,7 @@ async function AccountStatus() {
 
   const t = await getTranslations("auth.pendingApproval");
   const [contact, accounts] = await Promise.all([getContactSetting(), getAccountsSetting()]);
-  const contactEmail = contact?.email || env.ADMIN_EMAIL;
+  const contactEmail = contact.email || env.ADMIN_EMAIL;
   const status = session.user.dentistStatus;
   const logout = <LogoutButton label={t("logout")} loginPath={`/${locale}/login`} />;
   const tStatus = await getTranslations("dentistStatus");
@@ -80,7 +80,6 @@ async function AccountStatus() {
     );
   }
 
-  const days = accounts?.reviewDays ?? "[X]";
   const steps = [
     { key: "registered", state: "done" },
     { key: "review", state: "current" },
@@ -117,9 +116,11 @@ async function AccountStatus() {
             </li>
           ))}
         </ol>
-        <p className="border-t border-line pt-4 text-sm text-ink-muted">
-          {t("reviewTime", { days })}
-        </p>
+        {accounts.reviewDays !== null && (
+          <p className="border-t border-line pt-4 text-sm text-ink-muted">
+            {t("reviewTime", { days: accounts.reviewDays })}
+          </p>
+        )}
       </div>
       <p className="text-sm text-ink-muted">{contactLine}</p>
       <div className="flex flex-wrap items-center justify-between gap-3 border-t border-line pt-6">

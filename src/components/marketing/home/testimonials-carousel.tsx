@@ -10,15 +10,16 @@ import { ArrowCircle } from "@/components/shared/button";
 import { Container } from "@/components/shared/container";
 import { SectionHeading } from "@/components/shared/section-label";
 
-// Placeholder quotes only, until real, consented testimonials arrive (docs/content-todo.md).
-// Never invent names, clinics or ratings here.
-const COUNT = 3;
+// Published testimonials (admin: Settings → Testimonials; consent required). Never invent quotes.
+export type TestimonialItem = { id: string; quote: string; author: string; initials: string };
 
-export function Testimonials() {
+export function TestimonialsCarousel({ items }: { items: TestimonialItem[] }) {
   const t = useTranslations("home.testimonials");
   const reduce = usePrefersReducedMotion();
   const [index, setIndex] = useState(0);
+  const COUNT = items.length;
   const go = (d: number) => setIndex((i) => (i + d + COUNT) % COUNT);
+  const item = items[index];
   const pad = (n: number) => String(n).padStart(2, "0");
 
   return (
@@ -50,41 +51,45 @@ export function Testimonials() {
               transition={reduce ? { duration: 0 } : { ...spring, duration: 0.5 }}
             >
               <blockquote className="max-w-[32ch] text-display-md text-ink">
-                “{t("quote", { n: index + 1 })}”
+                “{item.quote}”
               </blockquote>
               <figcaption className="mt-8 flex items-center gap-4">
                 <span
                   aria-hidden
-                  className="size-12 rounded-full bg-[linear-gradient(135deg,#d6e6f5,#8fb4dd)]"
-                />
-                <span className="text-ink-muted">{t("author")}</span>
+                  className="flex size-12 items-center justify-center rounded-full bg-brand-soft text-sm font-medium text-brand-deep"
+                >
+                  {item.initials}
+                </span>
+                <span className="text-ink-muted">{item.author}</span>
               </figcaption>
             </motion.figure>
           </AnimatePresence>
         </div>
 
-        <div className="mt-12 flex items-center justify-between border-t border-line pt-6">
-          <p aria-hidden className="font-mono text-label text-ink-muted">
-            <span className="text-ink">{pad(index + 1)}</span> / {pad(COUNT)}
-          </p>
-          <div className="flex gap-2">
-            <ArrowCircle
-              label={t("previous")}
-              direction="right"
-              variant="solid"
-              size="lg"
-              iconClassName="rotate-180"
-              onClick={() => go(-1)}
-            />
-            <ArrowCircle
-              label={t("next")}
-              direction="right"
-              variant="solid"
-              size="lg"
-              onClick={() => go(1)}
-            />
+        {COUNT > 1 && (
+          <div className="mt-12 flex items-center justify-between border-t border-line pt-6">
+            <p aria-hidden className="font-mono text-label text-ink-muted">
+              <span className="text-ink">{pad(index + 1)}</span> / {pad(COUNT)}
+            </p>
+            <div className="flex gap-2">
+              <ArrowCircle
+                label={t("previous")}
+                direction="right"
+                variant="solid"
+                size="lg"
+                iconClassName="rotate-180"
+                onClick={() => go(-1)}
+              />
+              <ArrowCircle
+                label={t("next")}
+                direction="right"
+                variant="solid"
+                size="lg"
+                onClick={() => go(1)}
+              />
+            </div>
           </div>
-        </div>
+        )}
       </Container>
     </section>
   );

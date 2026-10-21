@@ -7,11 +7,11 @@ import { usePrefersReducedMotion } from "./use-media-query";
 
 // Counts up to `value` when it scrolls into view. The server renders the final value, so
 // the number is correct without JS, for crawlers and under reduced motion.
-// `value: null` renders `placeholder` (e.g. "[X]") until the real figure exists.
+// `value: null` renders `placeholder` (empty by default; callers hide missing figures instead).
 
 export function Counter({
   value,
-  placeholder = "[X]",
+  placeholder = "",
   locale,
   className,
 }: {

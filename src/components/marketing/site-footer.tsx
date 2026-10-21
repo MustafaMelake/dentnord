@@ -2,6 +2,7 @@ import { getLocale, getTranslations } from "next-intl/server";
 
 import { Container } from "@/components/shared/container";
 import { LocaleSwitcher } from "@/components/shared/locale-switcher";
+import { Missing } from "@/components/shared/missing";
 import { Link } from "@/i18n/navigation";
 import { localized } from "@/lib/utils";
 import { getContactSetting, getCurrentYear } from "@/server/queries/site-settings";
@@ -16,7 +17,7 @@ export async function SiteFooter() {
     getContactSetting(),
     getCurrentYear(),
   ]);
-  const address = localized(contact?.address, locale);
+  const address = localized(contact.address, locale);
 
   const links = [
     { href: "/services", label: tNav("services") },
@@ -54,7 +55,7 @@ export async function SiteFooter() {
         <div className="lg:col-span-4">
           <h2 className="mb-4 font-mono text-label text-ink-muted">{t("contact")} /</h2>
           <dl className="grid gap-3">
-            {contact?.email && (
+            {contact.email ? (
               <div>
                 <dt className="sr-only">{t("email")}</dt>
                 <dd>
@@ -66,26 +67,32 @@ export async function SiteFooter() {
                   </a>
                 </dd>
               </div>
+            ) : (
+              <Missing field="contact.email" />
             )}
-            <div>
-              <dt className="sr-only">{t("phone")}</dt>
-              <dd className="text-ink">
-                {contact?.phone ? (
+            {contact.phone ? (
+              <div>
+                <dt className="sr-only">{t("phone")}</dt>
+                <dd className="text-ink">
                   <a
                     href={`tel:${contact.phone.replace(/\s+/g, "")}`}
                     className="underline-offset-4 hover:underline"
                   >
                     {contact.phone}
                   </a>
-                ) : (
-                  "[phone]"
-                )}
-              </dd>
-            </div>
-            <div>
-              <dt className="sr-only">{t("address")}</dt>
-              <dd className="whitespace-pre-line text-ink-muted">{address || "[address]"}</dd>
-            </div>
+                </dd>
+              </div>
+            ) : (
+              <Missing field="contact.phone" />
+            )}
+            {address ? (
+              <div>
+                <dt className="sr-only">{t("address")}</dt>
+                <dd className="whitespace-pre-line text-ink-muted">{address}</dd>
+              </div>
+            ) : (
+              <Missing field="contact.address" />
+            )}
           </dl>
           <div className="mt-6 flex items-center gap-3">
             <span className="font-mono text-label text-ink-muted">{t("language")}</span>
@@ -103,7 +110,11 @@ export async function SiteFooter() {
           <Link href="/privacy" className="underline-offset-4 hover:text-ink hover:underline">
             {t("privacy")}
           </Link>
-          <span>{t("cvr", { cvr: contact?.cvr || "[CVR]" })}</span>
+          {contact.cvr ? (
+            <span>{t("cvr", { cvr: contact.cvr })}</span>
+          ) : (
+            <Missing field="contact.cvr" />
+          )}
         </span>
       </Container>
     </footer>

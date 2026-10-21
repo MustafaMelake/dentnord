@@ -36,7 +36,7 @@ export default async function LoginPage() {
       <Suspense fallback={null}>
         <LoginNotice />
       </Suspense>
-      <LoginForm contactEmail={contact?.email || env.ADMIN_EMAIL} />
+      <LoginForm contactEmail={contact.email || env.ADMIN_EMAIL} />
     </AuthPage>
   );
 }

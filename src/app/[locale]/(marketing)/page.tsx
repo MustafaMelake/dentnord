@@ -13,7 +13,12 @@ import { Testimonials } from "@/components/marketing/home/testimonials";
 import { Workflow } from "@/components/marketing/home/workflow";
 import { routing } from "@/i18n/routing";
 import { countActiveImplantSystems, getActiveGuideTypes } from "@/server/queries/catalog";
-import { getStatsSetting } from "@/server/queries/site-settings";
+import { getImages } from "@/server/queries/media";
+import {
+  getDoctorSetting,
+  getImagesSetting,
+  getStatsSetting,
+} from "@/server/queries/site-settings";
 
 export async function generateMetadata(): Promise<Metadata> {
   const [locale, t, tMeta] = await Promise.all([
@@ -45,35 +50,52 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 export default async function HomePage() {
-  const [locale, guideTypes, stats, implantSystems] = await Promise.all([
+  const [locale, guideTypes, stats, doctor, siteImages, implantSystems] = await Promise.all([
     getLocale(),
     getActiveGuideTypes(),
     getStatsSetting(),
+    getDoctorSetting(),
+    getImagesSetting(),
     countActiveImplantSystems(),
   ]);
-  const stat = (n: number | null | undefined) => (typeof n === "number" ? n : null);
+  const images = await getImages([
+    siteImages.heroId,
+    siteImages.technologyId,
+    doctor.portraitId,
+    doctor.cardPhotoId,
+  ]);
+  const img = (id: string | null) => (id ? (images[id] ?? null) : null);
 
   return (
     <main>
       <Hero
         locale={locale}
         guideTypes={guideTypes}
-        clinics={stat(stats?.clinics)}
-        yearsExperience={stat(stats?.yearsExperience)}
+        clinics={stats.clinics}
+        yearsExperience={stats.yearsExperience}
+        doctorName={doctor.name}
+        image={img(siteImages.heroId)}
+        doctorPhoto={img(doctor.cardPhotoId)}
       />
       <Workflow />
       <Statement />
       <Services locale={locale} />
       <CasePreview locale={locale} guideTypes={guideTypes} />
       <GuideCard />
-      <About />
+      <About
+        locale={locale}
+        doctor={doctor}
+        portrait={img(doctor.portraitId)}
+        yearsExperience={stats.yearsExperience}
+      />
       <Technology
         locale={locale}
-        guidesDelivered={stat(stats?.guidesDelivered)}
-        turnaroundDays={stat(stats?.turnaroundDays)}
+        guidesDelivered={stats.guidesDelivered}
+        turnaroundDays={stats.turnaroundDays}
         implantSystems={implantSystems}
+        image={img(siteImages.technologyId)}
       />
-      <Testimonials />
+      <Testimonials locale={locale} />
       <CtaBand />
     </main>
   );

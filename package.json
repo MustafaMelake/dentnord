@@ -19,7 +19,8 @@
     "auth:generate": "pnpm dlx auth@1.7.10 generate --config scripts/auth-schema.config.ts --adapter prisma --dialect postgresql --output prisma/schema.prisma -y && prisma format",
     "postinstall": "prisma generate",
     "test:unit": "node --import tsx --test \"tests/unit/**/*.test.ts\"",
-    "test:e2e": "playwright test"
+    "test:e2e": "playwright test",
+    "test": "pnpm test:unit"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.1152.0",
@@ -50,6 +51,7 @@
     "react": "19.3.0",
     "react-dom": "19.3.0",
     "react-hook-form": "^7.90.0",
+    "react-markdown": "^10.1.0",
     "resend": "^6.34.1",
     "shadcn": "^4.22.0",
     "sonner": "^2.0.8",

@@ -21,6 +21,8 @@ type PlaceholderImageProps = {
   captionClassName?: string;
   /** For tiny images (avatars): keep the accessible label, hide the visible caption. */
   hideCaption?: boolean;
+  /** Stand-in for an image that isn't uploaded yet: no label, no caption, hidden from screen readers. */
+  decorative?: boolean;
   // Accepted for next/image parity; unused here.
   sizes?: string;
   priority?: boolean;
@@ -34,11 +36,11 @@ export function PlaceholderImage({
   captionPosition = "bottom-right",
   captionClassName,
   hideCaption,
+  decorative,
 }: PlaceholderImageProps) {
   return (
     <div
-      role="img"
-      aria-label={alt}
+      {...(decorative ? { "aria-hidden": true } : { role: "img", "aria-label": alt })}
       className={cn(
         "overflow-hidden",
         fill && "absolute inset-0 size-full",
@@ -58,7 +60,7 @@ export function PlaceholderImage({
             : "bg-[linear-gradient(to_right,rgb(15_46_76/0.05)_1px,transparent_1px),linear-gradient(to_bottom,rgb(15_46_76/0.05)_1px,transparent_1px)]",
         )}
       />
-      {!hideCaption && (
+      {!hideCaption && !decorative && (
         <span
           aria-hidden
           className={cn(

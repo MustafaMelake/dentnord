@@ -6,16 +6,29 @@ import { useCallback, useEffect, useRef, useState, type KeyboardEvent } from "re
 
 import { spring, usePrefersReducedMotion } from "@/components/motion/use-media-query";
 import { ArrowCircle } from "@/components/shared/button";
-import { PlaceholderImage } from "@/components/shared/placeholder-image";
+import { MissingMarker } from "@/components/shared/missing-marker";
+import { SiteImage } from "@/components/shared/site-image";
 import { Link } from "@/i18n/navigation";
 import { cn } from "@/lib/utils";
+import type { PublicImage } from "@/server/queries/media";
 
-type Item = { id: string; slug: string; title: string; imageAlt: string };
+type Item = { id: string; slug: string; title: string; image: PublicImage | null };
 
 // Draggable carousel (drag="x" with momentum), prev/next buttons and arrow keys.
 // The track may extend past the container to the right; the section clips it at the viewport.
 
-export function ServicesCarousel({ items, className }: { items: Item[]; className?: string }) {
+export function ServicesCarousel({
+  items,
+  locale,
+  missingImage,
+  className,
+}: {
+  items: Item[];
+  locale: string;
+  /** Admin-only marker for services without a photo. */
+  missingImage: { label: string; href: string };
+  className?: string;
+}) {
   const t = useTranslations("home.services");
   const reduce = usePrefersReducedMotion();
   const viewportRef = useRef<HTMLDivElement>(null);
@@ -135,8 +148,15 @@ export function ServicesCarousel({ items, className }: { items: Item[]; classNam
               key={item.id}
               aria-roledescription="slide"
               aria-label={t("position", { current: i + 1, total: items.length })}
-              className="w-[78vw] max-w-[22rem] sm:w-[20rem] lg:w-[22rem]"
+              className="relative w-[78vw] max-w-[22rem] sm:w-[20rem] lg:w-[22rem]"
             >
+              {!item.image && (
+                <MissingMarker
+                  {...missingImage}
+                  tone="dark"
+                  className="absolute top-4 left-4 z-10"
+                />
+              )}
               <Link
                 href={`/services#${item.slug}`}
                 draggable={false}
@@ -144,11 +164,11 @@ export function ServicesCarousel({ items, className }: { items: Item[]; classNam
                 className="group relative block aspect-[4/5] overflow-hidden rounded-media transition-transform duration-500 ease-spring motion-safe:hover:-translate-y-1"
               >
                 <div className="absolute inset-0 transition-transform duration-700 ease-spring motion-safe:group-hover:scale-[1.03]">
-                  <PlaceholderImage
-                    alt={item.imageAlt}
-                    fill
+                  <SiteImage
+                    image={item.image}
+                    locale={locale}
                     tone="dark"
-                    captionPosition="top-right"
+                    sizes="(min-width: 1024px) 22rem, (min-width: 640px) 20rem, 78vw"
                   />
                 </div>
                 <div
