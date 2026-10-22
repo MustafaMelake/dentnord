@@ -31,6 +31,7 @@
     "en": "English"
   },
   "caseStatus": {
+    "DRAFT": "Draft",
     "SUBMITTED": "Submitted",
     "NEEDS_FILES": "Needs files",
     "IN_PLANNING": "Planning",
@@ -322,23 +323,37 @@
       "viewCases": "View cases",
       "emptyTitle": "No cases yet",
       "emptyBody": "Send your CBCT and intraoral scan, choose the implant sites and guide type, and we'll plan the case with you.",
-      "emptyCta": "Submit your first case"
+      "emptyCta": "Submit your first case",
+      "drafts": "{count, plural, one {You have # draft} other {You have # drafts}} that hasn't been sent yet.",
+      "continueDrafts": "Continue",
+      "countsLabel": "Cases by status"
     },
     "cases": {
       "title": "Cases",
       "intro": "All cases you have submitted to Dentnord.",
       "emptyTitle": "No cases yet",
       "emptyBody": "Cases you submit appear here with their status.",
-      "emptyCta": "Submit your first case"
+      "emptyCta": "Submit your first case",
+      "draftsTitle": "Drafts ({count})",
+      "draftsIntro": "Not sent yet. Continue where you left off, or delete what you don't need.",
+      "submittedTitle": "Submitted cases",
+      "searchLabel": "Search cases",
+      "searchPlaceholder": "Case number or patient code",
+      "statusLabel": "Status",
+      "allStatuses": "All statuses",
+      "filter": "Filter",
+      "noResults": "No cases match your filters.",
+      "noneSubmitted": "You haven't submitted a case yet.",
+      "clearFilters": "Clear filters"
     },
     "newCase": {
       "title": "New case",
-      "intro": "Case submission is being built.",
-      "comingSoonTitle": "Coming soon",
-      "comingSoonBody": "Soon you can upload CBCT (DICOM) and intraoral scans (STL/PLY), mark implant sites and choose a guide type here."
+      "intro": "Four short steps. Everything is saved as you go, so you can leave and come back.",
+      "editTitle": "Continue case"
     },
     "caseDetail": {
-      "title": "Case"
+      "title": "Case",
+      "back": "All cases"
     },
     "account": {
       "title": "Account",
@@ -403,7 +418,8 @@
       "viewSite": "View website",
       "logout": "Log out",
       "pendingBadge": "{count} pending",
-      "account": "Account"
+      "account": "Account",
+      "newCasesBadge": "{count} new"
     },
     "caseDetail": "Case",
     "dashboard": {
@@ -859,6 +875,23 @@
           "privacy": "Privacy policy (Danish and English)"
         }
       }
+    },
+    "cases": {
+      "title": "Cases",
+      "intro": "Every submitted case. Drafts stay private to the dentist.",
+      "tabsLabel": "Filter by status",
+      "all": "All",
+      "searchLabel": "Search cases",
+      "searchPlaceholder": "Case number or patient code",
+      "dentistLabel": "Clinic",
+      "allDentists": "All clinics",
+      "filter": "Filter",
+      "empty": "No cases yet.",
+      "noResults": "No cases match these filters.",
+      "clear": "Clear filters",
+      "back": "All cases",
+      "case": "Case",
+      "dentist": "Clinic"
     }
   },
   "dentistStatus": {
@@ -876,7 +909,24 @@
     "passwordUnchanged": "Choose a password different from your current one.",
     "termsRequired": "Please accept the Terms and the Privacy policy.",
     "phoneInvalid": "Enter a valid phone number, e.g. +45 12 34 56 78.",
-    "cvrInvalid": "A Danish CVR number has 8 digits."
+    "cvrInvalid": "A Danish CVR number has 8 digits.",
+    "looksLikeName": "This looks like a name. Use a code that doesn't identify the patient.",
+    "looksLikeCpr": "This looks like a CPR number. Use a code that doesn't identify the patient.",
+    "looksLikeEmail": "This looks like an email address. Use a code that doesn't identify the patient.",
+    "patientCodeChars": "Use letters, digits, spaces and . _ # / - only.",
+    "dateInvalid": "Enter a valid date.",
+    "optionInvalid": "This option is no longer available. Choose another.",
+    "numberInvalid": "Enter a number.",
+    "outOfRange": "This value is out of range.",
+    "siteRequired": "Choose at least one implant site on the chart.",
+    "systemRequired": "Choose an implant system, or name the other system.",
+    "duplicateTooth": "Each tooth can be chosen once.",
+    "toothInvalid": "Unknown tooth number.",
+    "tooMany": "Too many items.",
+    "consentRequired": "Please confirm before you submit.",
+    "kitIncompatible": "This kit doesn't fit the chosen implant system.",
+    "fileRequired": "This file is required.",
+    "incomplete": "Incomplete."
   },
   "legal": {
     "terms": {
@@ -927,6 +977,16 @@
       "body": "We received a request to reset the password for your Dentnord account. The link is valid for one hour.",
       "cta": "Choose a new password",
       "ignore": "If you didn't ask for this, you can ignore this email. Your password stays the same."
+    },
+    "caseSubmitted": {
+      "subject": "New case {caseNumber} from {clinic}",
+      "preview": "Case {caseNumber} was submitted and is waiting for planning.",
+      "heading": "New case submitted",
+      "caseNumber": "Case",
+      "dentist": "Dentist",
+      "guideType": "Guide type",
+      "implants": "Implant sites",
+      "cta": "Open the case"
     }
   },
   "changePassword": {
@@ -949,5 +1009,232 @@
     "galleryLabel": "Images",
     "ctaTitle": "Planning a similar case?",
     "cta": "Submit a case"
+  },
+  "cases": {
+    "list": {
+      "new": "New",
+      "columns": {
+        "case": "Case",
+        "dentist": "Clinic",
+        "patientCode": "Patient code",
+        "guideType": "Guide type",
+        "implants": "Implants",
+        "submitted": "Submitted",
+        "status": "Status",
+        "open": "Open"
+      }
+    },
+    "drafts": {
+      "untitled": "Untitled draft",
+      "implants": "{count, plural, =0 {no implant sites} one {# implant site} other {# implant sites}}",
+      "saved": "saved {date}",
+      "continue": "Continue",
+      "deleteLabel": "Delete draft {name}",
+      "confirmTitle": "Delete this draft?",
+      "confirmBody": "The draft and every file uploaded for it are deleted permanently.",
+      "confirm": "Delete draft",
+      "cancel": "Cancel",
+      "deleted": "Draft deleted.",
+      "deleteFailed": "The draft couldn't be deleted. Please try again."
+    },
+    "detail": {
+      "summary": "Summary",
+      "status": "Status",
+      "patientCode": "Patient code",
+      "guideType": "Guide type",
+      "surgeryDate": "Planned surgery",
+      "submitted": "Submitted",
+      "notes": "Notes",
+      "sites": "{count, plural, one {Implant site} other {Implant sites ({count})}}",
+      "tooth": "Tooth",
+      "system": "Implant system",
+      "diameter": "Diameter",
+      "length": "Length",
+      "kit": "Surgical kit",
+      "suggested": "Dentnord suggests",
+      "files": "Files",
+      "noFiles": "No files.",
+      "fileKinds": {
+        "CBCT": "CBCT",
+        "INTRAORAL_SCAN": "Intraoral scan",
+        "PHOTO": "Photos",
+        "OTHER": "Other files",
+        "PLAN_REPORT": "Plan report",
+        "GUIDE_STL": "Guide (STL)"
+      },
+      "download": "Download {name}",
+      "downloadShort": "Download",
+      "timeline": "History",
+      "events": {
+        "CREATED": "Draft started",
+        "UPDATED": "Draft updated",
+        "STATUS_CHANGED": "Status: {status}",
+        "FILE_ADDED": "File added",
+        "FILE_FAILED": "File upload failed",
+        "FILE_REMOVED": "File removed",
+        "PLAN_APPROVED": "Plan approved",
+        "CHANGES_REQUESTED": "Changes requested"
+      }
+    },
+    "chart": {
+      "label": "Tooth chart: choose the implant sites",
+      "readOnlyLabel": "Tooth chart. Implant sites: {teeth}",
+      "none": "none",
+      "upper": "Upper",
+      "lower": "Lower",
+      "right": "R",
+      "left": "L",
+      "upperArch": "Upper jaw",
+      "lowerArch": "Lower jaw"
+    },
+    "teeth": {
+      "label": "Tooth {tooth}, {quadrant} {name}",
+      "short": "{quadrant} {name}",
+      "quadrants": {
+        "1": "upper right",
+        "2": "upper left",
+        "3": "lower left",
+        "4": "lower right"
+      },
+      "names": {
+        "1": "central incisor",
+        "2": "lateral incisor",
+        "3": "canine",
+        "4": "first premolar",
+        "5": "second premolar",
+        "6": "first molar",
+        "7": "second molar",
+        "8": "third molar"
+      }
+    },
+    "errors": {
+      "invalid": "Some fields need attention.",
+      "notFound": "This draft no longer exists, or it has already been submitted.",
+      "incomplete": "Something is missing. Check the steps marked as incomplete.",
+      "uploadsPending": "Wait until all uploads have finished.",
+      "storage": "We couldn't reach file storage. Please try again in a moment.",
+      "generic": "Something went wrong. Please try again.",
+      "network": "We couldn't save. Check your connection and try again."
+    },
+    "wizard": {
+      "progress": "Progress",
+      "stepOf": "step {step} of {total}",
+      "steps": {
+        "details": "Details",
+        "sites": "Implant sites",
+        "files": "Files",
+        "review": "Review"
+      },
+      "titles": {
+        "details": "Case details",
+        "sites": "Implant sites",
+        "files": "Scans and files",
+        "review": "Review and submit"
+      },
+      "intros": {
+        "details": "Identify the patient with your own code only, never a name or CPR number.",
+        "sites": "Tap the teeth where implants are planned, then choose the system and sizes for each site.",
+        "files": "Upload the CBCT and the intraoral scan. Files go straight to our EU storage.",
+        "review": "Check everything once more. You can still go back and change it."
+      },
+      "back": "Back",
+      "next": "Next",
+      "saving": "Saving…",
+      "save": {
+        "saving": "Saving…",
+        "saved": "Draft saved",
+        "error": "Not saved"
+      },
+      "details": {
+        "patientCode": "Patient code",
+        "patientCodeHint": "Your own reference, e.g. a journal number. Never a name or CPR number.",
+        "patientCodePlaceholder": "e.g. K-2041",
+        "surgeryDate": "Planned surgery date",
+        "optional": "optional",
+        "guideType": "Guide type",
+        "notes": "Notes for the lab",
+        "notesHint": "Anything we should know: bone quality, prosthetic plan, deadlines. No patient names."
+      },
+      "sites": {
+        "chartHint": "Seen from the front, as you face the patient. Use the arrow keys to move and Space to select.",
+        "listTitle": "Selected sites",
+        "count": "{count, plural, =0 {none} one {# site} other {# sites}}",
+        "empty": "No sites yet. Choose at least one tooth on the chart.",
+        "remove": "Remove tooth {tooth}",
+        "system": "Implant system",
+        "systemChoose": "Choose a system…",
+        "systemOther": "Other system…",
+        "systemOtherName": "Which system?",
+        "diameter": "Diameter (mm)",
+        "length": "Length (mm)",
+        "suggest": "Let Dentnord suggest",
+        "suggestShort": "suggested by Dentnord",
+        "kit": "Surgical kit",
+        "kitNone": "No preference",
+        "sizesSuggested": "Sizes: Dentnord suggests"
+      },
+      "files": {
+        "notConfigured": "File uploads aren't available yet. Your draft is saved; come back to add the files.",
+        "unavailable": "Uploads not available yet",
+        "dropHere": "Drop files here or browse",
+        "waitForUploads": "Waiting for uploads to finish…",
+        "missingRequired": "Still needed: {slots}",
+        "required": "Required",
+        "optional": "Optional",
+        "done": "Done",
+        "accepts": "Accepts {types}",
+        "maxSize": "max 2 GB per file",
+        "uploadedFiles": "Uploaded files",
+        "slots": {
+          "CBCT": {
+            "title": "CBCT (DICOM)",
+            "description": "The whole DICOM export as one .zip, or single .dcm files."
+          },
+          "INTRAORAL_SCAN": {
+            "title": "Intraoral scan",
+            "description": "Upper, lower and bite registration as .stl, .ply or .obj."
+          },
+          "PHOTO": {
+            "title": "Photos",
+            "description": "Clinical photos, if they help the planning."
+          },
+          "OTHER": {
+            "title": "Other files",
+            "description": "Anything else: wax-ups, reports, previous plans."
+          }
+        },
+        "zipHelp": {
+          "title": "How do I zip the DICOM folder?",
+          "windows": "Right-click the DICOM folder → Send to → Compressed (zipped) folder.",
+          "mac": "Control-click the DICOM folder → Compress."
+        },
+        "parts": {
+          "UPPER": "upper",
+          "LOWER": "lower",
+          "BITE": "bite"
+        },
+        "status": {
+          "PENDING": "waiting",
+          "UPLOADING": "uploading",
+          "COMPLETE": "uploaded",
+          "FAILED": "failed"
+        }
+      },
+      "review": {
+        "details": "Case details",
+        "sites": "Implant sites",
+        "files": "Files",
+        "edit": "Edit {section}",
+        "editShort": "Edit",
+        "consent": "I confirm that the patient has consented to sharing these scans with Dentnord for treatment planning, and that the files contain no patient names.",
+        "submit": "Submit case"
+      },
+      "success": {
+        "title": "Case submitted",
+        "body": "Thank you. We've received your case and will be in touch when the plan is ready for your review.",
+        "view": "View case",
+        "all": "All cases"
+      }
+    }
   }
 }

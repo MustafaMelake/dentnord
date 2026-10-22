@@ -1,14 +1,19 @@
-import { FolderOpen } from "lucide-react";
+import { FilePen, FolderOpen } from "lucide-react";
 import type { Metadata } from "next";
 import { getLocale, getTranslations } from "next-intl/server";
 import { Suspense } from "react";
 
+import { CaseList } from "@/components/cases/case-list";
 import { EmptyState } from "@/components/portal/empty-state";
 import { ShellPageHeader } from "@/components/shared/app-shell/app-shell";
 import { PageSkeleton } from "@/components/shared/app-shell/page-skeleton";
 import { ButtonLink } from "@/components/shared/button";
 import { SectionLabel } from "@/components/shared/section-label";
-import { countOwnCases, getOwnProfile } from "@/server/queries/dentist";
+import { StatusBadge } from "@/components/shared/status-badge";
+import type { CaseStatus } from "@/generated/prisma/enums";
+import { Link } from "@/i18n/navigation";
+import { getOwnCaseOverview } from "@/server/queries/cases";
+import { getOwnProfile } from "@/server/queries/dentist";
 
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getTranslations("portal.dashboard");
@@ -29,11 +34,15 @@ export default async function PortalDashboardPage() {
 
 async function Dashboard() {
   const locale = await getLocale();
-  const [t, profile, caseCount] = await Promise.all([
+  const [t, profile, overview] = await Promise.all([
     getTranslations("portal.dashboard"),
     getOwnProfile(locale),
-    countOwnCases(locale),
+    getOwnCaseOverview(locale),
   ]);
+  const statusCounts = (Object.entries(overview.counts) as [CaseStatus, number][]).filter(
+    ([status, n]) => status !== "DRAFT" && n > 0,
+  );
+  const submittedCount = statusCounts.reduce((sum, [, n]) => sum + n, 0);
 
   return (
     <>
@@ -52,18 +61,29 @@ async function Dashboard() {
         </div>
       </section>
 
+      {overview.drafts > 0 && (
+        <Link
+          href="/portal/cases"
+          className="flex items-center gap-3 rounded-card border border-dashed border-line bg-surface px-5 py-4 text-ink transition-colors hover:border-brand"
+        >
+          <FilePen aria-hidden className="size-5 shrink-0 text-brand" />
+          <span className="flex-1">{t("drafts", { count: overview.drafts })}</span>
+          <span className="text-sm text-brand">{t("continueDrafts")}</span>
+        </Link>
+      )}
+
       <section aria-labelledby="cases-heading" className="flex flex-col gap-4">
         <div className="flex items-center justify-between gap-4">
           <h2 id="cases-heading" className="font-mono text-label text-ink-muted">
             {t("casesLabel")}
           </h2>
-          {caseCount > 0 && (
+          {submittedCount > 0 && (
             <ButtonLink href="/portal/cases" variant="secondary">
               {t("viewCases")}
             </ButtonLink>
           )}
         </div>
-        {caseCount === 0 ? (
+        {submittedCount === 0 ? (
           <EmptyState
             icon={<FolderOpen />}
             title={t("emptyTitle")}
@@ -71,9 +91,30 @@ async function Dashboard() {
             cta={{ href: "/portal/cases/new", label: t("emptyCta") }}
           />
         ) : (
-          <p className="rounded-card border border-line bg-surface p-6 text-display-sm text-ink">
-            {t("casesCount", { count: caseCount })}
-          </p>
+          <>
+            <ul aria-label={t("countsLabel")} className="flex flex-wrap gap-2">
+              {statusCounts.map(([status, n]) => (
+                <li key={status}>
+                  <Link
+                    href={`/portal/cases?status=${status.toLowerCase()}`}
+                    className="inline-flex items-center gap-2 rounded-full border border-line bg-surface py-1 pr-3 pl-1 text-sm text-ink hover:border-ink/25"
+                  >
+                    <StatusBadge status={status} />
+                    <span className="tabular-nums">{n}</span>
+                  </Link>
+                </li>
+              ))}
+            </ul>
+            <CaseList
+              rows={overview.recent}
+              locale={locale}
+              link={(row, children, className) => (
+                <Link href={`/portal/cases/${row.id}`} className={className}>
+                  {children}
+                </Link>
+              )}
+            />
+          </>
         )}
       </section>
     </>

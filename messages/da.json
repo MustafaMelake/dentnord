@@ -32,6 +32,7 @@
     "en": "English"
   },
   "caseStatus": {
+    "DRAFT": "Kladde",
     "SUBMITTED": "Indsendt",
     "NEEDS_FILES": "Mangler filer",
     "IN_PLANNING": "Planlægning",
@@ -323,23 +324,37 @@
       "viewCases": "Se cases",
       "emptyTitle": "Ingen cases endnu",
       "emptyBody": "Send din CBCT og intraorale scanning, vælg implantatpositioner og skabelontype, så planlægger vi casen sammen med dig.",
-      "emptyCta": "Indsend din første case"
+      "emptyCta": "Indsend din første case",
+      "drafts": "{count, plural, one {Du har # kladde} other {Du har # kladder}}, der ikke er sendt endnu.",
+      "continueDrafts": "Fortsæt",
+      "countsLabel": "Sager efter status"
     },
     "cases": {
       "title": "Cases",
       "intro": "Alle cases, du har indsendt til Dentnord.",
       "emptyTitle": "Ingen cases endnu",
       "emptyBody": "Cases, du indsender, vises her med deres status.",
-      "emptyCta": "Indsend din første case"
+      "emptyCta": "Indsend din første case",
+      "draftsTitle": "Kladder ({count})",
+      "draftsIntro": "Ikke sendt endnu. Fortsæt hvor du slap, eller slet det, du ikke skal bruge.",
+      "submittedTitle": "Indsendte sager",
+      "searchLabel": "Søg i sager",
+      "searchPlaceholder": "Sagsnummer eller patientkode",
+      "statusLabel": "Status",
+      "allStatuses": "Alle statusser",
+      "filter": "Filtrér",
+      "noResults": "Ingen sager matcher dine filtre.",
+      "noneSubmitted": "Du har ikke indsendt en sag endnu.",
+      "clearFilters": "Ryd filtre"
     },
     "newCase": {
-      "title": "Ny case",
-      "intro": "Indsendelse af cases er under udvikling.",
-      "comingSoonTitle": "Kommer snart",
-      "comingSoonBody": "Snart kan du her uploade CBCT (DICOM) og intraorale scanninger (STL/PLY), markere implantatpositioner og vælge skabelontype."
+      "title": "Ny sag",
+      "intro": "Fire korte trin. Alt gemmes undervejs, så du kan gå fra og komme tilbage.",
+      "editTitle": "Fortsæt sag"
     },
     "caseDetail": {
-      "title": "Case"
+      "title": "Sag",
+      "back": "Alle sager"
     },
     "account": {
       "title": "Konto",
@@ -402,7 +417,24 @@
     "passwordUnchanged": "Vælg en anden adgangskode end din nuværende.",
     "termsRequired": "Du skal acceptere vilkårene og privatlivspolitikken.",
     "phoneInvalid": "Indtast et gyldigt telefonnummer, f.eks. +45 12 34 56 78.",
-    "cvrInvalid": "Et dansk CVR-nummer har 8 cifre."
+    "cvrInvalid": "Et dansk CVR-nummer har 8 cifre.",
+    "looksLikeName": "Det ligner et navn. Brug en kode, der ikke identificerer patienten.",
+    "looksLikeCpr": "Det ligner et CPR-nummer. Brug en kode, der ikke identificerer patienten.",
+    "looksLikeEmail": "Det ligner en e-mailadresse. Brug en kode, der ikke identificerer patienten.",
+    "patientCodeChars": "Brug kun bogstaver, tal, mellemrum og . _ # / -",
+    "dateInvalid": "Angiv en gyldig dato.",
+    "optionInvalid": "Denne mulighed findes ikke længere. Vælg en anden.",
+    "numberInvalid": "Angiv et tal.",
+    "outOfRange": "Værdien er uden for det tilladte interval.",
+    "siteRequired": "Vælg mindst én implantatposition på kortet.",
+    "systemRequired": "Vælg et implantatsystem, eller angiv navnet på det andet system.",
+    "duplicateTooth": "Hver tand kan kun vælges én gang.",
+    "toothInvalid": "Ukendt tandnummer.",
+    "tooMany": "For mange elementer.",
+    "consentRequired": "Bekræft venligst, før du indsender.",
+    "kitIncompatible": "Dette kit passer ikke til det valgte implantatsystem.",
+    "fileRequired": "Denne fil er påkrævet.",
+    "incomplete": "Ikke udfyldt."
   },
   "legal": {
     "terms": {
@@ -453,6 +485,16 @@
       "body": "Vi har modtaget en anmodning om at nulstille adgangskoden til din Dentnord-konto. Linket er gyldigt i en time.",
       "cta": "Vælg ny adgangskode",
       "ignore": "Har du ikke bedt om dette, kan du se bort fra e-mailen. Din adgangskode forbliver den samme."
+    },
+    "caseSubmitted": {
+      "subject": "Ny case {caseNumber} fra {clinic}",
+      "preview": "Case {caseNumber} er indsendt og venter på planlægning.",
+      "heading": "Ny case indsendt",
+      "caseNumber": "Case",
+      "dentist": "Tandlæge",
+      "guideType": "Skabelontype",
+      "implants": "Implantatpositioner",
+      "cta": "Åbn casen"
     }
   },
   "changePassword": {
@@ -475,5 +517,232 @@
     "galleryLabel": "Billeder",
     "ctaTitle": "Planlægger du en lignende case?",
     "cta": "Indsend en case"
+  },
+  "cases": {
+    "list": {
+      "new": "Ny",
+      "columns": {
+        "case": "Sag",
+        "dentist": "Klinik",
+        "patientCode": "Patientkode",
+        "guideType": "Guidetype",
+        "implants": "Implantater",
+        "submitted": "Indsendt",
+        "status": "Status",
+        "open": "Åbn"
+      }
+    },
+    "drafts": {
+      "untitled": "Kladde uden navn",
+      "implants": "{count, plural, =0 {ingen implantatpositioner} one {# implantatposition} other {# implantatpositioner}}",
+      "saved": "gemt {date}",
+      "continue": "Fortsæt",
+      "deleteLabel": "Slet kladden {name}",
+      "confirmTitle": "Slet denne kladde?",
+      "confirmBody": "Kladden og alle filer, der er uploadet til den, slettes permanent.",
+      "confirm": "Slet kladde",
+      "cancel": "Annullér",
+      "deleted": "Kladden er slettet.",
+      "deleteFailed": "Kladden kunne ikke slettes. Prøv igen."
+    },
+    "detail": {
+      "summary": "Oversigt",
+      "status": "Status",
+      "patientCode": "Patientkode",
+      "guideType": "Guidetype",
+      "surgeryDate": "Planlagt operation",
+      "submitted": "Indsendt",
+      "notes": "Noter",
+      "sites": "{count, plural, one {Implantatposition} other {Implantatpositioner ({count})}}",
+      "tooth": "Tand",
+      "system": "Implantatsystem",
+      "diameter": "Diameter",
+      "length": "Længde",
+      "kit": "Kirurgisk kit",
+      "suggested": "Dentnord foreslår",
+      "files": "Filer",
+      "noFiles": "Ingen filer.",
+      "fileKinds": {
+        "CBCT": "CBCT",
+        "INTRAORAL_SCAN": "Intraoral scanning",
+        "PHOTO": "Fotos",
+        "OTHER": "Andre filer",
+        "PLAN_REPORT": "Planrapport",
+        "GUIDE_STL": "Guide (STL)"
+      },
+      "download": "Download {name}",
+      "downloadShort": "Download",
+      "timeline": "Historik",
+      "events": {
+        "CREATED": "Kladde oprettet",
+        "UPDATED": "Kladde opdateret",
+        "STATUS_CHANGED": "Status: {status}",
+        "FILE_ADDED": "Fil tilføjet",
+        "FILE_FAILED": "Upload af fil mislykkedes",
+        "FILE_REMOVED": "Fil fjernet",
+        "PLAN_APPROVED": "Plan godkendt",
+        "CHANGES_REQUESTED": "Ændringer ønsket"
+      }
+    },
+    "chart": {
+      "label": "Tandkort: vælg implantatpositionerne",
+      "readOnlyLabel": "Tandkort. Implantatpositioner: {teeth}",
+      "none": "ingen",
+      "upper": "Overkæbe",
+      "lower": "Underkæbe",
+      "right": "H",
+      "left": "V",
+      "upperArch": "Overkæbe",
+      "lowerArch": "Underkæbe"
+    },
+    "teeth": {
+      "label": "Tand {tooth}, {quadrant} {name}",
+      "short": "{quadrant} {name}",
+      "quadrants": {
+        "1": "øverst til højre,",
+        "2": "øverst til venstre,",
+        "3": "nederst til venstre,",
+        "4": "nederst til højre,"
+      },
+      "names": {
+        "1": "central incisiv",
+        "2": "lateral incisiv",
+        "3": "hjørnetand",
+        "4": "første præmolar",
+        "5": "anden præmolar",
+        "6": "første molar",
+        "7": "anden molar",
+        "8": "tredje molar"
+      }
+    },
+    "errors": {
+      "invalid": "Nogle felter skal rettes.",
+      "notFound": "Kladden findes ikke længere, eller den er allerede indsendt.",
+      "incomplete": "Noget mangler. Tjek de trin, der ikke er udfyldt.",
+      "uploadsPending": "Vent, til alle uploads er færdige.",
+      "storage": "Vi kunne ikke nå fillageret. Prøv igen om lidt.",
+      "generic": "Noget gik galt. Prøv igen.",
+      "network": "Vi kunne ikke gemme. Tjek din forbindelse, og prøv igen."
+    },
+    "wizard": {
+      "progress": "Forløb",
+      "stepOf": "trin {step} af {total}",
+      "steps": {
+        "details": "Detaljer",
+        "sites": "Implantater",
+        "files": "Filer",
+        "review": "Gennemse"
+      },
+      "titles": {
+        "details": "Sagsdetaljer",
+        "sites": "Implantatpositioner",
+        "files": "Scanninger og filer",
+        "review": "Gennemse og indsend"
+      },
+      "intros": {
+        "details": "Identificér patienten med din egen kode, aldrig et navn eller CPR-nummer.",
+        "sites": "Tryk på tænderne, hvor der planlægges implantater, og vælg system og størrelser for hver position.",
+        "files": "Upload CBCT og intraoral scanning. Filerne går direkte til vores lager i EU.",
+        "review": "Tjek det hele en sidste gang. Du kan stadig gå tilbage og rette."
+      },
+      "back": "Tilbage",
+      "next": "Næste",
+      "saving": "Gemmer…",
+      "save": {
+        "saving": "Gemmer…",
+        "saved": "Kladde gemt",
+        "error": "Ikke gemt"
+      },
+      "details": {
+        "patientCode": "Patientkode",
+        "patientCodeHint": "Din egen reference, fx et journalnummer. Aldrig et navn eller CPR-nummer.",
+        "patientCodePlaceholder": "fx K-2041",
+        "surgeryDate": "Planlagt operationsdato",
+        "optional": "valgfri",
+        "guideType": "Guidetype",
+        "notes": "Noter til laboratoriet",
+        "notesHint": "Alt, vi bør vide: knoglekvalitet, protetisk plan, deadlines. Ingen patientnavne."
+      },
+      "sites": {
+        "chartHint": "Set forfra, som når du står over for patienten. Brug piletasterne til at flytte og mellemrum til at vælge.",
+        "listTitle": "Valgte positioner",
+        "count": "{count, plural, =0 {ingen} one {# position} other {# positioner}}",
+        "empty": "Ingen positioner endnu. Vælg mindst én tand på kortet.",
+        "remove": "Fjern tand {tooth}",
+        "system": "Implantatsystem",
+        "systemChoose": "Vælg et system…",
+        "systemOther": "Andet system…",
+        "systemOtherName": "Hvilket system?",
+        "diameter": "Diameter (mm)",
+        "length": "Længde (mm)",
+        "suggest": "Lad Dentnord foreslå",
+        "suggestShort": "foreslås af Dentnord",
+        "kit": "Kirurgisk kit",
+        "kitNone": "Ingen præference",
+        "sizesSuggested": "Størrelser: Dentnord foreslår"
+      },
+      "files": {
+        "notConfigured": "Upload af filer er ikke tilgængelig endnu. Din kladde er gemt; kom tilbage og tilføj filerne.",
+        "unavailable": "Upload er ikke tilgængelig endnu",
+        "dropHere": "Slip filer her, eller gennemse",
+        "waitForUploads": "Venter på, at uploads bliver færdige…",
+        "missingRequired": "Mangler stadig: {slots}",
+        "required": "Påkrævet",
+        "optional": "Valgfri",
+        "done": "Færdig",
+        "accepts": "Tager imod {types}",
+        "maxSize": "maks. 2 GB pr. fil",
+        "uploadedFiles": "Uploadede filer",
+        "slots": {
+          "CBCT": {
+            "title": "CBCT (DICOM)",
+            "description": "Hele DICOM-eksporten som én .zip eller enkelte .dcm-filer."
+          },
+          "INTRAORAL_SCAN": {
+            "title": "Intraoral scanning",
+            "description": "Overkæbe, underkæbe og bidregistrering som .stl, .ply eller .obj."
+          },
+          "PHOTO": {
+            "title": "Fotos",
+            "description": "Kliniske fotos, hvis de hjælper planlægningen."
+          },
+          "OTHER": {
+            "title": "Andre filer",
+            "description": "Alt andet: wax-ups, rapporter, tidligere planer."
+          }
+        },
+        "zipHelp": {
+          "title": "Hvordan zipper jeg DICOM-mappen?",
+          "windows": "Højreklik på DICOM-mappen → Send til → Komprimeret (zippet) mappe.",
+          "mac": "Ctrl-klik på DICOM-mappen → Komprimer."
+        },
+        "parts": {
+          "UPPER": "overkæbe",
+          "LOWER": "underkæbe",
+          "BITE": "bid"
+        },
+        "status": {
+          "PENDING": "venter",
+          "UPLOADING": "uploader",
+          "COMPLETE": "uploadet",
+          "FAILED": "mislykkedes"
+        }
+      },
+      "review": {
+        "details": "Sagsdetaljer",
+        "sites": "Implantatpositioner",
+        "files": "Filer",
+        "edit": "Ret {section}",
+        "editShort": "Ret",
+        "consent": "Jeg bekræfter, at patienten har givet samtykke til, at scanningerne deles med Dentnord til behandlingsplanlægning, og at filerne ikke indeholder patientnavne.",
+        "submit": "Indsend sag"
+      },
+      "success": {
+        "title": "Sagen er indsendt",
+        "body": "Tak. Vi har modtaget din sag og vender tilbage, når planen er klar til din gennemgang.",
+        "view": "Se sagen",
+        "all": "Alle sager"
+      }
+    }
   }
 }
