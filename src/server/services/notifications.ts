@@ -2,12 +2,14 @@ import "server-only";
 
 import { buildAccountApprovedEmail } from "@/emails/account-approved";
 import { buildAccountRejectedEmail } from "@/emails/account-rejected";
+import { buildCaseSubmittedEmail } from "@/emails/case-submitted";
 import { buildDentistRegisteredEmail } from "@/emails/dentist-registered";
 import { emailLocale } from "@/emails/i18n";
 import { buildPasswordResetEmail } from "@/emails/password-reset";
 import { env } from "@/env";
 import { db } from "@/lib/db";
 import { sendEmail, sendInBackground } from "@/lib/email";
+import { localized } from "@/lib/utils";
 import { getContactSetting } from "@/server/queries/site-settings";
 
 // Account emails. Each one is queued with `sendInBackground`, so callers never wait for the provider
@@ -92,5 +94,33 @@ export function sendPasswordResetEmail(user: Recipient, url: string) {
     const locale = emailLocale(user.preferredLocale);
     const email = buildPasswordResetEmail({ locale, name: user.name, resetUrl: url });
     await sendEmail({ to: user.email, ...email });
+  });
+}
+
+/** To ADMIN_EMAIL: a dentist submitted a case. No patient data (not even the patient code). */
+export function notifyCaseSubmitted(info: {
+  caseId: string;
+  caseNumber: string;
+  dentistName: string;
+  clinicName: string;
+  guideTypeName: unknown;
+  implantCount: number;
+}) {
+  sendInBackground(async () => {
+    const admin = await db.user.findUnique({
+      where: { email: env.ADMIN_EMAIL.toLowerCase() },
+      select: { preferredLocale: true },
+    });
+    const locale = emailLocale(admin?.preferredLocale ?? "en");
+    const email = buildCaseSubmittedEmail({
+      locale,
+      caseUrl: siteUrl(`/admin/cases/${info.caseId}`),
+      caseNumber: info.caseNumber,
+      dentistName: info.dentistName,
+      clinicName: info.clinicName,
+      guideType: localized(info.guideTypeName, locale),
+      implantCount: info.implantCount,
+    });
+    await sendEmail({ to: env.ADMIN_EMAIL, ...email });
   });
 }
