@@ -5,7 +5,10 @@ import {
   CompleteMultipartUploadCommand,
   CreateMultipartUploadCommand,
   DeleteObjectCommand,
+  DeleteObjectsCommand,
   GetObjectCommand,
+  HeadObjectCommand,
+  ListObjectsV2Command,
   ListPartsCommand,
   PutObjectCommand,
   UploadPartCommand,
@@ -13,9 +16,10 @@ import {
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 
 import { env } from "@/env";
-import { requireR2Client } from "@/lib/r2";
+import { getR2Client, requireR2Client } from "@/lib/r2";
 
-// Case files: private R2 bucket R2_CASES_BUCKET (EU jurisdiction), client in lib/r2.ts.
+// Case files: private R2 bucket R2_CASES_BUCKET, client in lib/r2.ts (endpoint per R2_JURISDICTION).
+// Keys are built by lib/case-files.ts (buildCaseFileKey), on the server only.
 // The bucket is private. The browser uploads directly via presigned URLs (files never pass through
 // Next.js), and downloads only through short-lived signed GET URLs.
 // The bucket needs a CORS rule allowing PUT from NEXT_PUBLIC_SITE_URL and exposing the `ETag` header.
@@ -25,14 +29,8 @@ export const UPLOAD_PART_URL_TTL_SECONDS = 15 * 60;
 
 const Bucket = env.R2_CASES_BUCKET;
 
-/** cases/<caseId>/<kind>/<random>-<sanitised file name> */
-export function buildCaseFileKey(caseId: string, kind: string, fileName: string) {
-  const safeName = fileName
-    .normalize("NFKD")
-    .replace(/[^\w.-]+/g, "_")
-    .slice(-120);
-  return `cases/${caseId}/${kind.toLowerCase()}/${crypto.randomUUID()}-${safeName}`;
-}
+/** Real R2 credentials are present (lib/r2.ts). */
+export const caseStorageConfigured = () => getR2Client() !== null;
 
 // ── Single-request upload (small files) ──────────────────────────────────────
 
@@ -40,9 +38,7 @@ export function presignPutObject(key: string, contentType: string) {
   return getSignedUrl(
     requireR2Client(),
     new PutObjectCommand({ Bucket, Key: key, ContentType: contentType }),
-    {
-      expiresIn: UPLOAD_PART_URL_TTL_SECONDS,
-    },
+    { expiresIn: UPLOAD_PART_URL_TTL_SECONDS },
   );
 }
 
@@ -102,7 +98,7 @@ export function abortMultipartUpload(key: string, uploadId: string) {
   );
 }
 
-// ── Download / delete ────────────────────────────────────────────────────────
+// ── Download / inspect / delete ──────────────────────────────────────────────
 
 /** Short-lived download URL. Always authorise the user against the case first. */
 export function presignGetObject(key: string, downloadFileName?: string) {
@@ -121,4 +117,44 @@ export function presignGetObject(key: string, downloadFileName?: string) {
 
 export function deleteObject(key: string) {
   return requireR2Client().send(new DeleteObjectCommand({ Bucket, Key: key }));
+}
+
+/** What R2 stored under this key (size, ETag), or null if there is no such object. */
+export async function headObject(key: string) {
+  try {
+    const res = await requireR2Client().send(new HeadObjectCommand({ Bucket, Key: key }));
+    return { sizeBytes: res.ContentLength ?? 0, etag: res.ETag?.replaceAll('"', "") ?? null };
+  } catch (error) {
+    const status = (error as { $metadata?: { httpStatusCode?: number } }).$metadata?.httpStatusCode;
+    if (status === 404) return null;
+    throw error;
+  }
+}
+
+/** Every key under a prefix (e.g. one case's folder). */
+export async function listKeys(prefix: string) {
+  const keys: string[] = [];
+  let token: string | undefined;
+  do {
+    const res = await requireR2Client().send(
+      new ListObjectsV2Command({ Bucket, Prefix: prefix, ContinuationToken: token }),
+    );
+    for (const o of res.Contents ?? []) if (o.Key) keys.push(o.Key);
+    token = res.IsTruncated ? res.NextContinuationToken : undefined;
+  } while (token);
+  return keys;
+}
+
+/** Deletes many keys (batches of 1000, the limit per request). */
+export async function deleteKeys(keys: string[]) {
+  for (let i = 0; i < keys.length; i += 1000) {
+    const batch = keys.slice(i, i + 1000);
+    const res = await requireR2Client().send(
+      new DeleteObjectsCommand({
+        Bucket,
+        Delete: { Objects: batch.map((Key) => ({ Key })), Quiet: true },
+      }),
+    );
+    if (res.Errors?.length) throw new Error(`R2 could not delete ${res.Errors.length} object(s)`);
+  }
 }

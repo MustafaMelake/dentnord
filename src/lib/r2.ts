@@ -3,8 +3,10 @@ import "server-only";
 import { S3Client } from "@aws-sdk/client-s3";
 
 import { env } from "@/env";
+import { r2Endpoint } from "@/lib/r2-endpoint";
 
-// Shared Cloudflare R2 client (S3-compatible, EU jurisdiction → `.eu.` endpoint).
+// Shared Cloudflare R2 client (S3-compatible). The endpoint follows R2_JURISDICTION (default "eu":
+// EU-jurisdiction buckets are only reachable at <account>.eu.r2.cloudflarestorage.com).
 // R2 credentials have fixed shapes; anything else (empty, "placeholder", …) counts as not configured,
 // and callers degrade gracefully instead of failing at import time.
 
@@ -29,7 +31,7 @@ export function getR2Client() {
   if (!creds) return null;
   client = new S3Client({
     region: "auto",
-    endpoint: `https://${creds.account}.eu.r2.cloudflarestorage.com`,
+    endpoint: r2Endpoint(creds.account, env.R2_JURISDICTION),
     credentials: { accessKeyId: creds.keyId, secretAccessKey: creds.secret },
     // Newer SDKs add CRC32 checksums by default, which breaks browser uploads to presigned R2 URLs.
     requestChecksumCalculation: "WHEN_REQUIRED",
