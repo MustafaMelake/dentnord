@@ -68,6 +68,8 @@ prisma/schema.prisma, seed.ts
   `<Suspense>`. Don't `await` session or params at a layout's top level.
 - **Locale outside `[locale]`:** in Server Actions, Route Handlers and /admin, pass the locale
   explicitly (`getTranslations({ locale, namespace })`), because `next/root-params` isn't available there.
+  (Without a root param, `i18n/request.ts` falls back to English, so shared server components that call
+  `useTranslations` render in English under /admin.)
 - Catalog rows referenced by cases are deactivated (`active = false`), not deleted.
 - Case numbers come from `allocateCaseNumber(tx)` inside the create transaction (`DN-YYYY-NNNN`).
 - `CaseFile.sizeBytes` is BigInt: convert it before passing to client components.

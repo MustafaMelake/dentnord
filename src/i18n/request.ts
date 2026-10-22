@@ -9,8 +9,15 @@ export default getRequestConfig(async ({ locale }) => {
   // Route Handlers and /admin, where the `[locale]` root param is not available.
   if (!locale) {
     const param = await rootParams.locale();
-    // Invalid segments are rejected with notFound() in app/[locale]/layout.tsx.
-    locale = hasLocale(routing.locales, param) ? param : routing.defaultLocale;
+    // No root param = outside [locale], i.e. the English-only /admin (so shared server components
+    // such as the case list render in English there). Invalid segments are rejected with notFound()
+    // in app/[locale]/layout.tsx.
+    locale =
+      param === undefined
+        ? "en"
+        : hasLocale(routing.locales, param)
+          ? param
+          : routing.defaultLocale;
   }
 
   return {
