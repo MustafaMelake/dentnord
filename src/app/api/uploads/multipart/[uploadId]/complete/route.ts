@@ -16,14 +16,14 @@ export async function POST(
   request: Request,
   ctx: RouteContext<"/api/uploads/multipart/[uploadId]/complete">,
 ) {
-  const user = await requireUploadUser(request, "write", "control");
+  const user = await requireUploadUser(request, "write", "control", "xml");
   if (user instanceof Response) return user;
   const { uploadId } = await ctx.params;
-  if (!isFileId(uploadId)) return error(404, "notFound");
+  if (!isFileId(uploadId)) return error(404, "notFound", {}, "xml");
   return respond(async () => {
     const { key, file } = await completeUpload(user.id, uploadId);
     return xml(
       `<CompleteMultipartUploadResult><Location>${escapeXml(file.id)}</Location><Key>${escapeXml(key)}</Key></CompleteMultipartUploadResult>`,
     );
-  });
+  }, "xml");
 }

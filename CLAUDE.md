@@ -217,7 +217,9 @@ prisma/schema.prisma, seed.ts
   `GET …/[id]/[part]` (15-min URL with the part's exact `Content-Length` signed in, fixed 16 MiB parts, so
   R2 enforces the declared size) and list / complete / abort to our routes, which talk to R2 themselves.
   Complete = list parts server-side, complete, HEAD, size check → COMPLETE + `CaseEvent`, else delete
-  - FAILED. So the bucket's CORS only needs `PUT` + exposed `ETag`.
+  the object and mark it FAILED. So the bucket's CORS only needs `PUT` + exposed `ETag`. Those three
+  routes answer like S3, errors included (`<Error><Code>…`): Vercel strips `x-amz-*` response
+  headers, so the error code must be in the body.
 - Route order: `requireUploadUser` (DB session, APPROVED dentist for writes; admin may only download)
   → per-user rate limit (`server/services/rate-limit.ts`, `rate_limit` table) → zod → service
   (`server/services/case-uploads.ts`, ownership + DRAFT + row state). Downloads:

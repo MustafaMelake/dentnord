@@ -225,6 +225,13 @@ const ops = {
     });
   },
 
+  /** An empty DRAFT case for an e2e user (API-level upload tests). */
+  async createDraft({ email }: { email: string }) {
+    if (!email.startsWith(E2E_EMAIL_PREFIX)) throw new Error("test users must use the e2e- prefix");
+    const user = await db.user.findUniqueOrThrow({ where: { email }, select: { id: true } });
+    return db.case.create({ data: { dentistId: user.id }, select: { id: true } });
+  },
+
   async r2Cleanup() {
     return r2Cleanup();
   },

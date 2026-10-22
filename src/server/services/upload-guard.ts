@@ -27,9 +27,10 @@ export async function requireUploadUser(
   request: Request,
   access: "write" | "read",
   limit: keyof typeof UPLOAD_LIMITS,
+  format: ErrorFormat = "json",
 ): Promise<UploadUser | Response> {
   const session = await getUploadSession(request);
-  if (!session) return error(401, "unauthorized");
+  if (!session) return error(401, "unauthorized", {}, format);
   const { id, role, dentistStatus } = session.user as {
     id: string;
     role: string;
@@ -38,10 +39,10 @@ export async function requireUploadUser(
   const isAdmin = role === "ADMIN";
   const isDentist = role === "DENTIST" && dentistStatus === "APPROVED";
   // The admin can read case files but never upload to (or delete from) a dentist's draft.
-  if (!(isDentist || (isAdmin && access === "read"))) return error(403, "forbidden");
-  if (!caseStorageConfigured()) return error(503, "notConfigured");
+  if (!(isDentist || (isAdmin && access === "read"))) return error(403, "forbidden", {}, format);
+  if (!caseStorageConfigured()) return error(503, "notConfigured", {}, format);
   const { allowed } = await rateLimit(`uploads:${limit}:${id}`, UPLOAD_LIMITS[limit]);
-  if (!allowed) return error(429, "rateLimited", { "Retry-After": "60" });
+  if (!allowed) return error(429, "rateLimited", { "Retry-After": "60" }, format);
   return { id, role: isAdmin ? "ADMIN" : "DENTIST" };
 }
 
@@ -51,13 +52,13 @@ const FILE_ID = /^[A-Za-z0-9_-]{1,64}$/;
 export const isFileId = (value: string) => FILE_ID.test(value);
 
 /** Runs a route body: UploadError → its status; anything else → 500 without details (no file names in logs). */
-export async function respond(fn: () => Promise<Response>) {
+export async function respond(fn: () => Promise<Response>, format: ErrorFormat = "json") {
   try {
     return await fn();
   } catch (e) {
-    if (e instanceof UploadError) return error(e.status, e.code);
+    if (e instanceof UploadError) return error(e.status, e.code, {}, format);
     console.error("[uploads]", e instanceof Error ? e.name : "error", httpStatusOf(e) ?? "");
-    return error(500, "storage");
+    return error(500, "storage", {}, format);
   }
 }
 
@@ -66,12 +67,26 @@ const httpStatusOf = (e: unknown) =>
 
 const NO_STORE = { "Cache-Control": "no-store" };
 
-/** JSON error; the code is repeated in x-amz-error-code, which Uppy's S3 client puts in its error. */
-export function error(status: number, code: string, headers: Record<string, string> = {}) {
-  return Response.json(
-    { error: code },
-    { status, headers: { ...NO_STORE, "x-amz-error-code": code, ...headers } },
-  );
+/**
+ * "json" for our own fetch calls; "xml" for the routes Uppy's S3 client calls (list / complete /
+ * abort): it reads the code from an S3-style <Error><Code> body. (Not from an x-amz-error-code
+ * header: Vercel strips x-amz-* response headers.)
+ */
+export type ErrorFormat = "json" | "xml";
+
+export function error(
+  status: number,
+  code: string,
+  headers: Record<string, string> = {},
+  format: ErrorFormat = "json",
+) {
+  if (format === "xml") {
+    return new Response(
+      `<?xml version="1.0" encoding="UTF-8"?><Error><Code>${escapeXml(code)}</Code><Message>${escapeXml(code)}</Message></Error>`,
+      { status, headers: { ...NO_STORE, "Content-Type": "application/xml", ...headers } },
+    );
+  }
+  return Response.json({ error: code }, { status, headers: { ...NO_STORE, ...headers } });
 }
 
 export function json(body: unknown, status = 200) {
