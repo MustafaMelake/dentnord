@@ -22,6 +22,7 @@ import { SitesStep } from "./sites-step";
 import type { WizardCatalog, WizardDetails, WizardFile, WizardSite, WizardStep } from "./types";
 import { WIZARD_STEPS } from "./types";
 import { useAutosave, type SaveState } from "./use-autosave";
+import { useCaseUploads } from "./use-case-uploads";
 
 const draftUrl = (locale: string, id: string, step: WizardStep) =>
   `/${locale}/portal/cases/${id}/edit?step=${step}`;
@@ -119,6 +120,8 @@ export function CaseWizard({
   const sitesAutosave = useAutosave(sites, async (v) => !!(await saveSitesNow(v, false))?.ok, {
     enabled: !!caseId,
   });
+  // Lives here, not in the files step, so going back a step never aborts an upload.
+  const uploads = useCaseUploads({ caseId, onFilesChange: setFiles });
 
   function goTo(next: WizardStep) {
     setErrors(null);
@@ -137,7 +140,9 @@ export function CaseWizard({
         ? 2
         : REQUIRED_FILE_KINDS.some(
               (k) => !files.some((f) => f.kind === k && f.uploadStatus === "COMPLETE"),
-            )
+            ) ||
+            uploads.uploading ||
+            files.some((f) => f.uploadStatus !== "COMPLETE")
           ? 3
           : 4;
 
@@ -251,9 +256,9 @@ export function CaseWizard({
       {step === 3 && caseId && (
         <FilesStep
           locale={locale}
-          caseId={caseId}
           files={files}
           storageConfigured={storageConfigured}
+          uploads={uploads}
           onFilesChange={setFiles}
           onBack={() => goTo(2)}
           onNext={() => goTo(4)}
