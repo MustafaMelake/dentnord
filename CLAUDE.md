@@ -32,7 +32,7 @@ react-markdown (no raw HTML) · @t3-oss/env-nextjs · ESLint + Prettier (tailwin
 src/app/[locale]/            root layout #1 (html lang from `next/root-params`)
   (marketing)/ (auth)/ (portal)/portal/
 src/app/admin/               root layout #2 (English, no locale segment)
-src/app/api/                 auth/[...all] (Better Auth), uploads/* (presign + multipart)
+src/app/api/                 auth/[...all] (Better Auth), uploads/* (case-file multipart + downloads)
 src/proxy.ts                 Next 16 "proxy" (formerly middleware): auth gate + next-intl routing
 src/components/              ui/ (shadcn, generated) marketing/ portal/ admin/ three/ shared/
 src/lib/                     db, auth*, r2 + storage (cases) + media-storage, email, price, validation/, utils
@@ -202,6 +202,29 @@ prisma/schema.prisma, seed.ts
   token, and records a `MediaAsset` (alt text in da + en required). Without real R2 credentials or a
   public URL (`lib/r2.ts`, `lib/media-storage.ts`), the picker shows "Image uploads not configured".
   Case files stay in the private `R2_CASES_BUCKET` (`lib/storage.ts`).
+
+## Cases & uploads
+
+- Wizard: `components/cases/wizard/*` (`case-wizard.tsx` orchestrates; autosave through a save queue;
+  the DRAFT is created on the first save, URL `/portal/cases/<id>/edit?step=N`). Server side:
+  `server/actions/cases.ts` → `server/services/cases.ts` (own DRAFT only; `submitCase` re-validates
+  everything and allocates the case number). Admin views are read-only (`server/queries/admin-cases.ts`).
+- **Every case file is a multipart upload** (`use-case-uploads.ts`, one Uppy instance per wizard so step
+  changes never abort uploads). `POST /api/uploads/multipart` registers it: the server checks kind /
+  extension / size (`lib/case-files.ts`), builds the key, creates the multipart upload in R2 and the
+  `CaseFile` row (UPLOADING), and returns **our file id** (R2's upload id never leaves the server). Uppy
+  gets `s3Multipart = { uploadId: <file id>, key }`; its `signRequest` maps part PUTs to
+  `GET …/[id]/[part]` (15-min URL with the part's exact `Content-Length` signed in, fixed 16 MiB parts, so
+  R2 enforces the declared size) and list / complete / abort to our routes, which talk to R2 themselves.
+  Complete = list parts server-side, complete, HEAD, size check → COMPLETE + `CaseEvent`, else delete
+  - FAILED. So the bucket's CORS only needs `PUT` + exposed `ETag`.
+- Route order: `requireUploadUser` (DB session, APPROVED dentist for writes; admin may only download)
+  → per-user rate limit (`server/services/rate-limit.ts`, `rate_limit` table) → zod → service
+  (`server/services/case-uploads.ts`, ownership + DRAFT + row state). Downloads:
+  `/api/uploads/files/[id]/download` → 303 to a 5-minute signed GET (owner, or admin for non-drafts).
+- `R2_KEY_PREFIX` (default empty) prefixes every case key; E2E runs use `test/` and the teardown deletes
+  everything under it (`tests/e2e/support/db-cli.ts`). E2E contexts add `x-forwarded-for` only to
+  localhost requests: on R2 requests it would fail CORS.
 
 ## Commands
 
