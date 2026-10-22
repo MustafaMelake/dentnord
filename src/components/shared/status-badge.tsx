@@ -7,6 +7,7 @@ import { cn } from "@/lib/utils";
 // Labels come from messages `caseStatus.*`.
 
 const tones: Record<CaseStatus, string> = {
+  DRAFT: "border border-dashed border-line bg-surface text-ink-muted",
   SUBMITTED: "bg-surface-2 text-ink",
   NEEDS_FILES: "bg-[#fbeedd] text-[#7a4a0c]",
   IN_PLANNING: "bg-brand-ice text-brand",
@@ -20,6 +21,7 @@ const tones: Record<CaseStatus, string> = {
 };
 
 const dots: Record<CaseStatus, string> = {
+  DRAFT: "bg-line",
   SUBMITTED: "bg-ink-muted",
   NEEDS_FILES: "bg-[#c9831f]",
   IN_PLANNING: "bg-brand",

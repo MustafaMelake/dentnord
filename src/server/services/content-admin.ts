@@ -176,7 +176,8 @@ export async function deleteOrArchive(model: ContentModel, id: string, actor: Ac
     if (model === "guideType") usage = await tx.case.count({ where: { guideTypeId: id } });
     if (model === "implantSystem")
       usage = await tx.caseImplant.count({ where: { implantSystemId: id } });
-    if (model === "surgicalKit") usage = await tx.case.count({ where: { surgicalKitId: id } });
+    if (model === "surgicalKit")
+      usage = await tx.caseImplant.count({ where: { surgicalKitId: id } });
 
     if (usage > 0) {
       if (model === "guideType")

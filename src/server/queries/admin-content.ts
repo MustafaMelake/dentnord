@@ -132,7 +132,7 @@ export async function listAdminSurgicalKits() {
       description: true,
       active: true,
       implantSystems: { select: { id: true } },
-      _count: { select: { cases: true } },
+      _count: { select: { implants: true } },
     },
   });
   return rows.map((k) => ({
@@ -141,7 +141,7 @@ export async function listAdminSurgicalKits() {
     manufacturer: k.manufacturer ?? "",
     active: k.active,
     implantSystemIds: k.implantSystems.map((s) => s.id),
-    usage: k._count.cases,
+    usage: k._count.implants,
     isExample: looksLikeExample(k.description),
   }));
 }

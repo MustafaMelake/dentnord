@@ -160,6 +160,8 @@ model AuditLog {
 // ─────────────────────────────────── Cases ───────────────────────────────────
 
 enum CaseStatus {
+  /// Being filled in by the dentist (wizard). Not visible to the lab; no case number yet.
+  DRAFT
   SUBMITTED
   NEEDS_FILES
   IN_PLANNING
@@ -174,20 +176,23 @@ enum CaseStatus {
 
 model Case {
   id          String     @id @default(cuid())
-  /// Human readable, e.g. DN-2026-0001. Allocated via CaseNumberSequence.
-  caseNumber  String     @unique
-  /// Pseudonymous code chosen by the dentist. NEVER a patient name (GDPR).
-  patientCode String
-  status      CaseStatus @default(SUBMITTED)
+  /// Human readable, e.g. DN-2026-0001. Allocated via CaseNumberSequence at submit (null while DRAFT).
+  caseNumber  String?    @unique
+  /// Pseudonymous code chosen by the dentist. NEVER a patient name (GDPR). Empty while drafting.
+  patientCode String     @default("")
+  status      CaseStatus @default(DRAFT)
   surgeryDate DateTime?  @db.Date
   notes       String?
+  /// When the dentist submitted the case (DRAFT → SUBMITTED).
+  submittedAt DateTime?
+  /// When the dentist confirmed they may share the files and the patient consented to planning.
+  consentAt   DateTime?
 
-  dentistId     String
-  dentist       User         @relation(fields: [dentistId], references: [id], onDelete: Restrict)
-  guideTypeId   String
-  guideType     GuideType    @relation(fields: [guideTypeId], references: [id], onDelete: Restrict)
-  surgicalKitId String?
-  surgicalKit   SurgicalKit? @relation(fields: [surgicalKitId], references: [id], onDelete: Restrict)
+  dentistId   String
+  dentist     User       @relation(fields: [dentistId], references: [id], onDelete: Restrict)
+  /// Required to submit; optional while drafting.
+  guideTypeId String?
+  guideType   GuideType? @relation(fields: [guideTypeId], references: [id], onDelete: Restrict)
 
   implants CaseImplant[]
   files    CaseFile[]
@@ -200,8 +205,8 @@ model Case {
   @@index([dentistId, createdAt(sort: Desc)])
   @@index([dentistId, patientCode])
   @@index([status, updatedAt(sort: Desc)])
+  @@index([dentistId, status])
   @@index([guideTypeId])
-  @@index([surgicalKitId])
   @@map("case")
 }
 
@@ -222,16 +227,20 @@ model CaseImplant {
   fdiTooth           Int
   implantSystemId    String?
   implantSystem      ImplantSystem? @relation(fields: [implantSystemId], references: [id], onDelete: Restrict)
-  /// Free text when the system is not in the catalog.
+  /// Free text when the system is not in the catalog ("Other").
   implantSystemOther String?
-  /// mm
-  diameter           Float
-  /// mm
-  length             Float
+  /// mm. Null = "Let Dentnord suggest".
+  diameter           Float?
+  /// mm. Null = "Let Dentnord suggest".
+  length             Float?
+  /// Sleeve / surgical kit for this site (compatible with the implant system). Null = no preference.
+  surgicalKitId      String?
+  surgicalKit        SurgicalKit?   @relation(fields: [surgicalKitId], references: [id], onDelete: Restrict)
   notes              String?
 
   @@unique([caseId, fdiTooth])
   @@index([implantSystemId])
+  @@index([surgicalKitId])
   @@map("case_implant")
 }
 
@@ -245,11 +254,21 @@ enum CaseFileKind {
 }
 
 enum UploadStatus {
+  /// Row created, presign issued, nothing received yet.
   PENDING
+  /// Multipart upload in progress.
   UPLOADING
-  COMPLETED
+  /// Object verified in R2 (HEAD: exists, size matches).
+  COMPLETE
+  /// Failed or aborted; the multipart upload was aborted and the object deleted.
   FAILED
-  ABORTED
+}
+
+/// Which jaw an intraoral scan file covers.
+enum ScanPart {
+  UPPER
+  LOWER
+  BITE
 }
 
 /// Object in the private R2 bucket. Accessed only through short-lived signed URLs.
@@ -258,7 +277,9 @@ model CaseFile {
   caseId       String
   case         Case         @relation(fields: [caseId], references: [id], onDelete: Cascade)
   kind         CaseFileKind
+  /// Built by the server: cases/{caseId}/{fileId}/{sanitisedName}. Never taken from the client.
   storageKey   String       @unique
+  /// Original file name, sanitised.
   fileName     String
   /// BigInt: CBCT exports can exceed 2 GB. Convert to number/string before sending to the client.
   sizeBytes    BigInt
@@ -266,6 +287,11 @@ model CaseFile {
   uploadStatus UploadStatus @default(PENDING)
   /// S3 multipart UploadId while the upload is in progress.
   uploadId     String?
+  /// Intraoral scans: upper / lower / bite (optional).
+  scanPart     ScanPart?
+  /// Integrity info if available (R2 ETag of the completed object).
+  checksum     String?
+  completedAt  DateTime?
   uploadedById String
   uploadedBy   User         @relation("CaseFileUploader", fields: [uploadedById], references: [id], onDelete: Restrict)
   createdAt    DateTime     @default(now())
@@ -281,6 +307,7 @@ enum CaseEventType {
   CREATED
   STATUS_CHANGED
   FILE_ADDED
+  FILE_FAILED
   FILE_REMOVED
   PLAN_APPROVED
   CHANGES_REQUESTED
@@ -414,7 +441,7 @@ model SurgicalKit {
 
   /// Systems this kit is compatible with.
   implantSystems ImplantSystem[]
-  cases          Case[]
+  implants       CaseImplant[]
 
   @@index([active, sortOrder])
   @@map("surgical_kit")
