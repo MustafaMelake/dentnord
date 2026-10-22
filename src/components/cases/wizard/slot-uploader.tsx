@@ -92,7 +92,7 @@ export function SlotUploader({
       {refused.length > 0 && (
         <ul role="alert" className="flex flex-col gap-1 text-sm text-destructive">
           {refused.map((r) => (
-            <li key={`${r.name}-${r.reason}`} className="break-words">
+            <li key={`${r.name}-${r.reason}`} className="[overflow-wrap:anywhere]">
               {t("refused", { name: r.name, reason: t(`errors.${r.reason}` as "errors.generic") })}
             </li>
           ))}

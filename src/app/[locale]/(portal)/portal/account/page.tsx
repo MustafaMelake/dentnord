@@ -70,7 +70,7 @@ function Panel({
   children: ReactNode;
 }) {
   return (
-    <section className="grid gap-6 rounded-card border border-line bg-surface p-5 sm:p-8 lg:grid-cols-[minmax(0,16rem)_minmax(0,1fr)] lg:gap-10">
+    <section className="grid grid-cols-1 gap-6 rounded-card border border-line bg-surface p-5 sm:p-8 lg:grid-cols-[minmax(0,16rem)_minmax(0,1fr)] lg:gap-10">
       <div className="flex flex-col gap-1.5">
         <h2 className="text-lg font-medium text-ink">{title}</h2>
         <p className="text-sm text-ink-muted">{description}</p>

@@ -34,10 +34,10 @@ export function CaseDetailView({
   );
 
   return (
-    <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_22rem] xl:items-start">
+    <div className="grid grid-cols-1 gap-6 xl:grid-cols-[minmax(0,1fr)_22rem] xl:items-start">
       <div className="flex min-w-0 flex-col gap-6">
         <Panel title={t("summary")}>
-          <dl className="grid gap-x-8 gap-y-4 sm:grid-cols-2">
+          <dl className="grid grid-cols-1 gap-x-8 gap-y-4 sm:grid-cols-2">
             <Item label={t("status")} value={<StatusBadge status={detail.status} />} />
             <Item
               label={t("patientCode")}

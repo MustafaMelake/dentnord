@@ -81,7 +81,7 @@ export function ReviewStep({
         onEdit={() => onEdit(1)}
         editLabel={t("edit", { section: t("details") })}
       >
-        <dl className="grid gap-x-8 gap-y-3 sm:grid-cols-2">
+        <dl className="grid grid-cols-1 gap-x-8 gap-y-3 sm:grid-cols-2">
           <Item
             label={tDetails("patientCode")}
             value={<span className="font-mono">{details.patientCode}</span>}
@@ -107,7 +107,7 @@ export function ReviewStep({
         onEdit={() => onEdit(2)}
         editLabel={t("edit", { section: t("sites") })}
       >
-        <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.2fr)] lg:items-start">
+        <div className="grid grid-cols-1 gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.2fr)] lg:items-start">
           <ToothChart selected={sites.map((s) => s.fdiTooth)} readOnly className="max-w-md" />
           <ul className="flex flex-col divide-y divide-line">
             {sites.map((s) => (
@@ -138,7 +138,7 @@ export function ReviewStep({
         onEdit={() => onEdit(3)}
         editLabel={t("edit", { section: t("files") })}
       >
-        <dl className="grid gap-x-8 gap-y-3 sm:grid-cols-2">
+        <dl className="grid grid-cols-1 gap-x-8 gap-y-3 sm:grid-cols-2">
           {DENTIST_FILE_KINDS.map((kind) => {
             const list = files.filter((f) => f.kind === kind && f.uploadStatus === "COMPLETE");
             return (

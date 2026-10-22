@@ -286,7 +286,7 @@ function SiteCard({
         </FormField>
       )}
 
-      <div className="grid gap-4 sm:grid-cols-2">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
         {(["diameter", "length"] as const).map((dim) => (
           <FormField key={dim} id={id(dim)} label={t(dim)} error={err(dim)}>
             {system ? (

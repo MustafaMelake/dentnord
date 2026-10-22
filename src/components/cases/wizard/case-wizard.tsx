@@ -160,7 +160,7 @@ export function CaseWizard({
   return (
     <div className="flex flex-col gap-8">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <ol className="flex flex-wrap gap-2" aria-label={t("progress")}>
+        <ol className="flex min-w-0 flex-wrap gap-2" aria-label={t("progress")}>
           {WIZARD_STEPS.map((key, i) => {
             const n = (i + 1) as WizardStep;
             const current = n === step;
@@ -300,7 +300,7 @@ function SaveIndicator({ state }: { state: SaveState }) {
     <p
       role="status"
       className={cn(
-        "flex items-center gap-1.5 text-sm",
+        "flex shrink-0 items-center gap-1.5 text-sm whitespace-nowrap",
         state === "error" ? "text-destructive" : "text-ink-muted",
       )}
     >

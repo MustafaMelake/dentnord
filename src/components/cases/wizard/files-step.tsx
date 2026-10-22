@@ -75,7 +75,7 @@ export function FilesStep({
       aria-labelledby="wizard-step-title"
     >
       {!storageConfigured && <FormAlert tone="info">{t("notConfigured")}</FormAlert>}
-      <div className="grid gap-4 lg:grid-cols-2">
+      <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
         {DENTIST_FILE_KINDS.map((kind) => (
           <Slot
             key={kind}

@@ -77,7 +77,7 @@ export function DetailsStep({
       className="flex flex-col gap-8"
       aria-labelledby="wizard-step-title"
     >
-      <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
         <FormField
           id="patientCode"
           label={t("patientCode")}
@@ -124,7 +124,7 @@ export function DetailsStep({
         className="flex flex-col gap-3"
       >
         <legend className="mb-3 text-sm font-medium text-ink">{t("guideType")}</legend>
-        <div className="grid gap-3 sm:grid-cols-2">
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
           {guideTypes.map((g) => {
             const checked = values.guideTypeId === g.id;
             return (
