@@ -568,7 +568,8 @@
         "PHOTO": "Fotos",
         "OTHER": "Andre filer",
         "PLAN_REPORT": "Planrapport",
-        "GUIDE_STL": "Guide (STL)"
+        "GUIDE_STL": "Guide (STL)",
+        "PLAN_3D": "3D-model af planen"
       },
       "download": "Download {name}",
       "downloadShort": "Download",
@@ -581,7 +582,8 @@
         "FILE_FAILED": "Upload af fil mislykkedes",
         "FILE_REMOVED": "Fil fjernet",
         "PLAN_APPROVED": "Plan godkendt",
-        "CHANGES_REQUESTED": "Ændringer ønsket"
+        "CHANGES_REQUESTED": "Ændringer ønsket",
+        "PLAN_CREATED": "Ny planversion påbegyndt"
       }
     },
     "chart": {

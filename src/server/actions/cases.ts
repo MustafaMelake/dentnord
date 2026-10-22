@@ -23,8 +23,8 @@ import {
   getOwnDraftFiles,
   saveDetails,
   saveSites,
-  submitCase,
 } from "@/server/services/cases";
+import { runTransition, WorkflowError } from "@/server/services/case-workflow";
 import { notifyCaseSubmitted } from "@/server/services/notifications";
 
 // New-case wizard and draft actions (dentist). Order in every action: session (approved dentist,
@@ -110,24 +110,36 @@ export async function submitCaseAction(
     const parsed = submitSchema.safeParse({ consent: input.consent });
     if (!parsed.success) throw new CaseError("invalid", toFieldErrors(parsed.error));
     const id = caseId.parse(input.caseId);
-    const result = await submitCase(dentistId, id);
+    // DRAFT → SUBMITTED through the workflow (the only code that changes a case status).
+    const result = await runTransition(
+      { id: dentistId, role: "DENTIST" },
+      { caseId: id, transition: "submit", expectedStatus: "DRAFT", input: { consent: true } },
+    ).catch((error: unknown) => {
+      if (!(error instanceof WorkflowError)) throw error;
+      // Already submitted (double click) or not this dentist's draft: "not found" for the wizard.
+      if (["notFound", "stale", "wrongState", "forbidden"].includes(error.code))
+        throw new CaseError("notFound");
+      if (error.code === "uploadsPending") throw new CaseError("uploadsPending");
+      throw new CaseError("invalid", error.fieldErrors);
+    });
+    const submitted = result.submitted!;
 
     const [dentist, guideType] = await Promise.all([
       db.user.findUnique({ where: { id: dentistId }, select: { name: true, clinicName: true } }),
-      db.guideType.findUnique({ where: { id: result.guideTypeId }, select: { name: true } }),
+      db.guideType.findUnique({ where: { id: submitted.guideTypeId }, select: { name: true } }),
     ]);
     // No patient data in the email: case number, clinic, guide type and counts only.
     notifyCaseSubmitted({
       caseId: id,
-      caseNumber: result.caseNumber,
+      caseNumber: result.caseNumber!,
       dentistName: dentist?.name ?? "",
       clinicName: dentist?.clinicName ?? "",
       guideTypeName: guideType?.name ?? null,
-      implantCount: result.implantCount,
+      implantCount: submitted.implantCount,
     });
     // No refresh(): it would re-render the wizard route, which redirects a submitted case to its page
     // before the success screen shows. The case pages are dynamic and load fresh on navigation.
-    return { caseNumber: result.caseNumber };
+    return { caseNumber: result.caseNumber! };
   });
 }
 

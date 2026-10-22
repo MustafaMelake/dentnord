@@ -1060,7 +1060,8 @@
         "PHOTO": "Photos",
         "OTHER": "Other files",
         "PLAN_REPORT": "Plan report",
-        "GUIDE_STL": "Guide (STL)"
+        "GUIDE_STL": "Guide (STL)",
+        "PLAN_3D": "Plan 3D model"
       },
       "download": "Download {name}",
       "downloadShort": "Download",
@@ -1073,7 +1074,8 @@
         "FILE_FAILED": "File upload failed",
         "FILE_REMOVED": "File removed",
         "PLAN_APPROVED": "Plan approved",
-        "CHANGES_REQUESTED": "Changes requested"
+        "CHANGES_REQUESTED": "Changes requested",
+        "PLAN_CREATED": "New plan version started"
       }
     },
     "chart": {
