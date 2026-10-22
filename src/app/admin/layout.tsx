@@ -11,6 +11,7 @@ import type { ShellNavItem } from "@/components/shared/app-shell/shell-nav";
 import { UserMenu, UserMenuSkeleton } from "@/components/shared/app-shell/user-menu";
 import { Toaster } from "@/components/ui/sonner";
 import { fontVariables } from "@/lib/fonts";
+import { countNewCases } from "@/server/queries/admin-cases";
 import { countPendingDentists } from "@/server/queries/admin-dentists";
 import { requireAdmin } from "@/server/queries/session";
 
@@ -40,7 +41,16 @@ export default async function AdminLayout({ children }: LayoutProps<"/admin">) {
         </Suspense>
       ),
     },
-    { href: "/admin/cases", label: t("cases"), icon: "cases" },
+    {
+      href: "/admin/cases",
+      label: t("cases"),
+      icon: "cases",
+      badge: (
+        <Suspense fallback={null}>
+          <NewCasesBadge />
+        </Suspense>
+      ),
+    },
     { href: "/admin/catalog", label: t("catalog"), icon: "catalog" },
     { href: "/admin/services", label: t("services"), icon: "services" },
     { href: "/admin/portfolio", label: t("portfolio"), icon: "portfolio" },
@@ -112,11 +122,23 @@ async function PendingBadge() {
     countPendingDentists(),
     getTranslations({ locale: "en", namespace: "admin.nav" }),
   ]);
+  return <NavBadge count={count} label={t("pendingBadge", { count })} />;
+}
+
+async function NewCasesBadge() {
+  const [count, t] = await Promise.all([
+    countNewCases(),
+    getTranslations({ locale: "en", namespace: "admin.nav" }),
+  ]);
+  return <NavBadge count={count} label={t("newCasesBadge", { count })} />;
+}
+
+function NavBadge({ count, label }: { count: number; label: string }) {
   if (count === 0) return null;
   return (
     <span className="min-w-6 rounded-full bg-brand px-1.5 py-0.5 text-center text-xs font-medium text-white">
       <span aria-hidden>{count}</span>
-      <span className="sr-only">{t("pendingBadge", { count })}</span>
+      <span className="sr-only">{label}</span>
     </span>
   );
 }
