@@ -145,7 +145,11 @@ const ops = {
     });
     await db.service.deleteMany({ where: { id: { in: services.map((s) => s.id) } } });
     await db.testimonial.deleteMany({ where: { id: { in: testimonials.map((t) => t.id) } } });
-    if (ids.length > 0) await db.user.deleteMany({ where: { id: { in: ids } } });
+    if (ids.length > 0) {
+      // Cases restrict deleting their dentist; files, sites and events cascade with the case.
+      await db.case.deleteMany({ where: { dentistId: { in: ids } } });
+      await db.user.deleteMany({ where: { id: { in: ids } } });
+    }
     return { removed: ids.length };
   },
 };
