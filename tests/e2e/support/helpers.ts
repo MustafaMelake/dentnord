@@ -4,10 +4,16 @@ import { expect, type Browser, type Page } from "@playwright/test";
  * A fresh browser context (own cookies) with its own client IP. Better Auth rate-limits sign-in per
  * IP + path; locally every request would otherwise share one bucket. (On Vercel the edge sets
  * x-forwarded-for itself, so clients can't choose it.)
+ * The header is added only to requests for our own server: `extraHTTPHeaders` would also put it on
+ * the browser's direct uploads to R2, whose CORS rule (rightly) doesn't allow it.
  */
 export async function newUser(browser: Browser) {
   const ip = `10.${rand()}.${rand()}.${rand()}`;
-  const context = await browser.newContext({ extraHTTPHeaders: { "x-forwarded-for": ip } });
+  const context = await browser.newContext();
+  await context.route(
+    (url) => url.origin === "http://localhost:3000",
+    (route) => route.continue({ headers: { ...route.request().headers(), "x-forwarded-for": ip } }),
+  );
   const page = await context.newPage();
   return { context, page };
 }

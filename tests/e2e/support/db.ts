@@ -76,3 +76,23 @@ export const getTestimonials = (authorPrefix: string) =>
     "getTestimonials",
     { authorPrefix },
   );
+
+export type DbCaseFile = {
+  id: string;
+  kind: string;
+  uploadStatus: string;
+  sizeBytes: number;
+  storageKey: string;
+  scanPart: string | null;
+};
+
+export const getCaseFiles = (caseId: string) => run<DbCaseFile[]>("caseFiles", { caseId });
+
+/** Objects in R2 under test/cases/{caseId}/ (E2E runs use the test/ key prefix). */
+export const getR2Objects = (caseId: string) =>
+  run<{ key: string; size: number }[]>("r2Objects", { caseId });
+
+export const getCase = (caseId: string) =>
+  run<{ status: string; caseNumber: string | null; events: { type: string }[] } | null>("getCase", {
+    caseId,
+  });

@@ -32,7 +32,8 @@ export default defineConfig({
   webServer: {
     command: skipBuild ? "pnpm start" : "pnpm build && pnpm start",
     url: `${BASE_URL}/en/login`,
-    env: { BETTER_AUTH_URL: BASE_URL, NEXT_PUBLIC_SITE_URL: BASE_URL },
+    // Case files go under test/ in the real bucket; global teardown deletes everything there.
+    env: { BETTER_AUTH_URL: BASE_URL, NEXT_PUBLIC_SITE_URL: BASE_URL, R2_KEY_PREFIX: "test/" },
     timeout: 10 * 60_000,
     reuseExistingServer: false,
     stdout: "ignore",
