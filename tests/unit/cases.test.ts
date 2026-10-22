@@ -3,10 +3,14 @@ import { describe, it } from "node:test";
 
 import {
   buildCaseFileKey,
+  CASE_UPLOAD_PART_BYTES,
   caseKeyPrefix,
   checkCaseUpload,
+  expectedPartSize,
   extensionOf,
+  guessScanPart,
   MAX_CASE_FILE_BYTES,
+  partCount,
   REQUIRED_FILE_KINDS,
   sanitizeFileName,
 } from "../../src/lib/case-files";
@@ -239,5 +243,62 @@ describe("R2 endpoint", () => {
       () => r2Endpoint(`https://${id}.r2.cloudflarestorage.com`, "eu"),
       "a URL is not an account id",
     );
+  });
+});
+
+describe("multipart parts", () => {
+  const P = CASE_UPLOAD_PART_BYTES;
+
+  it("splits a file into fixed parts with a shorter last part", () => {
+    assert.equal(partCount(1), 1);
+    assert.equal(partCount(P), 1);
+    assert.equal(partCount(P + 1), 2);
+    assert.equal(partCount(MAX_CASE_FILE_BYTES), 128);
+    assert.equal(expectedPartSize(P + 10, 1), P);
+    assert.equal(expectedPartSize(P + 10, 2), 10);
+    assert.equal(expectedPartSize(500, 1), 500);
+  });
+
+  it("has no part 0, no fractional parts and nothing past the end", () => {
+    assert.equal(expectedPartSize(P * 2, 0), null);
+    assert.equal(expectedPartSize(P * 2, 3), null);
+    assert.equal(expectedPartSize(P * 2, 1.5), null);
+    assert.equal(expectedPartSize(P * 2, -1), null);
+  });
+
+  it("part sizes always add up to the file size", () => {
+    for (const size of [1, P - 1, P, P + 1, 3 * P + 12345, MAX_CASE_FILE_BYTES]) {
+      let sum = 0;
+      for (let n = 1; n <= partCount(size); n++) sum += expectedPartSize(size, n)!;
+      assert.equal(sum, size);
+    }
+  });
+
+  it("parts respect S3's 5 MiB minimum (except the last)", () => {
+    assert.ok(P >= 5 * 1024 ** 2);
+  });
+});
+
+describe("scan part guess", () => {
+  it("reads upper / lower / bite from common names", () => {
+    assert.equal(guessScanPart("UpperJaw.stl"), null); // one word, not a token match
+    assert.equal(guessScanPart("upper.stl"), "UPPER");
+    assert.equal(guessScanPart("Case 12 - Upper.STL"), "UPPER");
+    assert.equal(guessScanPart("scan_lower_jaw.ply"), "LOWER");
+    assert.equal(guessScanPart("K-2041 OK.stl"), "UPPER");
+    assert.equal(guessScanPart("K-2041 UK.stl"), "LOWER");
+    assert.equal(guessScanPart("overkæbe.stl"), "UPPER");
+    assert.equal(guessScanPart("Underkaebe.obj"), "LOWER");
+    assert.equal(guessScanPart("bite registration.stl"), "BITE");
+    assert.equal(guessScanPart("bid.stl"), "BITE");
+    assert.equal(guessScanPart("Oberkiefer.stl"), "UPPER");
+  });
+
+  it("guesses nothing when the name says nothing", () => {
+    assert.equal(guessScanPart("scan1.stl"), null);
+    assert.equal(guessScanPart("export.ply"), null);
+    // Words that merely contain the letters don't count.
+    assert.equal(guessScanPart("bidirectional.stl"), null);
+    assert.equal(guessScanPart("okay.stl"), null);
   });
 });

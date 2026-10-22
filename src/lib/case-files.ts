@@ -135,6 +135,38 @@ export function buildCaseFileKey({
   return `${prefix}cases/${caseId}/${fileId}/${sanitizeFileName(fileName)}`;
 }
 
+// ── Multipart parts ──────────────────────────────────────────────────────────
+// Every case upload is multipart with a fixed part size, so the server knows exactly how large each
+// part must be and signs that Content-Length into the part URL: R2 itself enforces the declared size.
+
+/** 16 MiB: above S3's 5 MiB minimum, 128 parts for a 2 GB file, small enough to retry cheaply. */
+export const CASE_UPLOAD_PART_BYTES = 16 * 1024 ** 2;
+
+export function partCount(sizeBytes: number) {
+  return Math.ceil(sizeBytes / CASE_UPLOAD_PART_BYTES);
+}
+
+/** Size of part `partNumber` (1-based) of a file of `sizeBytes`, or null if there is no such part. */
+export function expectedPartSize(sizeBytes: number, partNumber: number) {
+  const count = partCount(sizeBytes);
+  if (!Number.isInteger(partNumber) || partNumber < 1 || partNumber > count) return null;
+  return partNumber < count
+    ? CASE_UPLOAD_PART_BYTES
+    : sizeBytes - (count - 1) * CASE_UPLOAD_PART_BYTES;
+}
+
+/** Intraoral scans: guess upper / lower / bite from the file name (the dentist can change it). */
+export function guessScanPart(fileName: string): "UPPER" | "LOWER" | "BITE" | null {
+  const stem = (fileName.split(/[\\/]/).pop() ?? "").toLowerCase().replace(/\.[a-z0-9]+$/, "");
+  const words = stem.split(/[^a-zæøå]+/).filter(Boolean);
+  const has = (re: RegExp) => words.some((w) => re.test(w));
+  // "OK"/"UK": Danish over-/underkæbe, German Ober-/Unterkiefer.
+  if (has(/^(bite|bid|occlusion|buccal|registrering)$/)) return "BITE";
+  if (has(/^(upper|maxilla|maxillary|ok|overkæbe|overkaebe|oberkiefer)$/)) return "UPPER";
+  if (has(/^(lower|mandible|mandibular|uk|underkæbe|underkaebe|unterkiefer)$/)) return "LOWER";
+  return null;
+}
+
 /** The key prefix a case's files live under (used to delete a draft's objects). */
 export function caseKeyPrefix(prefix: string, caseId: string) {
   if (!SAFE_PREFIX.test(prefix) || !SAFE_ID.test(caseId)) throw new Error("Invalid key prefix");

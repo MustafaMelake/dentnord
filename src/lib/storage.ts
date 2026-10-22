@@ -10,7 +10,6 @@ import {
   HeadObjectCommand,
   ListObjectsV2Command,
   ListPartsCommand,
-  PutObjectCommand,
   UploadPartCommand,
 } from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
@@ -22,7 +21,8 @@ import { getR2Client, requireR2Client } from "@/lib/r2";
 // Keys are built by lib/case-files.ts (buildCaseFileKey), on the server only.
 // The bucket is private. The browser uploads directly via presigned URLs (files never pass through
 // Next.js), and downloads only through short-lived signed GET URLs.
-// The bucket needs a CORS rule allowing PUT from NEXT_PUBLIC_SITE_URL and exposing the `ETag` header.
+// The bucket needs a CORS rule allowing PUT from NEXT_PUBLIC_SITE_URL and exposing the `ETag` header
+// (PUT is enough: listing, completing and aborting go through our API routes, not the browser).
 
 export const SIGNED_URL_TTL_SECONDS = 5 * 60;
 export const UPLOAD_PART_URL_TTL_SECONDS = 15 * 60;
@@ -32,17 +32,8 @@ const Bucket = env.R2_CASES_BUCKET;
 /** Real R2 credentials are present (lib/r2.ts). */
 export const caseStorageConfigured = () => getR2Client() !== null;
 
-// ── Single-request upload (small files) ──────────────────────────────────────
-
-export function presignPutObject(key: string, contentType: string) {
-  return getSignedUrl(
-    requireR2Client(),
-    new PutObjectCommand({ Bucket, Key: key, ContentType: contentType }),
-    { expiresIn: UPLOAD_PART_URL_TTL_SECONDS },
-  );
-}
-
-// ── Multipart upload (large files, resumable; used by Uppy @uppy/aws-s3) ─────
+// ── Multipart upload (every case file; resumable; driven by Uppy @uppy/aws-s3) ──
+// The server creates, lists, completes and aborts; the browser only PUTs parts to signed URLs.
 
 export async function createMultipartUpload(key: string, contentType: string) {
   const res = await requireR2Client().send(
@@ -52,11 +43,23 @@ export async function createMultipartUpload(key: string, contentType: string) {
   return { key, uploadId: res.UploadId };
 }
 
-export function presignUploadPart(key: string, uploadId: string, partNumber: number) {
+/** Part URL with its exact Content-Length signed in: R2 rejects a part of any other size. */
+export function presignUploadPart(
+  key: string,
+  uploadId: string,
+  partNumber: number,
+  contentLength: number,
+) {
   return getSignedUrl(
     requireR2Client(),
-    new UploadPartCommand({ Bucket, Key: key, UploadId: uploadId, PartNumber: partNumber }),
-    { expiresIn: UPLOAD_PART_URL_TTL_SECONDS },
+    new UploadPartCommand({
+      Bucket,
+      Key: key,
+      UploadId: uploadId,
+      PartNumber: partNumber,
+      ContentLength: contentLength,
+    }),
+    { expiresIn: UPLOAD_PART_URL_TTL_SECONDS, signableHeaders: new Set(["content-length"]) },
   );
 }
 

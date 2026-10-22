@@ -1,8 +1,29 @@
-import { getUploadSession, notImplemented, unauthorized } from "@/server/services/upload-guard";
+import { completeUpload } from "@/server/services/case-uploads";
+import {
+  error,
+  escapeXml,
+  isFileId,
+  requireUploadUser,
+  respond,
+  xml,
+} from "@/server/services/upload-guard";
 
-// TODO: completeMultipartUpload(key, uploadId, parts), mark CaseFile COMPLETED, add a FILE_ADDED CaseEvent.
-export async function POST(request: Request) {
-  const session = await getUploadSession(request);
-  if (!session) return unauthorized();
-  return notImplemented();
+// POST: finish the upload. The part list Uppy sends is ignored: the server completes with the parts
+// R2 has, HEADs the object, and marks the file COMPLETE only if the size matches. Answers with S3
+// CompleteMultipartUpload XML, as Uppy's S3 client expects.
+
+export async function POST(
+  request: Request,
+  ctx: RouteContext<"/api/uploads/multipart/[uploadId]/complete">,
+) {
+  const user = await requireUploadUser(request, "write", "control");
+  if (user instanceof Response) return user;
+  const { uploadId } = await ctx.params;
+  if (!isFileId(uploadId)) return error(404, "notFound");
+  return respond(async () => {
+    const { key, file } = await completeUpload(user.id, uploadId);
+    return xml(
+      `<CompleteMultipartUploadResult><Location>${escapeXml(file.id)}</Location><Key>${escapeXml(key)}</Key></CompleteMultipartUploadResult>`,
+    );
+  });
 }

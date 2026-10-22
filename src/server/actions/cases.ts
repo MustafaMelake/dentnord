@@ -15,6 +15,7 @@ import {
 } from "@/lib/validation/case";
 import { getDentistScope } from "@/server/queries/dentist";
 import { removeCaseObjects } from "@/server/services/case-storage";
+import { setScanPart, UploadError } from "@/server/services/case-uploads";
 import {
   CaseError,
   createDraft,
@@ -38,6 +39,10 @@ export type CaseActionResult<T = undefined> =
     };
 
 const caseId = z.string().trim().min(1).max(64);
+const scanPartInput = z.object({
+  fileId: z.string().regex(/^[A-Za-z0-9_-]{1,64}$/),
+  scanPart: z.enum(["UPPER", "LOWER", "BITE"]).nullable(),
+});
 
 function toFieldErrors(error: z.ZodError) {
   const out: Record<string, string> = {};
@@ -145,6 +150,24 @@ export async function deleteDraftCase(
     }
     await deleteDraftRow(dentistId, id);
     refresh();
+    return undefined;
+  });
+}
+
+/** Intraoral scans: mark a file as upper / lower / bite (or clear it). */
+export async function setScanPartAction(
+  locale: string,
+  input: { fileId: string; scanPart: unknown },
+): Promise<CaseActionResult> {
+  return run(locale, async (dentistId) => {
+    const parsed = scanPartInput.safeParse(input);
+    if (!parsed.success) throw new CaseError("invalid");
+    try {
+      await setScanPart(dentistId, parsed.data.fileId, parsed.data.scanPart);
+    } catch (error) {
+      if (error instanceof UploadError) throw new CaseError("notFound");
+      throw error;
+    }
     return undefined;
   });
 }
