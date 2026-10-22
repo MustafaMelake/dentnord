@@ -10,11 +10,14 @@ import { auth } from "@/lib/auth";
 // authoritative check against the DB and must guard every protected layout, page, action and route.
 // With Cache Components, call them only inside a <Suspense> boundary (they read request headers).
 // `cache()` dedupes the DB lookup within one request, so layout + page checking twice costs one query.
+// `disableRefresh`: the DAL never writes cookies. A cookie write inside a Server Action makes Next
+// re-render the whole route (which remounted the case wizard on every autosave); the proxy refreshes
+// the cookie cache and the session expiry instead. Expired or revoked sessions are still rejected here.
 
 export const getSession = cache(async () =>
   auth.api.getSession({
     headers: await headers(),
-    query: { disableCookieCache: true },
+    query: { disableCookieCache: true, disableRefresh: true },
   }),
 );
 

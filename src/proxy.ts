@@ -22,8 +22,18 @@ function redirectTo(request: NextRequest, pathname: string, next?: string) {
   return NextResponse.redirect(url);
 }
 
-/** Cookie-cached session: fast, but role/status can be up to 5 minutes old. */
-const cachedSession = (request: NextRequest) => auth.api.getSession({ headers: request.headers });
+/**
+ * Cookie-cached session: fast, but role/status can be up to 5 minutes old. When the cache has expired,
+ * Better Auth reads the DB and re-issues the cache cookie (and extends the session once a day); those
+ * cookies are passed on here, because the DAL (server/queries/session.ts) never writes cookies.
+ */
+async function cachedSession(request: NextRequest) {
+  const { headers, response } = await auth.api.getSession({
+    headers: request.headers,
+    returnHeaders: true,
+  });
+  return { session: response, setCookies: headers.getSetCookie() };
+}
 
 /**
  * DB-backed session. Used before denying access, so a dentist approved a minute ago isn't bounced
@@ -64,7 +74,9 @@ export async function proxy(request: NextRequest) {
 
   if (pathname === "/admin" || pathname.startsWith("/admin/")) {
     const cached = await cachedSession(request);
-    if (cached?.user.role === "ADMIN") return withAdminHint(NextResponse.next(), true);
+    if (cached.session?.user.role === "ADMIN") {
+      return withAdminHint(withCookies(NextResponse.next(), cached.setCookies), true);
+    }
 
     // Not an admin according to the (possibly stale) cookie cache: ask the DB before denying, so a
     // freshly promoted admin isn't bounced to the home page for up to 5 minutes.
@@ -80,9 +92,14 @@ export async function proxy(request: NextRequest) {
   if (portal) {
     const locale = portal[1];
     const cached = await cachedSession(request);
-    if (!cached) return redirectTo(request, `/${locale}/login`, requested);
-    if (cached.user.role === "DENTIST" && cached.user.dentistStatus === "APPROVED") {
-      return handleI18nRouting(request);
+    if (!cached.session) {
+      return withCookies(redirectTo(request, `/${locale}/login`, requested), cached.setCookies);
+    }
+    if (
+      cached.session.user.role === "DENTIST" &&
+      cached.session.user.dentistStatus === "APPROVED"
+    ) {
+      return withCookies(handleI18nRouting(request), cached.setCookies);
     }
 
     const { session, setCookies } = await freshSession(request);
