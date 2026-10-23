@@ -16,12 +16,12 @@ export async function GET(
   request: Request,
   ctx: RouteContext<"/api/uploads/multipart/[uploadId]">,
 ) {
-  const user = await requireUploadUser(request, "write", "control", "xml");
+  const user = await requireUploadUser(request, "control", "xml");
   if (user instanceof Response) return user;
   const { uploadId } = await ctx.params;
   if (!isFileId(uploadId)) return error(404, "notFound", {}, "xml");
   return respond(async () => {
-    const parts = await listParts(user.id, uploadId);
+    const parts = await listParts(user, uploadId);
     const items = parts
       .map(
         (p) =>
@@ -36,12 +36,12 @@ export async function DELETE(
   request: Request,
   ctx: RouteContext<"/api/uploads/multipart/[uploadId]">,
 ) {
-  const user = await requireUploadUser(request, "write", "control", "xml");
+  const user = await requireUploadUser(request, "control", "xml");
   if (user instanceof Response) return user;
   const { uploadId } = await ctx.params;
   if (!isFileId(uploadId)) return error(404, "notFound", {}, "xml");
   return respond(async () => {
-    await removeUpload(user.id, uploadId);
+    await removeUpload(user, uploadId);
     return new Response(null, { status: 204, headers: { "Cache-Control": "no-store" } });
   }, "xml");
 }

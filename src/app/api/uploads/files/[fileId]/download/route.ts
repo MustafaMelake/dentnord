@@ -8,7 +8,7 @@ export async function GET(
   request: Request,
   ctx: RouteContext<"/api/uploads/files/[fileId]/download">,
 ) {
-  const user = await requireUploadUser(request, "read", "download");
+  const user = await requireUploadUser(request, "download");
   if (user instanceof Response) return user;
   const { fileId } = await ctx.params;
   if (!isFileId(fileId)) return error(404, "notFound");

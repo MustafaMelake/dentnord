@@ -20,12 +20,12 @@ export async function getUploadSession(request: Request) {
 export type UploadUser = { id: string; role: "ADMIN" | "DENTIST" };
 
 /**
- * Who may call an upload route: an APPROVED dentist for uploads ("write"); an approved dentist or the
- * admin for downloads ("read"). Returns the user, or the Response to send back.
+ * Who may call an upload route at all: an APPROVED dentist or the admin. What each may do (which
+ * kinds, in which case state) is decided per file by server/services/case-uploads.ts
+ * (lib/upload-permissions.ts). Returns the user, or the Response to send back.
  */
 export async function requireUploadUser(
   request: Request,
-  access: "write" | "read",
   limit: keyof typeof UPLOAD_LIMITS,
   format: ErrorFormat = "json",
 ): Promise<UploadUser | Response> {
@@ -38,8 +38,7 @@ export async function requireUploadUser(
   };
   const isAdmin = role === "ADMIN";
   const isDentist = role === "DENTIST" && dentistStatus === "APPROVED";
-  // The admin can read case files but never upload to (or delete from) a dentist's draft.
-  if (!(isDentist || (isAdmin && access === "read"))) return error(403, "forbidden", {}, format);
+  if (!(isDentist || isAdmin)) return error(403, "forbidden", {}, format);
   if (!caseStorageConfigured()) return error(503, "notConfigured", {}, format);
   const { allowed } = await rateLimit(`uploads:${limit}:${id}`, UPLOAD_LIMITS[limit]);
   if (!allowed) return error(429, "rateLimited", { "Retry-After": "60" }, format);
