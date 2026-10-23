@@ -987,6 +987,69 @@
       "guideType": "Guide type",
       "implants": "Implant sites",
       "cta": "Open the case"
+    },
+    "caseUpdate": {
+      "caseNumber": "Case",
+      "clinic": "Clinic",
+      "carrier": "Carrier",
+      "trackingNumber": "Tracking number",
+      "track": "Track the parcel",
+      "cta": "Open the case",
+      "needsFiles": {
+        "subject": "{caseNumber}: we need more files",
+        "heading": "We need more files",
+        "body": "To plan case {caseNumber} we need one or more additional files. Open the case to see what's missing and upload it."
+      },
+      "planReady": {
+        "subject": "{caseNumber}: plan v{version} is ready for your approval",
+        "heading": "Your plan is ready",
+        "body": "Plan version {version} for case {caseNumber} is ready. Review the implant positions and the guide design in the portal, then approve it or request changes."
+      },
+      "shipped": {
+        "subject": "{caseNumber}: your guide has shipped",
+        "heading": "Your surgical guide is on its way",
+        "body": "The guide for case {caseNumber} has been shipped. Please confirm in the portal when it arrives."
+      },
+      "cancelled": {
+        "subject": "{caseNumber} was cancelled",
+        "heading": "Case cancelled",
+        "body": "Case {caseNumber} has been cancelled. Open the case to see the reason."
+      },
+      "messageToDentist": {
+        "subject": "{caseNumber}: new message from Dentnord",
+        "heading": "You have a new message",
+        "body": "Dentnord wrote to you about case {caseNumber}. Open the case to read and reply."
+      },
+      "resubmitted": {
+        "subject": "{caseNumber}: files added, ready again",
+        "heading": "Case resubmitted with new files",
+        "body": "{clinic} added the requested files to case {caseNumber}."
+      },
+      "planApproved": {
+        "subject": "{caseNumber}: plan v{version} approved",
+        "heading": "Plan approved",
+        "body": "{clinic} approved plan version {version} for case {caseNumber}. It can go into production."
+      },
+      "changesRequested": {
+        "subject": "{caseNumber}: changes requested on plan v{version}",
+        "heading": "Changes requested",
+        "body": "{clinic} requested changes to plan version {version} for case {caseNumber}. Open the case to read the comment."
+      },
+      "delivered": {
+        "subject": "{caseNumber}: delivery confirmed",
+        "heading": "Delivery confirmed",
+        "body": "{clinic} confirmed that the guide for case {caseNumber} has arrived."
+      },
+      "cancelledByDentist": {
+        "subject": "{caseNumber} was cancelled by the clinic",
+        "heading": "Case cancelled by the clinic",
+        "body": "{clinic} cancelled case {caseNumber}."
+      },
+      "messageToAdmin": {
+        "subject": "{caseNumber}: new message from {clinic}",
+        "heading": "New message",
+        "body": "{clinic} wrote about case {caseNumber}."
+      }
     }
   },
   "changePassword": {
@@ -1272,6 +1335,9 @@
         "view": "View case",
         "all": "All cases"
       }
+    },
+    "plans": {
+      "approveStatement": "I have reviewed the implant positions, sizes and guide design in this plan and approve it for production."
     }
   }
 }
