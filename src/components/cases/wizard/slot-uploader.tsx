@@ -4,7 +4,6 @@ import { UploadCloud } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useId, useState, type DragEvent } from "react";
 
-import { FILE_RULES, type DentistFileKind } from "@/lib/case-files";
 import { cn } from "@/lib/utils";
 
 /**
@@ -14,10 +13,14 @@ import { cn } from "@/lib/utils";
  */
 export function SlotUploader({
   kind,
+  title,
+  extensions,
   enabled,
   onAdd,
 }: {
-  kind: DentistFileKind;
+  kind: string;
+  title: string;
+  extensions: readonly string[];
   enabled: boolean;
   /** Returns the files refused before upload, with a reason code. */
   onAdd: (files: File[]) => { name: string; reason: string }[];
@@ -80,8 +83,8 @@ export function SlotUploader({
           id={inputId}
           type="file"
           multiple
-          accept={FILE_RULES[kind].extensions.join(",")}
-          aria-label={t("chooseFor", { slot: t(`slots.${kind}.title`) })}
+          accept={extensions.join(",")}
+          aria-label={t("chooseFor", { slot: title })}
           className="sr-only"
           onChange={(e) => {
             take(e.target.files);

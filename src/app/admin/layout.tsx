@@ -13,6 +13,7 @@ import { Toaster } from "@/components/ui/sonner";
 import { fontVariables } from "@/lib/fonts";
 import { countNewCases } from "@/server/queries/admin-cases";
 import { countPendingDentists } from "@/server/queries/admin-dentists";
+import { unreadCounts } from "@/server/services/case-messages";
 import { requireAdmin } from "@/server/queries/session";
 
 import "../globals.css";
@@ -48,6 +49,7 @@ export default async function AdminLayout({ children }: LayoutProps<"/admin">) {
       badge: (
         <Suspense fallback={null}>
           <NewCasesBadge />
+          <UnreadMessagesBadge />
         </Suspense>
       ),
     },
@@ -133,10 +135,35 @@ async function NewCasesBadge() {
   return <NavBadge count={count} label={t("newCasesBadge", { count })} />;
 }
 
-function NavBadge({ count, label }: { count: number; label: string }) {
+/** Unread messages from dentists, across all cases. */
+async function UnreadMessagesBadge() {
+  const [session, t] = await Promise.all([
+    requireAdmin(),
+    getTranslations({ locale: "en", namespace: "admin.nav" }),
+  ]);
+  const { total } = await unreadCounts({ id: session.user.id, role: "ADMIN" });
+  return <NavBadge count={total} label={t("unreadBadge", { count: total })} tone="outline" />;
+}
+
+function NavBadge({
+  count,
+  label,
+  tone = "solid",
+}: {
+  count: number;
+  label: string;
+  tone?: "solid" | "outline";
+}) {
   if (count === 0) return null;
   return (
-    <span className="min-w-6 rounded-full bg-brand px-1.5 py-0.5 text-center text-xs font-medium text-white">
+    <span
+      data-nav-badge={tone}
+      className={
+        tone === "solid"
+          ? "min-w-6 rounded-full bg-brand px-1.5 py-0.5 text-center text-xs font-medium text-white"
+          : "min-w-6 rounded-full border border-brand px-1.5 py-0.5 text-center text-xs font-medium text-brand"
+      }
+    >
       <span aria-hidden>{count}</span>
       <span className="sr-only">{label}</span>
     </span>

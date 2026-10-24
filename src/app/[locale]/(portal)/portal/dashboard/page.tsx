@@ -1,4 +1,4 @@
-import { FilePen, FolderOpen } from "lucide-react";
+import { BellRing, FilePen, FolderOpen } from "lucide-react";
 import type { Metadata } from "next";
 import { getLocale, getTranslations } from "next-intl/server";
 import { Suspense } from "react";
@@ -14,6 +14,8 @@ import type { CaseStatus } from "@/generated/prisma/enums";
 import { Link } from "@/i18n/navigation";
 import { getOwnCaseOverview } from "@/server/queries/cases";
 import { getOwnProfile } from "@/server/queries/dentist";
+import { requireApprovedDentist } from "@/server/queries/session";
+import { unreadCounts } from "@/server/services/case-messages";
 
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getTranslations("portal.dashboard");
@@ -34,10 +36,12 @@ export default async function PortalDashboardPage() {
 
 async function Dashboard() {
   const locale = await getLocale();
-  const [t, profile, overview] = await Promise.all([
+  const session = await requireApprovedDentist(locale);
+  const [t, profile, overview, unread] = await Promise.all([
     getTranslations("portal.dashboard"),
     getOwnProfile(locale),
     getOwnCaseOverview(locale),
+    unreadCounts({ id: session.user.id, role: "DENTIST" }),
   ]);
   const statusCounts = (Object.entries(overview.counts) as [CaseStatus, number][]).filter(
     ([status, n]) => status !== "DRAFT" && n > 0,
@@ -60,6 +64,37 @@ async function Dashboard() {
           </ButtonLink>
         </div>
       </section>
+
+      {overview.actionNeeded.length > 0 && (
+        <section
+          aria-labelledby="action-needed"
+          className="flex flex-col gap-3"
+          data-action-needed-list=""
+        >
+          <h2 id="action-needed" className="flex items-center gap-2 font-medium text-ink">
+            <BellRing aria-hidden className="size-4 text-brand" />
+            {t("actionNeeded", { count: overview.actionNeeded.length })}
+          </h2>
+          <ul className="flex flex-col gap-2">
+            {overview.actionNeeded.map((c) => (
+              <li key={c.id}>
+                <Link
+                  href={`/portal/cases/${c.id}`}
+                  data-action-case={c.caseNumber ?? c.id}
+                  className="flex flex-wrap items-center gap-x-3 gap-y-1 rounded-card border border-brand/30 bg-brand-ice/50 px-4 py-3 transition-colors hover:border-brand"
+                >
+                  <span className="font-mono font-medium text-ink">{c.caseNumber}</span>
+                  <StatusBadge status={c.status} />
+                  <span className="flex-1 text-sm text-ink">
+                    {t(`actions.${c.status}` as "actions.NEEDS_FILES")}
+                  </span>
+                  <span className="text-sm font-medium text-brand">{t("open")}</span>
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
 
       {overview.drafts > 0 && (
         <Link
@@ -107,6 +142,7 @@ async function Dashboard() {
             </ul>
             <CaseList
               rows={overview.recent}
+              unread={unread.perCase}
               locale={locale}
               link={(row, children, className) => (
                 <Link href={`/portal/cases/${row.id}`} className={className}>

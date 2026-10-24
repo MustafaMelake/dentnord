@@ -4,7 +4,8 @@ import AwsS3, { type AwsBody } from "@uppy/aws-s3";
 import Uppy, { type UppyFile } from "@uppy/core";
 import { useCallback, useEffect, useRef, useState, useSyncExternalStore } from "react";
 
-import { CASE_UPLOAD_PART_BYTES, checkCaseUpload, type DentistFileKind } from "@/lib/case-files";
+import { CASE_UPLOAD_PART_BYTES } from "@/lib/case-files";
+import { checkFileType } from "@/lib/upload-permissions";
 
 import type { WizardFile } from "./types";
 
@@ -18,14 +19,14 @@ import type { WizardFile } from "./types";
 // API routes, which talk to R2 themselves. Uppy retries failed requests and waits while offline; when
 // the connection comes back we also retry anything that failed.
 
-type Meta = { kind: DentistFileKind; serverId?: string; registerError?: string };
+type Meta = { kind: string; serverId?: string; registerError?: string };
 type Body = AwsBody;
 type LiveFile = UppyFile<Meta, Body>;
 
 export type LiveUpload = {
   uppyId: string;
   serverId: string | null;
-  kind: DentistFileKind;
+  kind: string;
   name: string;
   size: number;
   percent: number;
@@ -51,16 +52,21 @@ async function apiError(res: Response) {
 
 export function useCaseUploads({
   caseId,
+  planId = null,
   onFilesChange,
 }: {
   caseId: string | null;
+  /** Lab plan files: the plan version being prepared. */
+  planId?: string | null;
   onFilesChange: (update: (files: WizardFile[]) => WizardFile[]) => void;
 }) {
   const [uppy, setUppy] = useState<Uppy<Meta, Body> | null>(null);
   const caseIdRef = useRef(caseId);
+  const planIdRef = useRef(planId);
   const onFilesChangeRef = useRef(onFilesChange);
   useEffect(() => {
     caseIdRef.current = caseId;
+    planIdRef.current = planId;
     onFilesChangeRef.current = onFilesChange;
   });
 
@@ -83,6 +89,7 @@ export function useCaseUploads({
               kind: file.meta.kind,
               fileName: file.name,
               sizeBytes: file.size,
+              ...(planIdRef.current ? { planId: planIdRef.current } : {}),
             }),
           }).catch(() => null);
           if (!res?.ok) {
@@ -186,12 +193,12 @@ export function useCaseUploads({
 
   /** Adds files to a slot. Returns the files refused before upload, with the reason code. */
   const add = useCallback(
-    (kind: DentistFileKind, files: File[]) => {
+    (kind: string, files: File[]) => {
       const refused: { name: string; reason: string }[] = [];
       if (!uppy) return refused;
       let added = 0;
       for (const file of files) {
-        const check = checkCaseUpload(kind, file.name, file.size);
+        const check = checkFileType(kind, file.name, file.size);
         if (!check.ok) {
           refused.push({ name: file.name, reason: check.reason });
           continue;

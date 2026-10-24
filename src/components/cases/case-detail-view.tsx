@@ -11,7 +11,9 @@ import { formatBytes, formatMm } from "./format";
 import { ToothChart } from "./tooth-chart";
 
 // Read-only case page body, shared by the dentist portal and the admin (which passes locale "en").
-// File links go to the download route, which re-checks access and redirects to a 5-minute signed URL.
+// `top` / `bottom` slot the lifecycle sections (actions, plans, viewer, messages) into the main
+// column; the history sits beside it. File links go to the download route, which re-checks access
+// and redirects to a 5-minute signed URL.
 
 export const caseFileDownloadHref = (fileId: string) => `/api/uploads/files/${fileId}/download`;
 
@@ -19,10 +21,17 @@ export function CaseDetailView({
   detail,
   locale,
   aside,
+  top,
+  bottom,
+  audience = "dentist",
 }: {
   detail: CaseDetail;
   locale: string;
   aside?: ReactNode;
+  top?: ReactNode;
+  bottom?: ReactNode;
+  /** How the lab is named in the history: "Dentnord" for the dentist, the person for the admin. */
+  audience?: "dentist" | "admin";
 }) {
   const t = useTranslations("cases.detail");
   const tFiles = useTranslations("cases.wizard.files");
@@ -36,6 +45,7 @@ export function CaseDetailView({
   return (
     <div className="grid grid-cols-1 gap-6 xl:grid-cols-[minmax(0,1fr)_22rem] xl:items-start">
       <div className="flex min-w-0 flex-col gap-6">
+        {top}
         <Panel title={t("summary")}>
           <dl className="grid grid-cols-1 gap-x-8 gap-y-4 sm:grid-cols-2">
             <Item label={t("status")} value={<StatusBadge status={detail.status} />} />
@@ -173,6 +183,7 @@ export function CaseDetailView({
             </div>
           )}
         </Panel>
+        {bottom}
       </div>
 
       <Panel title={t("timeline")} className="xl:sticky xl:top-6">
@@ -186,14 +197,35 @@ export function CaseDetailView({
               <p className="text-sm text-ink">
                 {e.type === "STATUS_CHANGED" && e.toStatus
                   ? t("events.STATUS_CHANGED", { status: tStatus(e.toStatus) })
-                  : t(`events.${e.type}`)}
+                  : e.type === "PLAN_APPROVED" ||
+                      e.type === "CHANGES_REQUESTED" ||
+                      e.type === "PLAN_CREATED"
+                    ? t(`events.${e.type}`, { version: Number(e.metadata.planVersion ?? 1) })
+                    : t(`events.${e.type}`)}
               </p>
-              <time dateTime={e.createdAt} className="text-xs text-ink-muted">
-                {format.dateTime(new Date(e.createdAt), {
-                  dateStyle: "medium",
-                  timeStyle: "short",
-                })}
-              </time>
+              {e.note && (
+                <p className="mt-1 rounded-lg bg-surface-2 px-2.5 py-1.5 text-xs [overflow-wrap:anywhere] whitespace-pre-wrap text-ink">
+                  {e.note}
+                </p>
+              )}
+              <p className="text-xs text-ink-muted">
+                <time dateTime={e.createdAt}>
+                  {format.dateTime(new Date(e.createdAt), {
+                    dateStyle: "medium",
+                    timeStyle: "short",
+                  })}
+                </time>
+                {e.actorRole && (
+                  <>
+                    {" · "}
+                    {e.actorRole === "ADMIN"
+                      ? audience === "dentist"
+                        ? t("byLab")
+                        : (e.actorName ?? t("byLab"))
+                      : (e.actorName ?? t("byClinic"))}
+                  </>
+                )}
+              </p>
             </li>
           ))}
         </ol>

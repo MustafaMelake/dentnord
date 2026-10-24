@@ -326,7 +326,14 @@
       "emptyCta": "Submit your first case",
       "drafts": "{count, plural, one {You have # draft} other {You have # drafts}} that hasn't been sent yet.",
       "continueDrafts": "Continue",
-      "countsLabel": "Cases by status"
+      "countsLabel": "Cases by status",
+      "actionNeeded": "{count, plural, one {Action needed on # case} other {Action needed on # cases}}",
+      "open": "Open",
+      "actions": {
+        "AWAITING_APPROVAL": "Review and approve the plan",
+        "NEEDS_FILES": "Upload the missing files",
+        "SHIPPED": "Confirm delivery"
+      }
     },
     "cases": {
       "title": "Cases",
@@ -389,7 +396,8 @@
       "account": "Account",
       "menu": "Menu",
       "openMenu": "Open menu",
-      "website": "Website"
+      "website": "Website",
+      "unreadBadge": "{count, plural, one {# unread message} other {# unread messages}}"
     },
     "userMenu": {
       "label": "Account menu",
@@ -419,7 +427,8 @@
       "logout": "Log out",
       "pendingBadge": "{count} pending",
       "account": "Account",
-      "newCasesBadge": "{count} new"
+      "newCasesBadge": "{count} new",
+      "unreadBadge": "{count, plural, one {# unread message} other {# unread messages}}"
     },
     "caseDetail": "Case",
     "dashboard": {
@@ -429,7 +438,16 @@
       "pendingBody": "{count, plural, =0 {No dentists are waiting for approval.} one {# dentist is waiting for approval.} other {# dentists are waiting for approval.}}",
       "review": "Review dentists",
       "approvedLabel": "Approved dentists",
-      "rejectedLabel": "Rejected dentists"
+      "rejectedLabel": "Rejected dentists",
+      "cases": {
+        "byStatus": "Cases by status",
+        "none": "No submitted cases yet.",
+        "waitingOnUs": "Waiting on us",
+        "viewAll": "View all",
+        "nothingWaiting": "Nothing is waiting on you.",
+        "upcoming": "Surgeries in the next 14 days",
+        "noUpcoming": "No surgeries planned in the next 14 days."
+      }
     },
     "dentists": {
       "title": "Dentists",
@@ -891,7 +909,130 @@
       "clear": "Clear filters",
       "back": "All cases",
       "case": "Case",
-      "dentist": "Clinic"
+      "dentist": "Clinic",
+      "queueLabel": "Whose turn",
+      "waitingOnUs": "Waiting on us",
+      "waitingOnDentist": "Waiting on the dentist",
+      "sortLabel": "Sort by",
+      "sortSubmitted": "Newest submitted",
+      "sortSurgery": "Planned surgery date"
+    },
+    "lifecycle": {
+      "title": "Actions",
+      "nothing": "Nothing to do right now: the next step is the dentist's, or the case is closed.",
+      "done": "Case updated.",
+      "refresh": "Refresh",
+      "required": "Required.",
+      "errors": {
+        "generic": "Something went wrong. Please try again.",
+        "network": "We couldn't reach the server. Check your connection and try again.",
+        "stale": "This case was updated in the meantime. Please refresh to see the latest.",
+        "forbidden": "You can't do that on this case.",
+        "wrongState": "That isn't possible in the case's current state.",
+        "notFound": "This case no longer exists.",
+        "invalid": "Please check the highlighted fields.",
+        "unauthorized": "Your session has ended. Please log in again.",
+        "noNewFiles": "Add at least one new file before sending.",
+        "uploadsPending": "Wait until all uploads have finished.",
+        "noPreparedPlan": "Prepare a plan version first.",
+        "planReportMissing": "Upload the plan report (PDF) first.",
+        "notLatestPlan": "A newer plan version exists. Please refresh.",
+        "planAlreadyDecided": "A decision has already been made on this plan.",
+        "planNotSent": "This plan hasn't been sent yet."
+      },
+      "next": {
+        "DRAFT": "Draft (not visible to the lab).",
+        "SUBMITTED": "New case. Check the files: start planning, or ask for missing files.",
+        "NEEDS_FILES": "Waiting for the dentist to upload the files you asked for.",
+        "IN_PLANNING": "Prepare the plan version (report + 3D files), then send it for approval.",
+        "AWAITING_APPROVAL": "Waiting for the dentist to approve the plan or request changes.",
+        "CHANGES_REQUESTED": "The dentist requested changes. Move back to planning and prepare a new version.",
+        "APPROVED": "Approved. Start production.",
+        "IN_PRODUCTION": "In production. Ship it with the carrier and tracking number.",
+        "SHIPPED": "Shipped. Waiting for the dentist to confirm delivery.",
+        "DELIVERED": "Delivered. The case is complete.",
+        "CANCELLED": "Cancelled."
+      },
+      "startPlanning": {
+        "title": "Start planning",
+        "description": "The files are complete. Move the case to planning.",
+        "again": "Move back to planning to prepare a new plan version.",
+        "button": "Start planning"
+      },
+      "requestFiles": {
+        "title": "Ask for missing files",
+        "description": "The dentist gets an email and sees your message on the case.",
+        "label": "What's missing?",
+        "button": "Request files"
+      },
+      "startProduction": {
+        "title": "Start production",
+        "description": "The plan is approved.",
+        "button": "Start production"
+      },
+      "ship": {
+        "title": "Ship",
+        "description": "The dentist gets an email with the tracking details.",
+        "carrier": "Carrier",
+        "trackingNumber": "Tracking number",
+        "trackingUrl": "Tracking link (optional)",
+        "required": "Carrier and tracking number are required; the link must start with http(s)://.",
+        "button": "Mark as shipped"
+      },
+      "confirmDelivery": {
+        "title": "Mark as delivered",
+        "description": "If the dentist confirmed delivery another way.",
+        "button": "Mark as delivered"
+      },
+      "cancel": {
+        "title": "Cancel the case",
+        "description": "The dentist gets an email and sees the reason on the case.",
+        "label": "Reason",
+        "button": "Cancel case"
+      },
+      "plan": {
+        "startTitle": "Prepare plan v{version}",
+        "startDescription": "Start a plan version, upload the report and the 3D files, then send it to the dentist.",
+        "start": "Start plan v{version}",
+        "startFailed": "The plan version couldn't be started. Refresh and try again.",
+        "preparing": "Preparing plan v{version}",
+        "preparingDescription": "Only you can see this version until you send it.",
+        "files": {
+          "PLAN_REPORT": {
+            "title": "Plan report",
+            "description": "The plan as a PDF. Required."
+          },
+          "PLAN_3D": {
+            "title": "3D plan model",
+            "description": "Planned implants (STL, PLY, OBJ or GLB)."
+          },
+          "GUIDE_STL": {
+            "title": "Guide design",
+            "description": "The guide as STL."
+          }
+        },
+        "note": "Note for the dentist (optional)",
+        "noteHint": "Shown with the plan, in the dentist's language (falls back to the other).",
+        "saveNote": "Save note",
+        "noteFailed": "The note couldn't be saved.",
+        "moveToPlanningFirst": "Move the case to planning before sending a new version.",
+        "reportRequired": "Upload the plan report (PDF) to send this version.",
+        "waitForUploads": "Wait for the uploads to finish.",
+        "readyToSend": "Ready to send. The dentist gets an email.",
+        "send": "Send to dentist for approval"
+      },
+      "thread": {
+        "title": "Messages with the dentist",
+        "description": "The dentist sees these messages and gets an email (at most one per 10 minutes).",
+        "empty": "No messages yet.",
+        "placeholder": "Write to the dentist…"
+      },
+      "internal": {
+        "title": "Internal notes",
+        "description": "Only Dentnord sees these. Never shown to the dentist.",
+        "empty": "No internal notes.",
+        "placeholder": "Write an internal note…"
+      }
     }
   },
   "dentistStatus": {
@@ -1084,8 +1225,11 @@
         "implants": "Implants",
         "submitted": "Submitted",
         "status": "Status",
-        "open": "Open"
-      }
+        "open": "Open",
+        "surgery": "Surgery"
+      },
+      "unread": "{count, plural, one {# unread message} other {# unread messages}}",
+      "surgeryIn": "{days, plural, =0 {Surgery today} one {Surgery tomorrow} other {Surgery in # days}}"
     },
     "drafts": {
       "untitled": "Untitled draft",
@@ -1136,10 +1280,12 @@
         "FILE_ADDED": "File added",
         "FILE_FAILED": "File upload failed",
         "FILE_REMOVED": "File removed",
-        "PLAN_APPROVED": "Plan approved",
-        "CHANGES_REQUESTED": "Changes requested",
-        "PLAN_CREATED": "New plan version started"
-      }
+        "PLAN_APPROVED": "Plan v{version} approved",
+        "CHANGES_REQUESTED": "Changes requested on plan v{version}",
+        "PLAN_CREATED": "Plan v{version} started"
+      },
+      "byLab": "Dentnord",
+      "byClinic": "the clinic"
     },
     "chart": {
       "label": "Tooth chart: choose the implant sites",
@@ -1317,7 +1463,10 @@
           "forbidden": "you can't upload to this case",
           "unauthorized": "your session has ended; log in again",
           "partNumber": "the upload is out of step; remove it and add the file again",
-          "generic": "something went wrong; please retry"
+          "generic": "something went wrong; please retry",
+          "wrongState": "files can't be added to this case right now",
+          "planRequired": "start a plan version first",
+          "notViewable": "this file can't be shown in 3D"
         }
       },
       "review": {
@@ -1337,7 +1486,173 @@
       }
     },
     "plans": {
-      "approveStatement": "I have reviewed the implant positions, sizes and guide design in this plan and approve it for production."
+      "approveStatement": "I have reviewed the implant positions, sizes and guide design in this plan and approve it for production.",
+      "title": "Treatment plan",
+      "none": "No plan yet.",
+      "version": "Plan v{version}",
+      "latest": "latest",
+      "sent": "Sent {date}",
+      "preparing": "Being prepared (not visible to the dentist)",
+      "kinds": {
+        "PLAN_REPORT": "Report",
+        "PLAN_3D": "3D model",
+        "GUIDE_STL": "Guide"
+      },
+      "download": "Download {name}",
+      "approvedBy": "Approved by {name}, {date}",
+      "changesBy": "Changes requested by {name}, {date}"
+    },
+    "stepper": {
+      "label": "Case progress",
+      "cancelled": "This case was cancelled.",
+      "stateDone": "done",
+      "stateCurrent": "current step",
+      "stateUpcoming": "upcoming",
+      "steps": {
+        "submitted": "Submitted",
+        "planning": "Planning",
+        "approval": "Your approval",
+        "production": "Production",
+        "shipped": "Shipped",
+        "delivered": "Delivered"
+      },
+      "next": {
+        "DRAFT": "Finish and submit your case.",
+        "SUBMITTED": "We're checking your files. Next, we plan the implant positions and the guide.",
+        "NEEDS_FILES": "We need more files before we can plan. Upload them below and send them to us.",
+        "IN_PLANNING": "We're planning the implant positions and designing your guide. You'll get the plan to review.",
+        "AWAITING_APPROVAL": "Your plan is ready. Review it in 3D, then approve it or request changes.",
+        "CHANGES_REQUESTED": "We're updating the plan with your changes. You'll get a new version to review.",
+        "APPROVED": "Thank you for approving. Your guide goes into production next.",
+        "IN_PRODUCTION": "Your guide is being produced. We'll let you know when it ships.",
+        "SHIPPED": "Your guide is on its way. Please confirm when it arrives.",
+        "DELIVERED": "Delivered. Thank you, and good luck with the surgery.",
+        "CANCELLED": "This case is closed."
+      }
+    },
+    "viewer": {
+      "title": "3D viewer",
+      "fit": "Fit",
+      "reset": "Reset",
+      "noModels": "No 3D files on this case yet.",
+      "emptyScene": "Switch on a layer to see it in 3D.",
+      "loading": "Loading 3D files… {percent} %",
+      "hint": "Drag to rotate · pinch or scroll to zoom · two fingers or right-drag to pan",
+      "layersLabel": "Layers",
+      "show": "Show {name}",
+      "hide": "Hide {name}",
+      "color": "Colour of {name}",
+      "opacity": "Opacity",
+      "opacityFor": "Opacity of {name}",
+      "progressFor": "Loading {name}",
+      "largeOnPhone": "This file is {size}. Loading it on a phone may be slow and use a lot of data.",
+      "loadAnyway": "Load anyway",
+      "skip": "Skip",
+      "cbctNote": "CBCT can't be previewed in the browser. Download it to view it in your DICOM software.",
+      "errors": {
+        "access": "This file isn't available.",
+        "network": "The file couldn't be loaded. Check your connection and switch the layer on again.",
+        "format": "This file couldn't be read as a 3D model."
+      },
+      "layers": {
+        "scan": "Intraoral scan",
+        "scanUPPER": "Upper scan",
+        "scanLOWER": "Lower scan",
+        "scanBITE": "Bite scan",
+        "PLAN_3D": "Planned implants",
+        "GUIDE_STL": "Guide",
+        "OTHER": "Model",
+        "CBCT": "CBCT",
+        "PHOTO": "Photo",
+        "PLAN_REPORT": "Plan report",
+        "planPrefix": "Plan v{version} · {what}"
+      }
+    },
+    "messages": {
+      "title": "Messages",
+      "description": "Write to Dentnord about this case. Plain text only.",
+      "empty": "No messages yet.",
+      "placeholder": "Write a message…",
+      "you": "You",
+      "dentnord": "Dentnord",
+      "clinic": "Clinic",
+      "edited": "edited",
+      "new": "new",
+      "editLabel": "Edit message",
+      "save": "Save",
+      "cancel": "Cancel",
+      "edit": "Edit",
+      "delete": "Delete",
+      "send": "Send",
+      "hint": "{count} characters left · Ctrl+Enter sends · you can edit for 5 minutes",
+      "errors": {
+        "generic": "The message couldn't be sent. Please try again.",
+        "invalid": "Write a message (at most 5,000 characters).",
+        "rateLimited": "You're sending messages quickly. Wait a minute and try again.",
+        "editWindow": "Messages can only be changed for 5 minutes.",
+        "notFound": "This message or case no longer exists.",
+        "unauthorized": "Your session has ended. Please log in again.",
+        "forbidden": "You can't do that."
+      }
+    },
+    "actions": {
+      "refresh": "Refresh",
+      "errors": {
+        "generic": "Something went wrong. Please try again.",
+        "network": "We couldn't reach the server. Check your connection and try again.",
+        "stale": "This case was updated in the meantime. Please refresh to see the latest.",
+        "forbidden": "You can't do that on this case.",
+        "wrongState": "That isn't possible in the case's current state.",
+        "notFound": "This case no longer exists.",
+        "invalid": "Please check the highlighted fields.",
+        "unauthorized": "Your session has ended. Please log in again.",
+        "noNewFiles": "Add at least one new file before sending.",
+        "uploadsPending": "Wait until all uploads have finished.",
+        "noPreparedPlan": "Prepare a plan version first.",
+        "planReportMissing": "Upload the plan report (PDF) first.",
+        "notLatestPlan": "A newer plan version exists. Please refresh.",
+        "planAlreadyDecided": "A decision has already been made on this plan.",
+        "planNotSent": "This plan hasn't been sent yet."
+      },
+      "approval": {
+        "title": "Plan v{version} is ready for your approval",
+        "body": "Review the implant positions, sizes and the guide design. You can look at the plan in 3D and read the report below.",
+        "toPlan": "Read the plan",
+        "toViewer": "Open the 3D viewer",
+        "approveTitle": "Approve for production",
+        "consentRequired": "Please confirm that you have reviewed the plan.",
+        "approve": "Approve plan",
+        "changesTitle": "Request changes",
+        "changesHint": "What should we change? Be as specific as you can.",
+        "commentRequired": "Please describe the changes.",
+        "requestChanges": "Request changes"
+      },
+      "shipped": {
+        "title": "Your guide has shipped",
+        "confirm": "Confirm delivery",
+        "carrier": "Carrier",
+        "trackingNumber": "Tracking number",
+        "tracking": "Tracking",
+        "track": "Track the parcel"
+      },
+      "delivered": {
+        "title": "Delivered"
+      },
+      "needsFiles": {
+        "title": "We need more files",
+        "fromLab": "From Dentnord",
+        "body": "Add the missing files below, then send them to us. Files you sent earlier stay on the case.",
+        "addFirst": "Add at least one new file.",
+        "send": "{count, plural, =0 {Send to Dentnord} one {Send # new file to Dentnord} other {Send # new files to Dentnord}}"
+      },
+      "cancel": {
+        "button": "Cancel this case",
+        "title": "Cancel this case?",
+        "body": "Dentnord stops working on it. This can't be undone.",
+        "reason": "Reason (optional)",
+        "keep": "Keep the case",
+        "confirm": "Cancel case"
+      }
     }
   }
 }

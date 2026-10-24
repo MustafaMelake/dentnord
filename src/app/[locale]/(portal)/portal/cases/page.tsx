@@ -14,6 +14,8 @@ import { SelectInput, TextInput } from "@/components/shared/form-controls";
 import { CaseStatus } from "@/generated/prisma/enums";
 import { Link } from "@/i18n/navigation";
 import { listOwnCases, listOwnDrafts } from "@/server/queries/cases";
+import { requireApprovedDentist } from "@/server/queries/session";
+import { unreadCounts } from "@/server/services/case-messages";
 
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getTranslations("portal.cases");
@@ -49,11 +51,13 @@ async function Cases({ searchParams }: Pick<PageProps<"/[locale]/portal/cases">,
   const status = FILTER_STATUSES.find((s) => s === String(params.status ?? "").toUpperCase());
   const query = typeof params.q === "string" ? params.q.trim().slice(0, 60) : "";
   const locale = await getLocale();
-  const [t, tStatus, rows, drafts] = await Promise.all([
+  const session = await requireApprovedDentist(locale);
+  const [t, tStatus, rows, drafts, unread] = await Promise.all([
     getTranslations("portal.cases"),
     getTranslations("caseStatus"),
     listOwnCases(locale, { status, query }),
     listOwnDrafts(locale),
+    unreadCounts({ id: session.user.id, role: "DENTIST" }),
   ]);
   const filtered = Boolean(status || query);
 
@@ -138,6 +142,7 @@ async function Cases({ searchParams }: Pick<PageProps<"/[locale]/portal/cases">,
           <CaseList
             rows={rows}
             locale={locale}
+            unread={unread.perCase}
             link={(row, children, className) => (
               <Link href={`/portal/cases/${row.id}`} className={className}>
                 {children}
