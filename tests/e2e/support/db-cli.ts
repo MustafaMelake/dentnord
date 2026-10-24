@@ -225,6 +225,89 @@ const ops = {
     });
   },
 
+  /** Emails logged for a case (kind + recipient), oldest first. */
+  async emailLog({ caseId }: { caseId: string }) {
+    return db.emailLog.findMany({
+      where: { caseId },
+      orderBy: { createdAt: "asc" },
+      select: { kind: true, to: true },
+    });
+  },
+
+  /** Plan versions of a case with their decision and files. */
+  async casePlans({ caseId }: { caseId: string }) {
+    const plans = await db.casePlan.findMany({
+      where: { caseId },
+      orderBy: { version: "asc" },
+      select: {
+        id: true,
+        version: true,
+        sentAt: true,
+        decision: true,
+        decisionComment: true,
+        approvalStatement: true,
+        approvalLocale: true,
+        files: { select: { id: true, kind: true, uploadStatus: true } },
+      },
+    });
+    return plans.map((p) => ({ ...p, sent: p.sentAt !== null, sentAt: undefined }));
+  },
+
+  /** The status trail: [from, to] of every status change, oldest first. */
+  async caseTrail({ caseId }: { caseId: string }) {
+    const events = await db.caseEvent.findMany({
+      where: { caseId, toStatus: { not: null }, type: { not: "CREATED" } },
+      orderBy: { createdAt: "asc" },
+      select: { fromStatus: true, toStatus: true, type: true, note: true },
+    });
+    return events;
+  },
+
+  /** Messages on a case: thread, author role, body. */
+  async caseMessages({ caseId }: { caseId: string }) {
+    return db.caseMessage.findMany({
+      where: { caseId },
+      orderBy: { createdAt: "asc" },
+      select: { internal: true, authorRole: true, body: true, readAt: true },
+    });
+  },
+
+  /** A SUBMITTED case for an e2e dentist, without files (for tests that don't need the wizard). */
+  async createSubmittedCase({ email }: { email: string }) {
+    if (!email.startsWith(E2E_EMAIL_PREFIX)) throw new Error("test users must use the e2e- prefix");
+    const user = await db.user.findUniqueOrThrow({ where: { email }, select: { id: true } });
+    const guideType = await db.guideType.findFirst({
+      where: { active: true },
+      select: { id: true },
+    });
+    const now = new Date();
+    const c = await db.case.create({
+      data: {
+        dentistId: user.id,
+        status: "SUBMITTED",
+        caseNumber: `E2E-${Date.now()}`,
+        patientCode: "E2E-QUICK",
+        guideTypeId: guideType?.id,
+        submittedAt: now,
+        consentAt: now,
+        statusChangedAt: now,
+        implants: { create: [{ fdiTooth: 36 }] },
+        events: {
+          create: [
+            {
+              type: "STATUS_CHANGED",
+              fromStatus: "DRAFT",
+              toStatus: "SUBMITTED",
+              actorId: user.id,
+            },
+          ],
+        },
+      },
+      select: { id: true },
+    });
+    return c;
+  },
+
   /** An empty DRAFT case for an e2e user (API-level upload tests). */
   async createDraft({ email }: { email: string }) {
     if (!email.startsWith(E2E_EMAIL_PREFIX)) throw new Error("test users must use the e2e- prefix");
