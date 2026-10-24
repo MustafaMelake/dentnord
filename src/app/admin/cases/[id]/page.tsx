@@ -85,7 +85,12 @@ async function CaseDetail({ params }: Pick<PageProps<"/admin/cases/[id]">, "para
         top={
           <>
             {data.plans.length > 0 && <PlanVersions plans={data.plans} locale="en" />}
-            <CaseViewer layers={data.layers} hasCbct={data.hasCbct} />
+            <CaseViewer
+              // A new set of layers (e.g. a plan was just sent) starts a fresh viewer.
+              key={`${status}:${data.layers.map((l) => l.fileId).join(",")}`}
+              layers={data.layers}
+              hasCbct={data.hasCbct}
+            />
           </>
         }
         bottom={

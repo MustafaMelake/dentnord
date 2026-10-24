@@ -43,6 +43,14 @@ function defaultLook(layer: ViewerLayer): { color: string; opacity: number } {
   return { color: "#c3c9d0", opacity: 1 };
 }
 
+const initialState = (l: ViewerLayer): LayerState => ({
+  ...defaultLook(l),
+  visible: l.defaultOn,
+  status: "idle",
+  progress: 0,
+  error: null,
+});
+
 const isPhone = () =>
   typeof window !== "undefined" &&
   (window.matchMedia("(pointer: coarse)").matches || window.innerWidth < 768);
@@ -55,14 +63,12 @@ export function CaseViewer({ layers, hasCbct }: { layers: ViewerLayer[]; hasCbct
   const [models, setModels] = useState<Record<string, THREE.Object3D>>({});
   const aborts = useRef(new Map<string, AbortController>());
   const controlsRef = useRef<ViewerControls | null>(null);
+  // The page remounts the viewer (key) when its set of layers changes; the fallback in `look` only
+  // guards against a layer the state hasn't seen.
   const [state, setState] = useState<Record<string, LayerState>>(() =>
-    Object.fromEntries(
-      layers.map((l) => [
-        l.fileId,
-        { ...defaultLook(l), visible: l.defaultOn, status: "idle", progress: 0, error: null },
-      ]),
-    ),
+    Object.fromEntries(layers.map((l) => [l.fileId, initialState(l)])),
   );
+  const look = (l: ViewerLayer) => state[l.fileId] ?? initialState(l);
 
   // The latest look per layer, for loads that finish later.
   const latest = useRef(state);
@@ -70,9 +76,15 @@ export function CaseViewer({ layers, hasCbct }: { layers: ViewerLayer[]; hasCbct
     latest.current = state;
   }, [state]);
 
-  const patch = useCallback((id: string, p: Partial<LayerState>) => {
-    setState((s) => ({ ...s, [id]: { ...s[id], ...p } }));
-  }, []);
+  const patch = useCallback(
+    (id: string, p: Partial<LayerState>) => {
+      setState((s) => {
+        const base = s[id] ?? initialState(layers.find((l) => l.fileId === id)!);
+        return { ...s, [id]: { ...base, ...p } };
+      });
+    },
+    [layers],
+  );
 
   const load = useCallback(
     (layer: ViewerLayer) => {
@@ -81,8 +93,8 @@ export function CaseViewer({ layers, hasCbct }: { layers: ViewerLayer[]; hasCbct
       patch(layer.fileId, { status: "loading", progress: 0, error: null });
       loadCaseModel(layer, (progress) => patch(layer.fileId, { progress }), controller.signal)
         .then((object) => {
-          const look = latest.current[layer.fileId];
-          applyLayerMaterial(object, look.color, look.opacity);
+          const current = latest.current[layer.fileId] ?? initialState(layer);
+          applyLayerMaterial(object, current.color, current.opacity);
           setModels((m) => ({ ...m, [layer.fileId]: object }));
           patch(layer.fileId, { status: "ready", progress: 1 });
         })
@@ -117,7 +129,7 @@ export function CaseViewer({ layers, hasCbct }: { layers: ViewerLayer[]; hasCbct
         io.disconnect();
         setInView(true);
         for (const layer of layers) {
-          const s = latest.current[layer.fileId];
+          const s = latest.current[layer.fileId] ?? initialState(layer);
           if (s.visible && s.status === "idle") start(layer);
         }
       },
@@ -132,18 +144,18 @@ export function CaseViewer({ layers, hasCbct }: { layers: ViewerLayer[]; hasCbct
     return () => pending.forEach((c) => c.abort());
   }, []);
 
-  function setLook(layer: ViewerLayer, look: Partial<Pick<LayerState, "color" | "opacity">>) {
-    const next = { ...state[layer.fileId], ...look };
+  function setLook(layer: ViewerLayer, change: Partial<Pick<LayerState, "color" | "opacity">>) {
+    const next = { ...look(layer), ...change };
     const object = models[layer.fileId];
     if (object) applyLayerMaterial(object, next.color, next.opacity);
-    patch(layer.fileId, look);
+    patch(layer.fileId, change);
   }
 
   const shown = layers
-    .filter((l) => state[l.fileId].visible && state[l.fileId].status === "ready")
+    .filter((l) => look(l).visible && look(l).status === "ready")
     .filter((l) => models[l.fileId])
     .map((l) => ({ key: l.fileId, object: models[l.fileId] }));
-  const loading = layers.filter((l) => state[l.fileId].status === "loading");
+  const loading = layers.filter((l) => look(l).status === "loading");
 
   const layerLabel = (l: ViewerLayer) => {
     const what =
@@ -187,137 +199,141 @@ export function CaseViewer({ layers, hasCbct }: { layers: ViewerLayer[]; hasCbct
       {layers.length === 0 ? (
         <p className="text-sm text-ink-muted">{t("noModels")}</p>
       ) : (
-        <div className="grid grid-cols-1 gap-4 lg:grid-cols-[minmax(0,1fr)_17rem]">
-          <div className="relative aspect-[4/3] min-h-64 overflow-hidden rounded-xl border border-line bg-[#f4f6f8]">
-            {inView && <ViewerCanvas objects={shown} controlsRef={controlsRef} />}
-            {shown.length === 0 && loading.length === 0 && (
-              <p className="pointer-events-none absolute inset-0 flex items-center justify-center p-6 text-center text-sm text-ink-muted">
-                {t("emptyScene")}
-              </p>
-            )}
-            {loading.length > 0 && (
-              <div
-                role="status"
-                className="absolute inset-x-3 bottom-3 flex items-center gap-2 rounded-full bg-surface/95 px-3 py-1.5 text-xs text-ink shadow-sm"
-              >
-                <LoaderCircle aria-hidden className="size-3.5 animate-spin text-brand" />
-                {t("loading", {
-                  percent: Math.round(
-                    (loading.reduce((sum, l) => sum + state[l.fileId].progress, 0) /
-                      loading.length) *
-                      100,
-                  ),
-                })}
-              </div>
-            )}
-            <p className="pointer-events-none absolute top-2 left-3 text-[0.6875rem] text-ink-muted">
-              {t("hint")}
-            </p>
-          </div>
-
-          <ul className="flex flex-col gap-2" aria-label={t("layersLabel")}>
-            {layers.map((layer) => {
-              const s = state[layer.fileId];
-              const label = layerLabel(layer);
-              return (
-                <li
-                  key={layer.fileId}
-                  data-layer={layer.fileId}
-                  data-layer-state={s.status}
-                  className="flex flex-col gap-2 rounded-xl border border-line px-3 py-2.5 text-sm"
+        <div className="@container">
+          <div className="grid grid-cols-1 gap-4 @2xl:grid-cols-[minmax(0,1fr)_17rem]">
+            <div className="relative h-72 overflow-hidden rounded-xl border border-line bg-[#f4f6f8] sm:h-96">
+              {inView && <ViewerCanvas objects={shown} controlsRef={controlsRef} />}
+              {shown.length === 0 && loading.length === 0 && (
+                <p className="pointer-events-none absolute inset-0 flex items-center justify-center p-6 text-center text-sm text-ink-muted">
+                  {t("emptyScene")}
+                </p>
+              )}
+              {loading.length > 0 && (
+                <div
+                  role="status"
+                  className="absolute inset-x-3 bottom-3 flex items-center gap-2 rounded-full bg-surface/95 px-3 py-1.5 text-xs text-ink shadow-sm"
                 >
-                  <div className="flex items-center gap-2">
-                    <button
-                      type="button"
-                      aria-pressed={s.visible}
-                      aria-label={t(s.visible ? "hide" : "show", { name: label })}
-                      onClick={() => {
-                        const visible = !s.visible;
-                        patch(layer.fileId, { visible });
-                        // Switched on and not loaded yet (or failed before): download it now.
-                        if (visible && (s.status === "idle" || s.status === "error")) start(layer);
-                      }}
-                      className={cn(
-                        "flex size-8 shrink-0 items-center justify-center rounded-full transition-colors",
-                        s.visible ? "bg-brand-ice text-brand" : "text-ink-muted hover:bg-surface-2",
-                      )}
-                    >
-                      {s.visible ? <Eye className="size-4" /> : <EyeOff className="size-4" />}
-                    </button>
-                    <span className="min-w-0 flex-1">
-                      <span className="block truncate text-ink">{label}</span>
-                      <span className="block truncate text-xs text-ink-muted" title={layer.name}>
-                        {layer.name} · {formatBytes(layer.sizeBytes, locale)}
+                  <LoaderCircle aria-hidden className="size-3.5 animate-spin text-brand" />
+                  {t("loading", {
+                    percent: Math.round(
+                      (loading.reduce((sum, l) => sum + look(l).progress, 0) / loading.length) *
+                        100,
+                    ),
+                  })}
+                </div>
+              )}
+              <p className="pointer-events-none absolute top-2 left-3 text-[0.6875rem] text-ink-muted">
+                {t("hint")}
+              </p>
+            </div>
+
+            <ul className="flex flex-col gap-2" aria-label={t("layersLabel")}>
+              {layers.map((layer) => {
+                const s = look(layer);
+                const label = layerLabel(layer);
+                return (
+                  <li
+                    key={layer.fileId}
+                    data-layer={layer.fileId}
+                    data-layer-state={s.status}
+                    className="flex flex-col gap-2 rounded-xl border border-line px-3 py-2.5 text-sm"
+                  >
+                    <div className="flex items-center gap-2">
+                      <button
+                        type="button"
+                        aria-pressed={s.visible}
+                        aria-label={t(s.visible ? "hide" : "show", { name: label })}
+                        onClick={() => {
+                          const visible = !s.visible;
+                          patch(layer.fileId, { visible });
+                          // Switched on and not loaded yet (or failed before): download it now.
+                          if (visible && (s.status === "idle" || s.status === "error"))
+                            start(layer);
+                        }}
+                        className={cn(
+                          "flex size-8 shrink-0 items-center justify-center rounded-full transition-colors",
+                          s.visible
+                            ? "bg-brand-ice text-brand"
+                            : "text-ink-muted hover:bg-surface-2",
+                        )}
+                      >
+                        {s.visible ? <Eye className="size-4" /> : <EyeOff className="size-4" />}
+                      </button>
+                      <span className="min-w-0 flex-1">
+                        <span className="block truncate text-ink">{label}</span>
+                        <span className="block truncate text-xs text-ink-muted" title={layer.name}>
+                          {layer.name} · {formatBytes(layer.sizeBytes, locale)}
+                        </span>
                       </span>
-                    </span>
-                    <input
-                      type="color"
-                      value={s.color}
-                      onChange={(e) => setLook(layer, { color: e.target.value })}
-                      aria-label={t("color", { name: label })}
-                      className="size-7 shrink-0 cursor-pointer rounded-full border border-line bg-transparent p-0.5"
-                    />
-                  </div>
-                  {s.status === "loading" && (
-                    <div
-                      role="progressbar"
-                      aria-label={t("progressFor", { name: label })}
-                      aria-valuemin={0}
-                      aria-valuemax={100}
-                      aria-valuenow={Math.round(s.progress * 100)}
-                      className="h-1 overflow-hidden rounded-full bg-surface-2"
-                    >
-                      <div
-                        className="h-full bg-brand transition-[width]"
-                        style={{ width: `${s.progress * 100}%` }}
-                      />
-                    </div>
-                  )}
-                  {s.status === "confirm" && (
-                    <div className="flex flex-col gap-2 rounded-lg bg-[#fbeedd] p-2 text-xs text-[#7a4a0c]">
-                      {t("largeOnPhone", { size: formatBytes(layer.sizeBytes, locale) })}
-                      <span className="flex gap-2">
-                        <button
-                          type="button"
-                          className="font-medium underline"
-                          onClick={() => load(layer)}
-                        >
-                          {t("loadAnyway")}
-                        </button>
-                        <button
-                          type="button"
-                          className="underline"
-                          onClick={() => patch(layer.fileId, { visible: false, status: "idle" })}
-                        >
-                          {t("skip")}
-                        </button>
-                      </span>
-                    </div>
-                  )}
-                  {s.status === "error" && (
-                    <p className="text-xs text-destructive">
-                      {t(`errors.${s.error ?? "network"}` as "errors.network")}
-                    </p>
-                  )}
-                  {s.visible && s.status === "ready" && (
-                    <label className="flex items-center gap-2 text-xs text-ink-muted">
-                      <span className="w-16 shrink-0">{t("opacity")}</span>
                       <input
-                        type="range"
-                        min={0.15}
-                        max={1}
-                        step={0.05}
-                        value={s.opacity}
-                        onChange={(e) => setLook(layer, { opacity: Number(e.target.value) })}
-                        aria-label={t("opacityFor", { name: label })}
-                        className="w-full accent-brand"
+                        type="color"
+                        value={s.color}
+                        onChange={(e) => setLook(layer, { color: e.target.value })}
+                        aria-label={t("color", { name: label })}
+                        className="size-7 shrink-0 cursor-pointer rounded-full border border-line bg-transparent p-0.5"
                       />
-                    </label>
-                  )}
-                </li>
-              );
-            })}
-          </ul>
+                    </div>
+                    {s.status === "loading" && (
+                      <div
+                        role="progressbar"
+                        aria-label={t("progressFor", { name: label })}
+                        aria-valuemin={0}
+                        aria-valuemax={100}
+                        aria-valuenow={Math.round(s.progress * 100)}
+                        className="h-1 overflow-hidden rounded-full bg-surface-2"
+                      >
+                        <div
+                          className="h-full bg-brand transition-[width]"
+                          style={{ width: `${s.progress * 100}%` }}
+                        />
+                      </div>
+                    )}
+                    {s.status === "confirm" && (
+                      <div className="flex flex-col gap-2 rounded-lg bg-[#fbeedd] p-2 text-xs text-[#7a4a0c]">
+                        {t("largeOnPhone", { size: formatBytes(layer.sizeBytes, locale) })}
+                        <span className="flex gap-2">
+                          <button
+                            type="button"
+                            className="font-medium underline"
+                            onClick={() => load(layer)}
+                          >
+                            {t("loadAnyway")}
+                          </button>
+                          <button
+                            type="button"
+                            className="underline"
+                            onClick={() => patch(layer.fileId, { visible: false, status: "idle" })}
+                          >
+                            {t("skip")}
+                          </button>
+                        </span>
+                      </div>
+                    )}
+                    {s.status === "error" && (
+                      <p className="text-xs text-destructive">
+                        {t(`errors.${s.error ?? "network"}` as "errors.network")}
+                      </p>
+                    )}
+                    {s.visible && s.status === "ready" && (
+                      <label className="flex items-center gap-2 text-xs text-ink-muted">
+                        <span className="w-16 shrink-0">{t("opacity")}</span>
+                        <input
+                          type="range"
+                          min={0.15}
+                          max={1}
+                          step={0.05}
+                          value={s.opacity}
+                          onChange={(e) => setLook(layer, { opacity: Number(e.target.value) })}
+                          aria-label={t("opacityFor", { name: label })}
+                          className="w-full accent-brand"
+                        />
+                      </label>
+                    )}
+                  </li>
+                );
+              })}
+            </ul>
+          </div>
         </div>
       )}
 

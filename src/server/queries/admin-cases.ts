@@ -87,8 +87,10 @@ export async function countNewCases() {
 }
 
 /** Dashboard: what waits on the lab (oldest first) and surgeries in the next 14 days. */
-export async function getAdminCaseOverview(now = new Date()) {
+export async function getAdminCaseOverview() {
   await requireAdmin();
+  // Read the clock only after the session (request data): Cache Components must not prerender it.
+  const now = new Date();
   const today = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()));
   const in14 = new Date(today.getTime() + 14 * 86_400_000);
   const [waiting, upcoming] = await Promise.all([
