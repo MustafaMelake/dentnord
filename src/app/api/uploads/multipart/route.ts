@@ -11,15 +11,20 @@ const body = z.object({
   kind: z.string().max(32),
   fileName: z.string().trim().min(1).max(255),
   sizeBytes: z.number().int().positive(),
+  /** Admin plan files: the plan version being prepared. */
+  planId: z
+    .string()
+    .regex(/^[A-Za-z0-9_-]{1,64}$/)
+    .optional(),
 });
 
 export async function POST(request: Request) {
-  const user = await requireUploadUser(request, "write", "register");
+  const user = await requireUploadUser(request, "register");
   if (user instanceof Response) return user;
   const parsed = body.safeParse(await request.json().catch(() => null));
   if (!parsed.success) return error(400, "invalid");
   return respond(async () => {
-    const { key, file } = await registerUpload(user.id, parsed.data);
+    const { key, file } = await registerUpload(user, parsed.data);
     return json({ fileId: file.id, key, file }, 201);
   });
 }

@@ -327,7 +327,14 @@
       "emptyCta": "Indsend din første case",
       "drafts": "{count, plural, one {Du har # kladde} other {Du har # kladder}}, der ikke er sendt endnu.",
       "continueDrafts": "Fortsæt",
-      "countsLabel": "Sager efter status"
+      "countsLabel": "Sager efter status",
+      "actionNeeded": "{count, plural, one {Handling påkrævet på # sag} other {Handling påkrævet på # sager}}",
+      "open": "Åbn",
+      "actions": {
+        "AWAITING_APPROVAL": "Gennemgå og godkend planen",
+        "NEEDS_FILES": "Upload de manglende filer",
+        "SHIPPED": "Bekræft modtagelse"
+      }
     },
     "cases": {
       "title": "Cases",
@@ -390,7 +397,8 @@
       "account": "Konto",
       "menu": "Menu",
       "openMenu": "Åbn menu",
-      "website": "Hjemmeside"
+      "website": "Hjemmeside",
+      "unreadBadge": "{count, plural, one {# ulæst besked} other {# ulæste beskeder}}"
     },
     "userMenu": {
       "label": "Kontomenu",
@@ -495,6 +503,69 @@
       "guideType": "Skabelontype",
       "implants": "Implantatpositioner",
       "cta": "Åbn casen"
+    },
+    "caseUpdate": {
+      "caseNumber": "Sag",
+      "clinic": "Klinik",
+      "carrier": "Fragtfirma",
+      "trackingNumber": "Trackingnummer",
+      "track": "Følg pakken",
+      "cta": "Åbn sagen",
+      "needsFiles": {
+        "subject": "{caseNumber}: vi mangler filer",
+        "heading": "Vi mangler flere filer",
+        "body": "For at planlægge sag {caseNumber} har vi brug for en eller flere filer mere. Åbn sagen for at se, hvad der mangler, og upload det."
+      },
+      "planReady": {
+        "subject": "{caseNumber}: plan v{version} er klar til din godkendelse",
+        "heading": "Din plan er klar",
+        "body": "Planversion {version} for sag {caseNumber} er klar. Gennemgå implantatpositionerne og guidedesignet i portalen, og godkend den eller bed om ændringer."
+      },
+      "shipped": {
+        "subject": "{caseNumber}: din guide er afsendt",
+        "heading": "Din kirurgiske guide er på vej",
+        "body": "Guiden til sag {caseNumber} er afsendt. Bekræft venligst i portalen, når den er modtaget."
+      },
+      "cancelled": {
+        "subject": "{caseNumber} er annulleret",
+        "heading": "Sagen er annulleret",
+        "body": "Sag {caseNumber} er blevet annulleret. Åbn sagen for at se årsagen."
+      },
+      "messageToDentist": {
+        "subject": "{caseNumber}: ny besked fra Dentnord",
+        "heading": "Du har en ny besked",
+        "body": "Dentnord har skrevet til dig om sag {caseNumber}. Åbn sagen for at læse og svare."
+      },
+      "resubmitted": {
+        "subject": "{caseNumber}: filer tilføjet, klar igen",
+        "heading": "Sagen er indsendt igen med nye filer",
+        "body": "{clinic} har tilføjet de ønskede filer til sag {caseNumber}."
+      },
+      "planApproved": {
+        "subject": "{caseNumber}: plan v{version} godkendt",
+        "heading": "Planen er godkendt",
+        "body": "{clinic} har godkendt planversion {version} for sag {caseNumber}. Den kan gå i produktion."
+      },
+      "changesRequested": {
+        "subject": "{caseNumber}: ændringer ønsket i plan v{version}",
+        "heading": "Ændringer ønsket",
+        "body": "{clinic} har bedt om ændringer i planversion {version} for sag {caseNumber}. Åbn sagen for at læse kommentaren."
+      },
+      "delivered": {
+        "subject": "{caseNumber}: levering bekræftet",
+        "heading": "Levering bekræftet",
+        "body": "{clinic} har bekræftet, at guiden til sag {caseNumber} er modtaget."
+      },
+      "cancelledByDentist": {
+        "subject": "{caseNumber} er annulleret af klinikken",
+        "heading": "Sagen er annulleret af klinikken",
+        "body": "{clinic} har annulleret sag {caseNumber}."
+      },
+      "messageToAdmin": {
+        "subject": "{caseNumber}: ny besked fra {clinic}",
+        "heading": "Ny besked",
+        "body": "{clinic} har skrevet om sag {caseNumber}."
+      }
     }
   },
   "changePassword": {
@@ -529,8 +600,11 @@
         "implants": "Implantater",
         "submitted": "Indsendt",
         "status": "Status",
-        "open": "Åbn"
-      }
+        "open": "Åbn",
+        "surgery": "Operation"
+      },
+      "unread": "{count, plural, one {# ulæst besked} other {# ulæste beskeder}}",
+      "surgeryIn": "{days, plural, =0 {Operation i dag} one {Operation i morgen} other {Operation om # dage}}"
     },
     "drafts": {
       "untitled": "Kladde uden navn",
@@ -568,7 +642,8 @@
         "PHOTO": "Fotos",
         "OTHER": "Andre filer",
         "PLAN_REPORT": "Planrapport",
-        "GUIDE_STL": "Guide (STL)"
+        "GUIDE_STL": "Guide (STL)",
+        "PLAN_3D": "3D-model af planen"
       },
       "download": "Download {name}",
       "downloadShort": "Download",
@@ -580,9 +655,12 @@
         "FILE_ADDED": "Fil tilføjet",
         "FILE_FAILED": "Upload af fil mislykkedes",
         "FILE_REMOVED": "Fil fjernet",
-        "PLAN_APPROVED": "Plan godkendt",
-        "CHANGES_REQUESTED": "Ændringer ønsket"
-      }
+        "PLAN_APPROVED": "Plan v{version} godkendt",
+        "CHANGES_REQUESTED": "Ændringer ønsket i plan v{version}",
+        "PLAN_CREATED": "Plan v{version} påbegyndt"
+      },
+      "byLab": "Dentnord",
+      "byClinic": "klinikken"
     },
     "chart": {
       "label": "Tandkort: vælg implantatpositionerne",
@@ -760,7 +838,10 @@
           "forbidden": "du kan ikke uploade til denne sag",
           "unauthorized": "din session er udløbet; log ind igen",
           "partNumber": "uploaden er kommet ud af trit; fjern den, og tilføj filen igen",
-          "generic": "noget gik galt; prøv igen"
+          "generic": "noget gik galt; prøv igen",
+          "wrongState": "der kan ikke tilføjes filer til sagen lige nu",
+          "planRequired": "start først en planversion",
+          "notViewable": "filen kan ikke vises i 3D"
         }
       },
       "review": {
@@ -777,6 +858,175 @@
         "body": "Tak. Vi har modtaget din sag og vender tilbage, når planen er klar til din gennemgang.",
         "view": "Se sagen",
         "all": "Alle sager"
+      }
+    },
+    "plans": {
+      "approveStatement": "Jeg har gennemgået implantatpositionerne, størrelserne og guidedesignet i denne plan og godkender den til produktion.",
+      "title": "Behandlingsplan",
+      "none": "Ingen plan endnu.",
+      "version": "Plan v{version}",
+      "latest": "nyeste",
+      "sent": "Sendt {date}",
+      "preparing": "Under forberedelse (ikke synlig for tandlægen)",
+      "kinds": {
+        "PLAN_REPORT": "Rapport",
+        "PLAN_3D": "3D-model",
+        "GUIDE_STL": "Guide"
+      },
+      "download": "Download {name}",
+      "approvedBy": "Godkendt af {name}, {date}",
+      "changesBy": "Ændringer ønsket af {name}, {date}"
+    },
+    "stepper": {
+      "label": "Sagens forløb",
+      "cancelled": "Sagen er annulleret.",
+      "stateDone": "færdig",
+      "stateCurrent": "nuværende trin",
+      "stateUpcoming": "kommende",
+      "steps": {
+        "submitted": "Indsendt",
+        "planning": "Planlægning",
+        "approval": "Din godkendelse",
+        "production": "Produktion",
+        "shipped": "Afsendt",
+        "delivered": "Leveret"
+      },
+      "next": {
+        "DRAFT": "Gør din sag færdig, og indsend den.",
+        "SUBMITTED": "Vi gennemgår dine filer. Derefter planlægger vi implantatpositionerne og guiden.",
+        "NEEDS_FILES": "Vi mangler flere filer, før vi kan planlægge. Upload dem nedenfor, og send dem til os.",
+        "IN_PLANNING": "Vi planlægger implantatpositionerne og designer din guide. Du får planen til gennemgang.",
+        "AWAITING_APPROVAL": "Din plan er klar. Gennemgå den i 3D, og godkend den eller bed om ændringer.",
+        "CHANGES_REQUESTED": "Vi opdaterer planen med dine ændringer. Du får en ny version til gennemgang.",
+        "APPROVED": "Tak for godkendelsen. Din guide går nu i produktion.",
+        "IN_PRODUCTION": "Din guide bliver produceret. Vi giver besked, når den er afsendt.",
+        "SHIPPED": "Din guide er på vej. Bekræft venligst, når den er modtaget.",
+        "DELIVERED": "Leveret. Tak, og held og lykke med operationen.",
+        "CANCELLED": "Sagen er lukket."
+      }
+    },
+    "viewer": {
+      "title": "3D-visning",
+      "fit": "Tilpas",
+      "reset": "Nulstil",
+      "noModels": "Der er endnu ingen 3D-filer på sagen.",
+      "emptyScene": "Slå et lag til for at se det i 3D.",
+      "loading": "Indlæser 3D-filer… {percent} %",
+      "hint": "Træk for at rotere · knib eller scroll for at zoome · to fingre eller højreklik-træk for at panorere",
+      "layersLabel": "Lag",
+      "show": "Vis {name}",
+      "hide": "Skjul {name}",
+      "color": "Farve på {name}",
+      "opacity": "Synlighed",
+      "opacityFor": "Synlighed for {name}",
+      "progressFor": "Indlæser {name}",
+      "largeOnPhone": "Filen er {size}. Det kan være langsomt og bruge meget data at indlæse den på en telefon.",
+      "loadAnyway": "Indlæs alligevel",
+      "skip": "Spring over",
+      "cbctNote": "CBCT kan ikke vises i browseren. Download den, og åbn den i dit DICOM-program.",
+      "errors": {
+        "access": "Filen er ikke tilgængelig.",
+        "network": "Filen kunne ikke indlæses. Tjek din forbindelse, og slå laget til igen.",
+        "format": "Filen kunne ikke læses som en 3D-model."
+      },
+      "layers": {
+        "scan": "Intraoral scanning",
+        "scanUPPER": "Scanning, overkæbe",
+        "scanLOWER": "Scanning, underkæbe",
+        "scanBITE": "Bidscanning",
+        "PLAN_3D": "Planlagte implantater",
+        "GUIDE_STL": "Guide",
+        "OTHER": "Model",
+        "CBCT": "CBCT",
+        "PHOTO": "Foto",
+        "PLAN_REPORT": "Planrapport",
+        "planPrefix": "Plan v{version} · {what}"
+      }
+    },
+    "messages": {
+      "title": "Beskeder",
+      "description": "Skriv til Dentnord om denne sag. Kun almindelig tekst.",
+      "empty": "Ingen beskeder endnu.",
+      "placeholder": "Skriv en besked…",
+      "you": "Dig",
+      "dentnord": "Dentnord",
+      "clinic": "Klinik",
+      "edited": "redigeret",
+      "new": "ny",
+      "editLabel": "Rediger besked",
+      "save": "Gem",
+      "cancel": "Annullér",
+      "edit": "Rediger",
+      "delete": "Slet",
+      "send": "Send",
+      "hint": "{count} tegn tilbage · Ctrl+Enter sender · du kan redigere i 5 minutter",
+      "errors": {
+        "generic": "Beskeden kunne ikke sendes. Prøv igen.",
+        "invalid": "Skriv en besked (højst 5.000 tegn).",
+        "rateLimited": "Du sender beskeder hurtigt. Vent et minut, og prøv igen.",
+        "editWindow": "Beskeder kan kun ændres i 5 minutter.",
+        "notFound": "Beskeden eller sagen findes ikke længere.",
+        "unauthorized": "Din session er udløbet. Log ind igen.",
+        "forbidden": "Det kan du ikke."
+      }
+    },
+    "actions": {
+      "refresh": "Opdater",
+      "errors": {
+        "generic": "Noget gik galt. Prøv igen.",
+        "network": "Vi kunne ikke nå serveren. Tjek din forbindelse, og prøv igen.",
+        "stale": "Sagen er blevet opdateret i mellemtiden. Opdater siden for at se det seneste.",
+        "forbidden": "Det kan du ikke gøre på denne sag.",
+        "wrongState": "Det er ikke muligt i sagens nuværende status.",
+        "notFound": "Sagen findes ikke længere.",
+        "invalid": "Tjek de markerede felter.",
+        "unauthorized": "Din session er udløbet. Log ind igen.",
+        "noNewFiles": "Tilføj mindst én ny fil, før du sender.",
+        "uploadsPending": "Vent, til alle uploads er færdige.",
+        "noPreparedPlan": "Forbered først en planversion.",
+        "planReportMissing": "Upload først planrapporten (PDF).",
+        "notLatestPlan": "Der findes en nyere planversion. Opdater siden.",
+        "planAlreadyDecided": "Der er allerede taget stilling til denne plan.",
+        "planNotSent": "Denne plan er ikke sendt endnu."
+      },
+      "approval": {
+        "title": "Plan v{version} er klar til din godkendelse",
+        "body": "Gennemgå implantatpositionerne, størrelserne og guidedesignet. Du kan se planen i 3D og læse rapporten nedenfor.",
+        "toPlan": "Læs planen",
+        "toViewer": "Åbn 3D-visningen",
+        "approveTitle": "Godkend til produktion",
+        "consentRequired": "Bekræft venligst, at du har gennemgået planen.",
+        "approve": "Godkend planen",
+        "changesTitle": "Bed om ændringer",
+        "changesHint": "Hvad skal vi ændre? Vær så præcis som muligt.",
+        "commentRequired": "Beskriv venligst ændringerne.",
+        "requestChanges": "Bed om ændringer"
+      },
+      "shipped": {
+        "title": "Din guide er afsendt",
+        "confirm": "Bekræft modtagelse",
+        "carrier": "Fragtfirma",
+        "trackingNumber": "Trackingnummer",
+        "tracking": "Sporing",
+        "track": "Følg pakken"
+      },
+      "delivered": {
+        "title": "Leveret"
+      },
+      "needsFiles": {
+        "title": "Vi mangler flere filer",
+        "fromLab": "Fra Dentnord",
+        "body": "Tilføj de manglende filer nedenfor, og send dem til os. Filer, du har sendt tidligere, bliver på sagen.",
+        "addFirst": "Tilføj mindst én ny fil.",
+        "send": "{count, plural, =0 {Send til Dentnord} one {Send # ny fil til Dentnord} other {Send # nye filer til Dentnord}}"
+      },
+      "cancel": {
+        "button": "Annullér sagen",
+        "title": "Annullér sagen?",
+        "body": "Dentnord stopper arbejdet på den. Det kan ikke fortrydes.",
+        "reason": "Årsag (valgfri)",
+        "keep": "Behold sagen",
+        "confirm": "Annullér sag"
       }
     }
   }

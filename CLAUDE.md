@@ -207,8 +207,34 @@ prisma/schema.prisma, seed.ts
 
 - Wizard: `components/cases/wizard/*` (`case-wizard.tsx` orchestrates; autosave through a save queue;
   the DRAFT is created on the first save, URL `/portal/cases/<id>/edit?step=N`). Server side:
-  `server/actions/cases.ts` → `server/services/cases.ts` (own DRAFT only; `submitCase` re-validates
-  everything and allocates the case number). Admin views are read-only (`server/queries/admin-cases.ts`).
+  `server/actions/cases.ts` → `server/services/cases.ts` (own DRAFT only; `checkDraftComplete`
+  re-validates everything at submit).
+- **Status changes: only `server/services/case-workflow.ts` (`runTransition`) writes `Case.status`.**
+  The rules (who, from, to, required input, preconditions) live in `lib/case-workflow-rules.ts`, shared
+  with the UI (the admin panel shows only `allowedTransitions`) and covered by a full-matrix unit test.
+  Every transition locks the row, rejects stale requests (the client sends the status it saw →
+  "stale"), checks role / state / input / preconditions, applies its effects (case number, tracking,
+  plan decision) and writes a `CaseEvent`, in one transaction. Add a transition by editing the rules,
+  the effects switch, the unit test's expected matrix, and `case-notifications.ts` if it emails.
+- **Plans** (`CasePlan`, `server/services/case-plans.ts`): one unsent version at a time (IN_PLANNING /
+  CHANGES_REQUESTED), files attached via `planId`, sent by the `sendPlan` transition. The dentist only
+  ever sees sent versions (queries, downloads, history) and decides once on the latest
+  (`checkPlanDecision`); the approval stores the exact statement shown, in the dentist's language. A DB
+  trigger (`case_plan_guard`) makes decided plans immutable.
+- **Upload permissions** (`lib/upload-permissions.ts`): dentist files only in DRAFT / NEEDS_FILES (on a
+  submitted case only unfinished uploads can be cancelled); lab files (PLAN_REPORT / PLAN_3D /
+  GUIDE_STL) only into an unsent plan in IN_PLANNING / CHANGES_REQUESTED. Re-checked on every upload
+  call. Both sides use `components/cases/upload-slot.tsx` + `use-case-uploads.ts` (optional `planId`).
+- **Messages** (`server/services/case-messages.ts`): case thread + admin-only internal notes (dentist
+  queries hard-code `internal: false`; for them internal notes don't exist). Plain text ≤ 5,000
+  (`lib/validation/messages.ts`), rendered with `whitespace-pre-wrap`, never as HTML/markdown;
+  edit/delete for 5 minutes; per-user rate limit; unread = `readAt` null from the other side.
+- **Emails** (`server/services/case-notifications.ts`, template `emails/case-update.tsx`): case number,
+  tracking and a link only, never free text or the patient code. Every email is recorded in `EmailLog`
+  (also the 10-minute message throttle and what E2E asserts).
+- **Case pages**: `server/queries/case-page.ts` builds everything per actor; the 3D viewer
+  (`components/cases/viewer/`) fetches files through `/api/uploads/files/[id]/view` (5-minute signed GET),
+  so the cases bucket's CORS must allow `GET` from the site's origin.
 - **Every case file is a multipart upload** (`use-case-uploads.ts`, one Uppy instance per wizard so step
   changes never abort uploads). `POST /api/uploads/multipart` registers it: the server checks kind /
   extension / size (`lib/case-files.ts`), builds the key, creates the multipart upload in R2 and the
@@ -217,13 +243,15 @@ prisma/schema.prisma, seed.ts
   `GET …/[id]/[part]` (15-min URL with the part's exact `Content-Length` signed in, fixed 16 MiB parts, so
   R2 enforces the declared size) and list / complete / abort to our routes, which talk to R2 themselves.
   Complete = list parts server-side, complete, HEAD, size check → COMPLETE + `CaseEvent`, else delete
-  the object and mark it FAILED. So the bucket's CORS only needs `PUT` + exposed `ETag`. Those three
+  the object and mark it FAILED. So uploads need only `PUT` + exposed `ETag` in the bucket's CORS
+  (the 3D viewer adds `GET`). Those three
   routes answer like S3, errors included (`<Error><Code>…`): Vercel strips `x-amz-*` response
   headers, so the error code must be in the body.
-- Route order: `requireUploadUser` (DB session, APPROVED dentist for writes; admin may only download)
-  → per-user rate limit (`server/services/rate-limit.ts`, `rate_limit` table) → zod → service
-  (`server/services/case-uploads.ts`, ownership + DRAFT + row state). Downloads:
-  `/api/uploads/files/[id]/download` → 303 to a 5-minute signed GET (owner, or admin for non-drafts).
+- Route order: `requireUploadUser` (DB session: APPROVED dentist or admin) → per-user rate limit
+  (`server/services/rate-limit.ts`, `rate_limit` table) → zod → service (`server/services/case-uploads.ts`:
+  scope (own case / no drafts for the admin) → 404, then the permission matrix → 403). Downloads:
+  `/api/uploads/files/[id]/download` → 303 to a 5-minute signed GET (owner, or admin for non-drafts; a
+  plan's files only once sent, for the dentist).
 - `R2_KEY_PREFIX` (default empty) prefixes every case key; E2E runs use `test/` and the teardown deletes
   everything under it (`tests/e2e/support/db-cli.ts`). E2E contexts add `x-forwarded-for` only to
   localhost requests: on R2 requests it would fail CORS.

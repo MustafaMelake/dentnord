@@ -146,7 +146,7 @@ export async function getWizardData(locale: string, caseId: string | null) {
   };
 }
 
-const listSelect = {
+export const listSelect = {
   id: true,
   caseNumber: true,
   patientCode: true,
@@ -154,11 +154,13 @@ const listSelect = {
   createdAt: true,
   updatedAt: true,
   submittedAt: true,
+  surgeryDate: true,
+  statusChangedAt: true,
   guideType: { select: { name: true } },
   _count: { select: { implants: true } },
 } satisfies Prisma.CaseSelect;
 
-function toListRow(c: Prisma.CaseGetPayload<{ select: typeof listSelect }>) {
+export function toListRow(c: Prisma.CaseGetPayload<{ select: typeof listSelect }>) {
   return {
     id: c.id,
     caseNumber: c.caseNumber,
@@ -169,6 +171,8 @@ function toListRow(c: Prisma.CaseGetPayload<{ select: typeof listSelect }>) {
     createdAt: c.createdAt.toISOString(),
     updatedAt: c.updatedAt.toISOString(),
     submittedAt: c.submittedAt?.toISOString() ?? null,
+    surgeryDate: c.surgeryDate ? c.surgeryDate.toISOString().slice(0, 10) : null,
+    statusChangedAt: c.statusChangedAt?.toISOString() ?? null,
   };
 }
 export type CaseListRow = ReturnType<typeof toListRow>;
@@ -211,10 +215,13 @@ export async function listOwnDrafts(locale: string) {
   return rows.map(toListRow);
 }
 
-/** Dashboard: counts per status (excluding drafts) + the five latest submitted cases + drafts. */
+/** Statuses where it's the dentist's turn (dashboard "Action needed"). */
+export const DENTIST_ACTION_STATUSES = ["AWAITING_APPROVAL", "NEEDS_FILES", "SHIPPED"] as const;
+
+/** Dashboard: what needs the dentist, counts per status, the five latest cases, drafts. */
 export async function getOwnCaseOverview(locale: string) {
   const { dentistId } = await getDentistScope(locale);
-  const [groups, recent, drafts] = await Promise.all([
+  const [groups, recent, drafts, actionNeeded] = await Promise.all([
     db.case.groupBy({
       by: ["status"],
       where: ownCaseWhere(dentistId),
@@ -227,11 +234,22 @@ export async function getOwnCaseOverview(locale: string) {
       take: 5,
     }),
     db.case.count({ where: { ...ownCaseWhere(dentistId), status: "DRAFT" } }),
+    db.case.findMany({
+      where: { ...ownCaseWhere(dentistId), status: { in: [...DENTIST_ACTION_STATUSES] } },
+      orderBy: { statusChangedAt: "asc" },
+      select: listSelect,
+      take: 20,
+    }),
   ]);
   const counts = Object.fromEntries(groups.map((g) => [g.status, g._count._all])) as Partial<
     Record<CaseStatus, number>
   >;
-  return { counts, recent: recent.map(toListRow), drafts };
+  return {
+    counts,
+    recent: recent.map(toListRow),
+    drafts,
+    actionNeeded: actionNeeded.map(toListRow),
+  };
 }
 
 export const caseDetailSelect = {
@@ -243,6 +261,13 @@ export const caseDetailSelect = {
   notes: true,
   createdAt: true,
   submittedAt: true,
+  statusChangedAt: true,
+  shippingCarrier: true,
+  trackingNumber: true,
+  trackingUrl: true,
+  shippedAt: true,
+  deliveredAt: true,
+  cancelledAt: true,
   guideType: { select: { name: true } },
   dentist: { select: { id: true, name: true, clinicName: true, email: true } },
   implants: {
@@ -256,8 +281,9 @@ export const caseDetailSelect = {
       surgicalKit: { select: { name: true } },
     },
   },
+  // The case's own files; plan files are listed with their plan version (case-plans.ts).
   files: {
-    where: { uploadStatus: "COMPLETE" as const },
+    where: { uploadStatus: "COMPLETE" as const, planId: null },
     orderBy: [{ kind: "asc" as const }, { createdAt: "asc" as const }],
     select: fileSelect,
   },
@@ -270,6 +296,8 @@ export const caseDetailSelect = {
       toStatus: true,
       createdAt: true,
       metadata: true,
+      note: true,
+      actor: { select: { name: true, role: true } },
     },
   },
 } satisfies Prisma.CaseSelect;
@@ -284,6 +312,17 @@ export function toCaseDetail(c: Prisma.CaseGetPayload<{ select: typeof caseDetai
     notes: c.notes,
     createdAt: c.createdAt.toISOString(),
     submittedAt: c.submittedAt?.toISOString() ?? null,
+    statusChangedAt: c.statusChangedAt?.toISOString() ?? null,
+    shipping: c.shippingCarrier
+      ? {
+          carrier: c.shippingCarrier,
+          trackingNumber: c.trackingNumber ?? "",
+          trackingUrl: c.trackingUrl,
+          shippedAt: c.shippedAt?.toISOString() ?? null,
+        }
+      : null,
+    deliveredAt: c.deliveredAt?.toISOString() ?? null,
+    cancelledAt: c.cancelledAt?.toISOString() ?? null,
     guideTypeName: c.guideType ? toBilingual(c.guideType.name) : null,
     dentist: c.dentist,
     implants: c.implants.map((i) => ({
@@ -296,19 +335,17 @@ export function toCaseDetail(c: Prisma.CaseGetPayload<{ select: typeof caseDetai
       kit: i.surgicalKit?.name ?? null,
     })),
     files: c.files.map(toClientFile),
-    events: c.events.map((e) => ({ ...e, createdAt: e.createdAt.toISOString() })),
+    events: c.events.map((e) => ({
+      id: e.id,
+      type: e.type,
+      fromStatus: e.fromStatus,
+      toStatus: e.toStatus,
+      note: e.note,
+      metadata: (e.metadata ?? {}) as Record<string, unknown>,
+      actorRole: e.actor?.role ?? null,
+      actorName: e.actor?.name ?? null,
+      createdAt: e.createdAt.toISOString(),
+    })),
   };
 }
 export type CaseDetail = ReturnType<typeof toCaseDetail>;
-
-/** One of the dentist's own submitted cases (drafts open in the wizard instead). */
-export async function getOwnCaseDetail(locale: string, caseId: string) {
-  const { dentistId } = await getDentistScope(locale);
-  const c = await db.case.findFirst({
-    where: ownCaseWhere(dentistId, caseId),
-    select: caseDetailSelect,
-  });
-  if (!c) notFound();
-  if (c.status === "DRAFT") redirect(`/${locale}/portal/cases/${c.id}/edit`);
-  return toCaseDetail(c);
-}

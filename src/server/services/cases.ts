@@ -4,13 +4,12 @@ import type { Prisma } from "@/generated/prisma/client";
 import { REQUIRED_FILE_KINDS } from "@/lib/case-files";
 import { db } from "@/lib/db";
 import { detailsSchema, sitesSchema, type DetailsInput } from "@/lib/validation/case";
-import { allocateCaseNumber } from "@/server/services/case-number";
 
 // Case drafts and submission. Every function takes the dentist id from the DB-checked session (never
 // from the client) and only touches that dentist's own DRAFT cases: the WHERE clause carries both, so
 // a submitted or foreign case is simply "not found".
 
-type Tx = Prisma.TransactionClient;
+export type Tx = Prisma.TransactionClient;
 
 export class CaseError extends Error {
   constructor(
@@ -187,14 +186,14 @@ export async function saveSites(
 }
 
 /**
- * DRAFT → SUBMITTED: re-validates everything stored (details, sites, required files COMPLETE, no
- * upload still running), allocates the case number and records the event, in one transaction. The
- * status guard in the WHERE makes a double submit a no-op.
+ * The "validCase" + "requiredFiles" preconditions of DRAFT → SUBMITTED (case-workflow.ts runs it
+ * inside the transition): re-validates everything stored (details, sites against the live catalog,
+ * required files COMPLETE, no upload still running). Throws CaseError with field errors.
  */
-export async function submitCase(dentistId: string, caseId: string) {
-  return db.$transaction(async (tx) => {
-    const c = await tx.case.findFirst({
-      where: draftWhere(dentistId, caseId),
+export async function checkDraftComplete(tx: Tx, caseId: string) {
+  {
+    const c = await tx.case.findUnique({
+      where: { id: caseId },
       select: {
         patientCode: true,
         guideTypeId: true,
@@ -233,25 +232,8 @@ export async function submitCase(dentistId: string, caseId: string) {
     }
     await assertGuideType(tx, c.guideTypeId);
     await validateSites(tx, sites);
-
-    const caseNumber = await allocateCaseNumber(tx);
-    const now = new Date();
-    const { count } = await tx.case.updateMany({
-      where: draftWhere(dentistId, caseId),
-      data: { status: "SUBMITTED", caseNumber, submittedAt: now, consentAt: now },
-    });
-    if (count !== 1) throw new CaseError("notFound");
-    await tx.caseEvent.create({
-      data: {
-        caseId,
-        type: "STATUS_CHANGED",
-        fromStatus: "DRAFT",
-        toStatus: "SUBMITTED",
-        actorId: dentistId,
-      },
-    });
-    return { caseNumber, implantCount: sites.length, guideTypeId: c.guideTypeId! };
-  });
+    return { implantCount: sites.length, guideTypeId: c.guideTypeId! };
+  }
 }
 
 /** A draft's files (for deleting their objects before the rows). */

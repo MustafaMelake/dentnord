@@ -3,13 +3,28 @@ import { execFileSync } from "node:child_process";
 // Test setup/teardown against the database in .env (must be the Neon `dev` branch; db-cli.ts
 // refuses `production`). Runs db-cli.ts in a tsx child process, see the note there.
 
+/** Connection failures (flaky network) are retried; anything else fails the test at once. */
+const NETWORK_ERROR =
+  /ETIMEDOUT|ECONNRESET|ECONNREFUSED|ENETUNREACH|EAI_AGAIN|Can't reach database/;
+
 function run<T>(op: string, args: object = {}): T {
-  const out = execFileSync(
-    process.execPath,
-    ["--import", "tsx", "tests/e2e/support/db-cli.ts", JSON.stringify({ op, args })],
-    { encoding: "utf8", stdio: ["ignore", "pipe", "inherit"] },
-  );
-  return JSON.parse(out) as T;
+  for (let attempt = 1; ; attempt++) {
+    try {
+      const out = execFileSync(
+        process.execPath,
+        ["--import", "tsx", "tests/e2e/support/db-cli.ts", JSON.stringify({ op, args })],
+        { encoding: "utf8", stdio: ["ignore", "pipe", "pipe"] },
+      );
+      return JSON.parse(out) as T;
+    } catch (error) {
+      const stderr = String((error as { stderr?: unknown }).stderr ?? "");
+      if (attempt >= 3 || !NETWORK_ERROR.test(stderr)) {
+        if (stderr) process.stderr.write(stderr);
+        throw error;
+      }
+      Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, 3000 * attempt); // back off
+    }
+  }
 }
 
 export const E2E_PASSWORD = "e2e-Password-123";
@@ -96,3 +111,34 @@ export const getCase = (caseId: string) =>
   run<{ status: string; caseNumber: string | null; events: { type: string }[] } | null>("getCase", {
     caseId,
   });
+
+export const getEmailLog = (caseId: string) =>
+  run<{ kind: string; to: string }[]>("emailLog", { caseId });
+
+export type DbPlan = {
+  id: string;
+  version: number;
+  sent: boolean;
+  decision: string | null;
+  decisionComment: string | null;
+  approvalStatement: string | null;
+  approvalLocale: string | null;
+  files: { id: string; kind: string; uploadStatus: string }[];
+};
+export const getPlans = (caseId: string) => run<DbPlan[]>("casePlans", { caseId });
+
+export const getTrail = (caseId: string) =>
+  run<{ fromStatus: string | null; toStatus: string; type: string; note: string | null }[]>(
+    "caseTrail",
+    { caseId },
+  );
+
+/** A SUBMITTED case without files, straight in the DB (skips the wizard). */
+export const createSubmittedCase = (email: string) =>
+  run<{ id: string }>("createSubmittedCase", { email }).id;
+
+export const getMessages = (caseId: string) =>
+  run<{ internal: boolean; authorRole: string; body: string; readAt: string | null }[]>(
+    "caseMessages",
+    { caseId },
+  );

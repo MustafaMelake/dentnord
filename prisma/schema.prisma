@@ -57,6 +57,8 @@ model User {
   uploadedFiles CaseFile[]    @relation("CaseFileUploader")
   caseEvents    CaseEvent[]
   caseMessages  CaseMessage[]
+  plansCreated  CasePlan[]    @relation("PlanCreatedBy")
+  plansDecided  CasePlan[]    @relation("PlanDecidedBy")
   auditEntries  AuditLog[]
   mediaUploads  MediaAsset[]
 
@@ -198,6 +200,18 @@ model Case {
   files    CaseFile[]
   events   CaseEvent[]
   messages CaseMessage[]
+  plans    CasePlan[]
+  emails   EmailLog[]
+
+  /// When status last changed (set only by server/services/case-workflow.ts).
+  statusChangedAt DateTime?
+  /// Shipping (SHIPPED): carrier, tracking number and an optional http(s) tracking link.
+  shippingCarrier String?
+  trackingNumber  String?
+  trackingUrl     String?
+  shippedAt       DateTime?
+  deliveredAt     DateTime?
+  cancelledAt     DateTime?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -248,7 +262,11 @@ enum CaseFileKind {
   CBCT
   INTRAORAL_SCAN
   PHOTO
+  /// Lab: the plan report (pdf), required for every plan version.
   PLAN_REPORT
+  /// Lab: 3D model of the planned implants (stl/ply/obj/glb), optional.
+  PLAN_3D
+  /// Lab: the guide design (stl), optional.
   GUIDE_STL
   OTHER
 }
@@ -289,6 +307,9 @@ model CaseFile {
   uploadId     String?
   /// Intraoral scans: upper / lower / bite (optional).
   scanPart     ScanPart?
+  /// Lab files (PLAN_REPORT / PLAN_3D / GUIDE_STL) belong to one plan version.
+  planId       String?
+  plan         CasePlan?    @relation(fields: [planId], references: [id], onDelete: Cascade)
   /// Integrity info if available (R2 ETag of the completed object).
   checksum     String?
   completedAt  DateTime?
@@ -298,6 +319,7 @@ model CaseFile {
   updatedAt    DateTime     @updatedAt
 
   @@index([caseId, kind])
+  @@index([planId])
   @@index([uploadedById])
   @@index([uploadStatus, createdAt])
   @@map("case_file")
@@ -312,6 +334,8 @@ enum CaseEventType {
   PLAN_APPROVED
   CHANGES_REQUESTED
   UPDATED
+  /// The lab started preparing a new plan version.
+  PLAN_CREATED
 }
 
 /// Status timeline + audit log. Append-only.
@@ -336,20 +360,77 @@ model CaseEvent {
 
 /// Comment thread between the dentist and the lab on a case.
 model CaseMessage {
-  id        String    @id @default(cuid())
-  caseId    String
-  case      Case      @relation(fields: [caseId], references: [id], onDelete: Cascade)
-  authorId  String?
-  author    User?     @relation(fields: [authorId], references: [id], onDelete: SetNull)
-  body      String
-  /// When the other party read it.
-  readAt    DateTime?
-  createdAt DateTime  @default(now())
-  updatedAt DateTime  @updatedAt
+  id         String    @id @default(cuid())
+  caseId     String
+  case       Case      @relation(fields: [caseId], references: [id], onDelete: Cascade)
+  authorId   String?
+  author     User?     @relation(fields: [authorId], references: [id], onDelete: SetNull)
+  body       String
+  /// Who wrote it, as seen by the reader: the dentist, or Dentnord (ADMIN).
+  authorRole Role
+  /// Admin-only internal note. NEVER shown to (or queryable by) the dentist.
+  internal   Boolean   @default(false)
+  /// When the other party read it (not used for internal notes).
+  readAt     DateTime?
+  editedAt   DateTime?
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
 
-  @@index([caseId, createdAt])
+  @@index([caseId, internal, createdAt])
   @@index([authorId])
   @@map("case_message")
+}
+
+enum PlanDecision {
+  APPROVED
+  CHANGES_REQUESTED
+}
+
+/// A treatment plan version prepared by the lab. Unsent (sentAt null) while being prepared; the
+/// dentist decides on the latest sent version, once. The decision is a legal record: the app never
+/// edits or deletes it, and a DB trigger rejects changes to a decided plan.
+model CasePlan {
+  id          String    @id @default(cuid())
+  caseId      String
+  case        Case      @relation(fields: [caseId], references: [id], onDelete: Cascade)
+  version     Int
+  /// Optional note for the dentist: { "da": "...", "en": "..." }.
+  note        Json?
+  createdById String
+  createdBy   User      @relation("PlanCreatedBy", fields: [createdById], references: [id], onDelete: Restrict)
+  createdAt   DateTime  @default(now())
+  /// When it was sent to the dentist (IN_PLANNING → AWAITING_APPROVAL).
+  sentAt      DateTime?
+
+  decision          PlanDecision?
+  decidedById       String?
+  decidedBy         User?         @relation("PlanDecidedBy", fields: [decidedById], references: [id], onDelete: Restrict)
+  decidedAt         DateTime?
+  decisionComment   String?
+  /// Approval: the exact statement the dentist confirmed, and in which language.
+  approvalStatement String?
+  approvalLocale    String?
+
+  files CaseFile[]
+
+  @@unique([caseId, version])
+  @@index([caseId, sentAt])
+  @@map("case_plan")
+}
+
+/// Every email the app sent (or logged without Resend): for the per-case message throttle, for
+/// tests and for support. Never contains patient data (subjects carry the case number only).
+model EmailLog {
+  id        String   @id @default(cuid())
+  kind      String
+  to        String
+  subject   String
+  caseId    String?
+  case      Case?    @relation(fields: [caseId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+
+  @@index([caseId, kind, createdAt])
+  @@map("email_log")
 }
 
 // ──────────────────────────── Editable catalogs ────────────────────────────

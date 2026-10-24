@@ -11,7 +11,8 @@ import { UserMenu, UserMenuSkeleton } from "@/components/shared/app-shell/user-m
 import { Link } from "@/i18n/navigation";
 import { routing } from "@/i18n/routing";
 import { getOwnProfile } from "@/server/queries/dentist";
-import { requireApprovedDentist } from "@/server/queries/session";
+import { getSession, requireApprovedDentist } from "@/server/queries/session";
+import { unreadCounts } from "@/server/services/case-messages";
 
 // The shell is static (prerendered); the account box and the page content stream in behind
 // <Suspense>, each re-checking the session against the DB.
@@ -22,7 +23,16 @@ export default async function PortalLayout({ children }: LayoutProps<"/[locale]/
 
   const items: ShellNavItem[] = [
     { href: "/portal/dashboard", label: t("dashboard"), icon: "dashboard" },
-    { href: "/portal/cases", label: t("cases"), icon: "cases" },
+    {
+      href: "/portal/cases",
+      label: t("cases"),
+      icon: "cases",
+      badge: (
+        <Suspense fallback={null}>
+          <UnreadBadge />
+        </Suspense>
+      ),
+    },
     { href: "/portal/cases/new", label: t("newCase"), icon: "newCase" },
     { href: "/portal/account", label: t("account"), icon: "account" },
   ];
@@ -83,5 +93,25 @@ async function PortalAccount({ locale }: { locale: string }) {
       loginPath={`/${locale}/login`}
       locale={locale}
     />
+  );
+}
+
+/** Unread messages from Dentnord, across the dentist's cases. */
+async function UnreadBadge() {
+  const session = await getSession();
+  if (!session || session.user.role !== "DENTIST") return null;
+  const [{ total }, t] = await Promise.all([
+    unreadCounts({ id: session.user.id, role: "DENTIST" }),
+    getTranslations("portal.nav"),
+  ]);
+  if (total === 0) return null;
+  return (
+    <span
+      data-nav-badge="unread"
+      className="min-w-6 rounded-full bg-brand px-1.5 py-0.5 text-center text-xs font-medium text-white"
+    >
+      <span aria-hidden>{total}</span>
+      <span className="sr-only">{t("unreadBadge", { count: total })}</span>
+    </span>
   );
 }
