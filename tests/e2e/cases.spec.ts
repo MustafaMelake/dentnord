@@ -250,8 +250,9 @@ test("the server rejects wrong types and sizes, and R2 rejects a part of the wro
   expect([res.status(), await code(res)]).toEqual([400, "extension"]);
   res = await register("CBCT", "scan.zip", 3 * 1024 ** 3);
   expect([res.status(), await code(res)]).toEqual([400, "tooLarge"]);
-  res = await register("PLAN_REPORT", "plan.pdf", 1_000); // lab-only kind
-  expect([res.status(), await code(res)]).toEqual([400, "kind"]);
+  // A lab-only kind is a valid file type, but the permission matrix refuses it to a dentist.
+  res = await register("PLAN_REPORT", "plan.pdf", 1_000);
+  expect([res.status(), await code(res)]).toEqual([403, "kind"]);
   res = await register("CBCT", "scan.zip", 0);
   expect(res.status()).toBe(400);
   expect(getCaseFiles(caseId)).toHaveLength(0);
