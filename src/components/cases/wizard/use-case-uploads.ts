@@ -128,15 +128,17 @@ export function useCaseUploads({
       );
     });
 
-    // Removing a file in Uppy also removes it on the server (the route is idempotent).
-    u.on("file-removed", (file) => {
+    // Removing a file in Uppy (the remove / cancel buttons) also removes it on the server (the route
+    // is idempotent). Detached before destroy(): unmounting must never delete anyone's files.
+    const onRemoved = (file: LiveFile) => {
       const serverId = file.meta.serverId;
       if (!serverId) return;
       void fetch(`/api/uploads/multipart/${encodeURIComponent(serverId)}`, {
         method: "DELETE",
       }).catch(() => undefined);
       setFiles((files) => files.filter((f) => f.id !== serverId));
-    });
+    };
+    u.on("file-removed", onRemoved);
 
     setUppy(u);
     const retryOnline = () => {
@@ -145,6 +147,8 @@ export function useCaseUploads({
     window.addEventListener("online", retryOnline);
     return () => {
       window.removeEventListener("online", retryOnline);
+      u.off("file-removed", onRemoved);
+      // Unfinished uploads are aborted (Uppy calls our abort route); finished files stay.
       u.destroy();
     };
   }, []);

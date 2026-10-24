@@ -307,3 +307,20 @@ test("deleting a draft deletes its objects in R2", async ({ browser }) => {
   expect(getCase(caseId)).toBeNull();
   expect(getR2Objects(caseId)).toHaveLength(0);
 });
+
+test("leaving the wizard through an in-app link keeps the uploaded files", async ({ browser }) => {
+  const { page } = await signIn(browser, dentist);
+  const caseId = await startCase(page, "E2E-LEAVE-1");
+  await addFile(page, "CBCT", "keep.zip", 30_000);
+  await expect(row(page, "CBCT", "keep.zip")).toHaveAttribute("data-state", "done");
+
+  // Client-side navigation unmounts the wizard (and its uploader): nothing may be deleted.
+  await page.getByRole("navigation").getByRole("link", { name: "Cases" }).first().click();
+  await expect(page).toHaveURL(/\/en\/portal\/cases$/);
+  await page.waitForLoadState("networkidle");
+
+  expect(getCaseFiles(caseId).map((f) => [f.kind, f.uploadStatus])).toEqual([["CBCT", "COMPLETE"]]);
+  expect(getR2Objects(caseId)).toHaveLength(1);
+  await page.goto(`/en/portal/cases/${caseId}/edit?step=3`);
+  await expect(row(page, "CBCT", "keep.zip")).toHaveAttribute("data-state", "done");
+});
