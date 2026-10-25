@@ -217,6 +217,76 @@ export type LegalInput = z.input<typeof legalSchema>;
 export const siteImagesSchema = z.object({ heroId: optionalId, technologyId: optionalId });
 export type SiteImagesInput = z.input<typeof siteImagesSchema>;
 
+// ── Page texts (/admin/pages/*) ──────────────────────────────────────────────
+// Every field may be empty: an empty text is hidden on the public page (admins see a marker).
+
+const heading = () => bilingual(160);
+const paragraph = (max = 1500) => bilingual(max);
+const cta = {
+  ctaTitle: heading(),
+  ctaBody: bilingual(400),
+  ctaLabel: bilingual(60),
+};
+
+export const servicesPageSchema = z.object({
+  title: heading(),
+  intro: bilingual(600),
+  imageId: optionalId,
+  listHeading: heading(),
+  processHeading: heading(),
+  processBody: paragraph(),
+  ...cta,
+});
+export type ServicesPageInput = z.input<typeof servicesPageSchema>;
+
+export const aboutPageSchema = z.object({
+  title: heading(),
+  intro: bilingual(600),
+  expertiseHeading: heading(),
+  approachHeading: heading(),
+  approachBody: paragraph(),
+  imageId: optionalId,
+  statsHeading: heading(),
+  ...cta,
+});
+export type AboutPageInput = z.input<typeof aboutPageSchema>;
+
+export const contactPageSchema = z.object({
+  title: heading(),
+  intro: bilingual(600),
+  detailsHeading: heading(),
+  formHeading: heading(),
+  formIntro: bilingual(400),
+});
+export type ContactPageInput = z.input<typeof contactPageSchema>;
+
+/** The bilingual text fields of each page (the checklist wants both languages filled in). */
+export const PAGE_TEXT_FIELDS = {
+  services: [
+    "title",
+    "intro",
+    "listHeading",
+    "processHeading",
+    "processBody",
+    "ctaTitle",
+    "ctaBody",
+    "ctaLabel",
+  ],
+  about: [
+    "title",
+    "intro",
+    "expertiseHeading",
+    "approachHeading",
+    "approachBody",
+    "statsHeading",
+    "ctaTitle",
+    "ctaBody",
+    "ctaLabel",
+  ],
+  contact: ["title", "intro", "detailsHeading", "formHeading", "formIntro"],
+} as const satisfies Record<string, readonly string[]>;
+export type PageName = keyof typeof PAGE_TEXT_FIELDS;
+
 // ── Media ────────────────────────────────────────────────────────────────────
 
 export const MEDIA_TYPES = {

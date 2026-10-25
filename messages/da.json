@@ -448,7 +448,9 @@
     "consentRequired": "Bekræft venligst, før du indsender.",
     "kitIncompatible": "Dette kit passer ikke til det valgte implantatsystem.",
     "fileRequired": "Denne fil er påkrævet.",
-    "incomplete": "Ikke udfyldt."
+    "incomplete": "Ikke udfyldt.",
+    "messageTooShort": "Skriv lidt mere (mindst 10 tegn).",
+    "noPatientData": "Det ligner et CPR-nummer. Send ikke patientoplysninger her."
   },
   "legal": {
     "terms": {
@@ -572,6 +574,17 @@
         "heading": "Ny besked",
         "body": "{clinic} har skrevet om sag {caseNumber}."
       }
+    },
+    "contactMessage": {
+      "subject": "Ny kontaktbesked fra {name}",
+      "preview": "Nogen har sendt en besked via kontaktformularen.",
+      "heading": "Ny besked fra kontaktformularen",
+      "body": "Af hensyn til privatlivet står selve beskeden ikke i denne e-mail. Læs den i administrationen under Messages.",
+      "name": "Navn",
+      "clinic": "Klinik",
+      "email": "E-mail",
+      "phone": "Telefon",
+      "cta": "Åbn indbakken"
     }
   },
   "changePassword": {
@@ -1034,6 +1047,47 @@
         "keep": "Behold sagen",
         "confirm": "Annullér sag"
       }
+    }
+  },
+  "servicesPage": {
+    "listLabel": "Vores ydelser",
+    "processLabel": "Sådan foregår det",
+    "priceOnRequest": "Pris efter aftale",
+    "from": "Fra",
+    "free": "Uden beregning"
+  },
+  "aboutPage": {
+    "doctorLabel": "Bag Dentnord",
+    "approachLabel": "Sådan arbejder vi",
+    "statsLabel": "I tal",
+    "stats": {
+      "clinics": "Klinikker"
+    }
+  },
+  "contactPage": {
+    "detailsLabel": "Kontaktoplysninger",
+    "formLabel": "Send en besked",
+    "email": "E-mail",
+    "phone": "Telefon",
+    "address": "Adresse",
+    "cvr": "CVR-nr.",
+    "form": {
+      "label": "Kontaktformular",
+      "name": "Navn",
+      "clinic": "Klinik",
+      "email": "E-mail",
+      "phone": "Telefon",
+      "optional": "valgfri",
+      "message": "Besked",
+      "patientNote": "Skriv ikke patientoplysninger (navne, CPR-numre, scanninger) i denne formular. Send cases via tandlægeportalen i stedet.",
+      "honeypot": "Lad dette felt være tomt",
+      "send": "Send besked",
+      "sending": "Sender…",
+      "sentTitle": "Tak, din besked er sendt",
+      "sentBody": "Vi vender tilbage på e-mail.",
+      "sendAnother": "Send en ny besked",
+      "rateLimited": "For mange beskeder fra denne forbindelse. Prøv igen senere.",
+      "failed": "Beskeden kunne ikke sendes. Prøv igen."
     }
   }
 }

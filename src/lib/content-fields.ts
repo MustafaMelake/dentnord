@@ -30,6 +30,24 @@ export const CONTENT_FIELDS = {
   "accounts.reviewDays": { href: "/admin/settings?tab=accounts#reviewDays" },
   "legal.terms": { href: "/admin/settings?tab=legal#terms" },
   "legal.privacy": { href: "/admin/settings?tab=legal#privacy" },
+  // Page texts (/admin/pages/*): one checklist item per page, one marker per field.
+  "pages.services": { href: "/admin/pages/services" },
+  "pages.about": { href: "/admin/pages/about" },
+  "pages.contact": { href: "/admin/pages/contact" },
+  "servicesPage.intro": { href: "/admin/pages/services#field-intro" },
+  "servicesPage.image": { href: "/admin/pages/services#field-imageId" },
+  "servicesPage.listHeading": { href: "/admin/pages/services#field-listHeading" },
+  "servicesPage.process": { href: "/admin/pages/services#field-processHeading" },
+  "servicesPage.cta": { href: "/admin/pages/services#field-ctaTitle" },
+  "aboutPage.intro": { href: "/admin/pages/about#field-intro" },
+  "aboutPage.expertiseHeading": { href: "/admin/pages/about#field-expertiseHeading" },
+  "aboutPage.approach": { href: "/admin/pages/about#field-approachHeading" },
+  "aboutPage.image": { href: "/admin/pages/about#field-imageId" },
+  "aboutPage.statsHeading": { href: "/admin/pages/about#field-statsHeading" },
+  "aboutPage.cta": { href: "/admin/pages/about#field-ctaTitle" },
+  "contactPage.intro": { href: "/admin/pages/contact#field-intro" },
+  "contactPage.detailsHeading": { href: "/admin/pages/contact#field-detailsHeading" },
+  "contactPage.form": { href: "/admin/pages/contact#field-formHeading" },
 } as const;
 
 export type ContentField = keyof typeof CONTENT_FIELDS;

@@ -18,6 +18,7 @@ import { hashPassword } from "better-auth/crypto";
 
 import { PrismaClient } from "../src/generated/prisma/client";
 import { withVerifiedSsl } from "../src/lib/pg-url";
+import { seedPageTexts } from "./page-starters";
 import { seedRefusal } from "./seed-guard";
 
 // The guard compares against the .env FILE, because `pnpm db:seed` (Prisma CLI) has usually loaded
@@ -261,12 +262,20 @@ async function seedSiteSettings() {
   console.log(`✓ ${Object.keys(settings).length} site settings`);
 }
 
+async function seedPages() {
+  const created = await seedPageTexts(db);
+  console.log(
+    `✓ page texts: ${created.length ? `created ${created.join(", ")}` : "already there"}`,
+  );
+}
+
 async function main() {
   await seedAdmin();
   await seedServices();
   await seedGuideTypes();
   await seedImplantSystemsAndKits();
   await seedSiteSettings();
+  await seedPages();
 }
 
 main()

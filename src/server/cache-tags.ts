@@ -15,5 +15,16 @@ export const TAGS = {
   setting: (key: SettingKey) => `site-settings:${key}`,
 } as const;
 
-export const SETTING_KEYS = ["stats", "contact", "doctor", "accounts", "legal", "images"] as const;
+export const SETTING_KEYS = [
+  "stats",
+  "contact",
+  "doctor",
+  "accounts",
+  "legal",
+  "images",
+  // The texts of the Services / About / Contact pages (/admin/pages/*).
+  "page.services",
+  "page.about",
+  "page.contact",
+] as const;
 export type SettingKey = (typeof SETTING_KEYS)[number];

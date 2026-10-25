@@ -14,7 +14,7 @@ import {
 import { PrismaPg } from "@prisma/adapter-pg";
 import { hashPassword } from "better-auth/crypto";
 
-import { PrismaClient } from "../../../src/generated/prisma/client";
+import { PrismaClient, type Prisma } from "../../../src/generated/prisma/client";
 import { withVerifiedSsl } from "../../../src/lib/pg-url";
 import { r2Endpoint, type R2Jurisdiction } from "../../../src/lib/r2-endpoint";
 
@@ -184,6 +184,31 @@ const ops = {
     return row?.value ?? null;
   },
 
+  /** Puts a page-text setting back after a test edited it (only "page.*" keys). */
+  async setSetting({ key, value }: { key: string; value: Prisma.InputJsonValue | null }) {
+    if (!key.startsWith("page.")) throw new Error("E2E only restores page.* settings");
+    if (value === null) await db.siteSetting.deleteMany({ where: { key } });
+    else await db.siteSetting.upsert({ where: { key }, create: { key, value }, update: { value } });
+    return { ok: true };
+  },
+
+  async contactMessages({ email }: { email: string }) {
+    const rows = await db.contactMessage.findMany({
+      where: { email },
+      orderBy: { createdAt: "asc" },
+      select: {
+        id: true,
+        name: true,
+        clinic: true,
+        phone: true,
+        message: true,
+        locale: true,
+        readAt: true,
+      },
+    });
+    return rows.map(({ readAt, ...m }) => ({ ...m, read: readAt !== null }));
+  },
+
   async getTestimonials({ authorPrefix }: { authorPrefix: string }) {
     return db.testimonial.findMany({
       where: { authorName: { startsWith: authorPrefix } },
@@ -334,7 +359,11 @@ const ops = {
       where: { authorName: { startsWith: "E2E " } },
       select: { id: true },
     });
-    const contentIds = [...services, ...testimonials].map((r) => r.id);
+    const messages = await db.contactMessage.findMany({
+      where: { email: { startsWith: E2E_EMAIL_PREFIX } },
+      select: { id: true },
+    });
+    const contentIds = [...services, ...testimonials, ...messages].map((r) => r.id);
     await db.auditLog.deleteMany({
       where: {
         OR: [
@@ -346,6 +375,7 @@ const ops = {
     });
     await db.service.deleteMany({ where: { id: { in: services.map((s) => s.id) } } });
     await db.testimonial.deleteMany({ where: { id: { in: testimonials.map((t) => t.id) } } });
+    await db.contactMessage.deleteMany({ where: { id: { in: messages.map((m) => m.id) } } });
     if (ids.length > 0) {
       // Cases restrict deleting their dentist; files, sites and events cascade with the case.
       await db.case.deleteMany({ where: { dentistId: { in: ids } } });

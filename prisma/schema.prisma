@@ -617,3 +617,23 @@ model SiteSetting {
 
   @@map("site_setting")
 }
+
+/// Messages from the public contact form, read in /admin/messages. The form asks visitors not to
+/// send patient information. No IP address is stored (the rate limiter keys on a hash of it).
+model ContactMessage {
+  id        String    @id @default(cuid())
+  name      String
+  clinic    String
+  email     String
+  phone     String?
+  message   String
+  /// The site language the form was sent from ("da" | "en").
+  locale    String
+  /// Null = unread.
+  readAt    DateTime?
+  createdAt DateTime  @default(now())
+
+  @@index([createdAt(sort: Desc)])
+  @@index([readAt])
+  @@map("contact_message")
+}

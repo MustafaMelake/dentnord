@@ -86,6 +86,23 @@ export const getService = (id: string) =>
 export const getSetting = (key: string) =>
   run<Record<string, unknown> | null>("getSetting", { key });
 
+/** Restores a page.* setting (null deletes the row). */
+export const setSetting = (key: string, value: Record<string, unknown> | null) =>
+  run<{ ok: true }>("setSetting", { key, value });
+
+export type DbContactMessage = {
+  id: string;
+  name: string;
+  clinic: string;
+  phone: string | null;
+  message: string;
+  locale: string;
+  read: boolean;
+};
+
+export const getContactMessages = (email: string) =>
+  run<DbContactMessage[]>("contactMessages", { email });
+
 export const getTestimonials = (authorPrefix: string) =>
   run<{ id: string; authorName: string; consent: boolean; published: boolean }[]>(
     "getTestimonials",

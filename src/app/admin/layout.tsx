@@ -13,6 +13,7 @@ import { Toaster } from "@/components/ui/sonner";
 import { fontVariables } from "@/lib/fonts";
 import { countNewCases } from "@/server/queries/admin-cases";
 import { countPendingDentists } from "@/server/queries/admin-dentists";
+import { countUnreadContactMessages } from "@/server/queries/admin-messages";
 import { unreadCounts } from "@/server/services/case-messages";
 import { requireAdmin } from "@/server/queries/session";
 
@@ -56,6 +57,17 @@ export default async function AdminLayout({ children }: LayoutProps<"/admin">) {
     { href: "/admin/catalog", label: t("catalog"), icon: "catalog" },
     { href: "/admin/services", label: t("services"), icon: "services" },
     { href: "/admin/portfolio", label: t("portfolio"), icon: "portfolio" },
+    { href: "/admin/pages", label: t("pages"), icon: "pages" },
+    {
+      href: "/admin/messages",
+      label: t("messages"),
+      icon: "messages",
+      badge: (
+        <Suspense fallback={null}>
+          <ContactInboxBadge />
+        </Suspense>
+      ),
+    },
     { href: "/admin/settings", label: t("settings"), icon: "settings" },
   ];
 
@@ -143,6 +155,15 @@ async function UnreadMessagesBadge() {
   ]);
   const { total } = await unreadCounts({ id: session.user.id, role: "ADMIN" });
   return <NavBadge count={total} label={t("unreadBadge", { count: total })} tone="outline" />;
+}
+
+/** Unread contact-form messages (/admin/messages). */
+async function ContactInboxBadge() {
+  const [count, t] = await Promise.all([
+    countUnreadContactMessages(),
+    getTranslations({ locale: "en", namespace: "admin.nav" }),
+  ]);
+  return <NavBadge count={count} label={t("contactInboxBadge", { count })} />;
 }
 
 function NavBadge({

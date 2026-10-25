@@ -3,6 +3,7 @@ import "server-only";
 import { buildAccountApprovedEmail } from "@/emails/account-approved";
 import { buildAccountRejectedEmail } from "@/emails/account-rejected";
 import { buildCaseSubmittedEmail } from "@/emails/case-submitted";
+import { buildContactMessageEmail } from "@/emails/contact-message";
 import { buildDentistRegisteredEmail } from "@/emails/dentist-registered";
 import { emailLocale } from "@/emails/i18n";
 import { buildPasswordResetEmail } from "@/emails/password-reset";
@@ -60,6 +61,28 @@ export function notifyAdminOfRegistration(
       },
     });
     await sendEmail({ to: env.ADMIN_EMAIL, ...email });
+  });
+}
+
+/** To ADMIN_EMAIL: a new contact-form message in /admin/messages (sender only, not the text). */
+export function notifyAdminOfContactMessage(sender: {
+  name: string;
+  clinic: string;
+  email: string;
+  phone: string | null;
+}) {
+  sendInBackground(async () => {
+    const admin = await db.user.findUnique({
+      where: { email: env.ADMIN_EMAIL.toLowerCase() },
+      select: { preferredLocale: true },
+    });
+    const email = buildContactMessageEmail({
+      locale: emailLocale(admin?.preferredLocale ?? "en"),
+      inboxUrl: siteUrl("/admin/messages"),
+      sender: { ...sender, phone: sender.phone ?? "" },
+    });
+    // Reply-to the sender, so the admin can answer straight from the email.
+    await sendEmail({ to: env.ADMIN_EMAIL, replyTo: sender.email, ...email });
   });
 }
 

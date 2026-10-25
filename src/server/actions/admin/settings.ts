@@ -5,16 +5,22 @@ import { updateTag } from "next/cache";
 import type { Prisma } from "@/generated/prisma/client";
 import { db } from "@/lib/db";
 import {
+  aboutPageSchema,
   accountsSchema,
+  contactPageSchema,
   contactSchema,
   doctorSchema,
   legalSchema,
+  servicesPageSchema,
   siteImagesSchema,
   statsSchema,
+  type AboutPageInput,
   type AccountsInput,
   type ContactInput,
+  type ContactPageInput,
   type DoctorInput,
   type LegalInput,
+  type ServicesPageInput,
   type SiteImagesInput,
   type StatsInput,
 } from "@/lib/validation/admin";
@@ -86,4 +92,26 @@ export async function saveSiteImages(input: SiteImagesInput) {
     await assertMediaExists([data.heroId, data.technologyId]);
     await writeSetting("images", data, actor);
   });
+}
+
+// Page texts (/admin/pages/*). Saving a page also marks its seeded starter copy as reviewed.
+
+export async function saveServicesPage(input: ServicesPageInput) {
+  return runAdminAction(servicesPageSchema, input, async (data, actor) => {
+    await assertMediaExists([data.imageId]);
+    await writeSetting("page.services", { ...data, starter: false }, actor);
+  });
+}
+
+export async function saveAboutPage(input: AboutPageInput) {
+  return runAdminAction(aboutPageSchema, input, async (data, actor) => {
+    await assertMediaExists([data.imageId]);
+    await writeSetting("page.about", { ...data, starter: false }, actor);
+  });
+}
+
+export async function saveContactPage(input: ContactPageInput) {
+  return runAdminAction(contactPageSchema, input, (data, actor) =>
+    writeSetting("page.contact", { ...data, starter: false }, actor),
+  );
 }

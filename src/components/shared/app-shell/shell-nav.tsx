@@ -3,8 +3,10 @@
 import {
   Boxes,
   FilePlus2,
+  FileText,
   FolderOpen,
   Images,
+  Inbox,
   LayoutDashboard,
   Layers,
   Settings,
@@ -31,6 +33,8 @@ const ICONS = {
   services: Layers,
   portfolio: Images,
   settings: Settings,
+  pages: FileText,
+  messages: Inbox,
 } as const;
 
 export type ShellIcon = keyof typeof ICONS;

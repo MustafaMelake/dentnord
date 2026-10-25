@@ -21,6 +21,10 @@ export async function getPublishedServices() {
       slug: true,
       title: true,
       summary: true,
+      priceAmount: true,
+      priceFrom: true,
+      currency: true,
+      priceNote: true,
       image: { select: publicImageSelect },
     },
   });

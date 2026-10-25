@@ -434,7 +434,10 @@
       "pendingBadge": "{count} pending",
       "account": "Account",
       "newCasesBadge": "{count} new",
-      "unreadBadge": "{count, plural, one {# unread message} other {# unread messages}}"
+      "unreadBadge": "{count, plural, one {# unread message} other {# unread messages}}",
+      "pages": "Pages",
+      "messages": "Messages",
+      "contactInboxBadge": "{count, plural, one {# unread message} other {# unread messages}}"
     },
     "caseDetail": "Case",
     "dashboard": {
@@ -853,7 +856,9 @@
       "detail": {
         "servicesWithoutImage": "{count, plural, one {# published service has no photo} other {# published services have no photo}}",
         "exampleRows": "{count, plural, one {# example entry left} other {# example entries left}}",
-        "translationMissing": "{count, plural, one {# translation missing} other {# translations missing}}"
+        "translationMissing": "{count, plural, one {# translation missing} other {# translations missing}}",
+        "fieldsMissing": "{count, plural, one {# text missing in Danish or English} other {# texts missing in Danish or English}}",
+        "starterText": "Starter text: review it and save"
       },
       "fields": {
         "stats": {
@@ -897,6 +902,31 @@
         "legal": {
           "terms": "Terms (Danish and English)",
           "privacy": "Privacy policy (Danish and English)"
+        },
+        "pages": {
+          "services": "Services page texts",
+          "about": "About page texts",
+          "contact": "Contact page texts"
+        },
+        "servicesPage": {
+          "intro": "Services page: introduction",
+          "image": "Services page: photo",
+          "listHeading": "Services page: heading above the services",
+          "process": "Services page: “How ordering works” section",
+          "cta": "Services page: call to action"
+        },
+        "aboutPage": {
+          "intro": "About page: introduction",
+          "expertiseHeading": "About page: heading above the areas of expertise",
+          "approach": "About page: “How we work” section",
+          "image": "About page: photo",
+          "statsHeading": "About page: heading above the numbers",
+          "cta": "About page: call to action"
+        },
+        "contactPage": {
+          "intro": "Contact page: introduction",
+          "detailsHeading": "Contact page: heading above the contact details",
+          "form": "Contact page: heading and text above the form"
         }
       }
     },
@@ -1039,6 +1069,78 @@
         "empty": "No internal notes.",
         "placeholder": "Write an internal note…"
       }
+    },
+    "pages": {
+      "pageTitle": "Pages",
+      "intro": "The texts of the public Services, About and Contact pages, in Danish and English. Empty texts are hidden on the site.",
+      "navLabel": "Pages",
+      "names": {
+        "services": "Services",
+        "about": "About",
+        "contact": "Contact"
+      },
+      "viewOnSite": "View on site:",
+      "starterNotice": "This page still shows the starter text. Read it through, put it in your own words and save: the content checklist then marks the page as done.",
+      "topTitle": "Top of the page",
+      "topDescription": "The page title and the short introduction under it.",
+      "ctaTitle": "Call to action",
+      "ctaDescription": "The dark band at the bottom of the page. Its button opens case submission in the dentist portal.",
+      "fields": {
+        "title": "Page title",
+        "intro": "Introduction",
+        "image": "Photo",
+        "imageHint": "A wide photo under the introduction. Without one, a neutral background is shown.",
+        "heading": "Heading",
+        "body": "Text",
+        "paragraphsHint": "Leave an empty line to start a new paragraph.",
+        "ctaTitle": "Heading",
+        "ctaBody": "Text",
+        "ctaLabel": "Button text",
+        "ctaLabelHint": "Short, e.g. “Submit a case”."
+      },
+      "services": {
+        "listTitle": "Services",
+        "listDescription": "The heading above your services. The services themselves (photos, texts and prices) are edited under Services.",
+        "processTitle": "How ordering works",
+        "processDescription": "A short section under the services."
+      },
+      "about": {
+        "topDescription": "The page title and the introduction. The doctor's name, credentials, bio, portrait and facts come from Settings → About the doctor.",
+        "expertiseTitle": "Areas of expertise",
+        "expertiseDescription": "The heading above the areas of expertise. The list itself is edited under Settings → About the doctor.",
+        "approachTitle": "How we work",
+        "approachDescription": "A section about the way you work, with an optional photo.",
+        "imageHint": "Shown next to the text. Without one, a neutral background is shown.",
+        "statsTitle": "Numbers",
+        "statsDescription": "The heading above the numbers. The numbers come from Settings → Numbers; empty ones are hidden."
+      },
+      "contact": {
+        "detailsTitle": "Contact details",
+        "detailsDescription": "The heading above your contact details. Email, phone, address and CVR come from Settings → Contact.",
+        "formTitle": "Contact form",
+        "formDescription": "The heading and short text above the form. Messages arrive under Messages, and you get an email for each one."
+      }
+    },
+    "inbox": {
+      "title": "Messages",
+      "intro": "Messages sent through the contact form on the website. The email you get only says who wrote: the message itself is only here.",
+      "empty": "No messages yet",
+      "emptyHint": "Messages sent through the contact form show up here.",
+      "summary": "{total, plural, one {# message} other {# messages}}, {unread} unread",
+      "unread": "Unread",
+      "email": "Email",
+      "phone": "Phone",
+      "language": "Language",
+      "reply": "Reply by email",
+      "markRead": "Mark as read",
+      "markUnread": "Mark as unread",
+      "markedRead": "Marked as read",
+      "markedUnread": "Marked as unread",
+      "delete": "Delete",
+      "deleteTitle": "Delete this message?",
+      "deleteDescription": "The message from {name} will be deleted for good.",
+      "cancel": "Cancel",
+      "deleted": "Message deleted"
     }
   },
   "dentistStatus": {
@@ -1073,7 +1175,9 @@
     "consentRequired": "Please confirm before you submit.",
     "kitIncompatible": "This kit doesn't fit the chosen implant system.",
     "fileRequired": "This file is required.",
-    "incomplete": "Incomplete."
+    "incomplete": "Incomplete.",
+    "messageTooShort": "Please write a little more (at least 10 characters).",
+    "noPatientData": "This looks like a CPR number. Please don't send patient information here."
   },
   "legal": {
     "terms": {
@@ -1197,6 +1301,17 @@
         "heading": "New message",
         "body": "{clinic} wrote about case {caseNumber}."
       }
+    },
+    "contactMessage": {
+      "subject": "New contact message from {name}",
+      "preview": "Someone sent a message through the contact form.",
+      "heading": "New message from the contact form",
+      "body": "For privacy, the message itself is not in this email. Read it in the admin under Messages.",
+      "name": "Name",
+      "clinic": "Clinic",
+      "email": "Email",
+      "phone": "Phone",
+      "cta": "Open the inbox"
     }
   },
   "changePassword": {
@@ -1659,6 +1774,47 @@
         "keep": "Keep the case",
         "confirm": "Cancel case"
       }
+    }
+  },
+  "servicesPage": {
+    "listLabel": "Our services",
+    "processLabel": "How it works",
+    "priceOnRequest": "Price on request",
+    "from": "From",
+    "free": "Free of charge"
+  },
+  "aboutPage": {
+    "doctorLabel": "Behind Dentnord",
+    "approachLabel": "How we work",
+    "statsLabel": "In numbers",
+    "stats": {
+      "clinics": "Clinics"
+    }
+  },
+  "contactPage": {
+    "detailsLabel": "Contact details",
+    "formLabel": "Send a message",
+    "email": "Email",
+    "phone": "Phone",
+    "address": "Address",
+    "cvr": "CVR",
+    "form": {
+      "label": "Contact form",
+      "name": "Name",
+      "clinic": "Clinic",
+      "email": "Email",
+      "phone": "Phone",
+      "optional": "optional",
+      "message": "Message",
+      "patientNote": "Please don't include patient information (names, CPR numbers, scans) in this form. Send cases through the dentist portal instead.",
+      "honeypot": "Leave this field empty",
+      "send": "Send message",
+      "sending": "Sending…",
+      "sentTitle": "Thank you, your message has been sent",
+      "sentBody": "We'll get back to you by email.",
+      "sendAnother": "Send another message",
+      "rateLimited": "Too many messages from this connection. Please try again later.",
+      "failed": "The message could not be sent. Please try again."
     }
   }
 }

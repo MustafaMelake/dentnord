@@ -3,7 +3,7 @@ import "server-only";
 import { cacheLife, cacheTag } from "next/cache";
 
 import { db } from "@/lib/db";
-import { toBilingual, type Bilingual } from "@/lib/validation/admin";
+import { PAGE_TEXT_FIELDS, toBilingual, type Bilingual } from "@/lib/validation/admin";
 import { TAGS, type SettingKey } from "@/server/cache-tags";
 
 // SiteSetting rows (key → JSON), edited in /admin/settings. Each getter normalises the stored JSON
@@ -107,6 +107,46 @@ export type ImagesSetting = { heroId: string | null; technologyId: string | null
 export async function getImagesSetting(): Promise<ImagesSetting> {
   const v = await getSetting("images");
   return { heroId: ref(v.heroId), technologyId: ref(v.technologyId) };
+}
+
+// ── Page texts (/admin/pages/*) ──────────────────────────────────────────────
+// `starter`: the seeded starter copy (prisma/seed-pages.ts) that nobody has reviewed yet. It is shown
+// like any other text; the content checklist lists the page until an admin saves it once.
+
+type PageFields<P extends keyof typeof PAGE_TEXT_FIELDS> = Record<
+  (typeof PAGE_TEXT_FIELDS)[P][number],
+  Bilingual
+>;
+
+function pageTexts<P extends keyof typeof PAGE_TEXT_FIELDS>(
+  page: P,
+  v: Record<string, unknown>,
+): PageFields<P> & { starter: boolean } {
+  const fields = Object.fromEntries(PAGE_TEXT_FIELDS[page].map((f) => [f, toBilingual(v[f])]));
+  return { ...(fields as PageFields<P>), starter: v.starter === true };
+}
+
+export type ServicesPageSetting = PageFields<"services"> & {
+  imageId: string | null;
+  starter: boolean;
+};
+
+export async function getServicesPageSetting(): Promise<ServicesPageSetting> {
+  const v = await getSetting("page.services");
+  return { ...pageTexts("services", v), imageId: ref(v.imageId) };
+}
+
+export type AboutPageSetting = PageFields<"about"> & { imageId: string | null; starter: boolean };
+
+export async function getAboutPageSetting(): Promise<AboutPageSetting> {
+  const v = await getSetting("page.about");
+  return { ...pageTexts("about", v), imageId: ref(v.imageId) };
+}
+
+export type ContactPageSetting = PageFields<"contact"> & { starter: boolean };
+
+export async function getContactPageSetting(): Promise<ContactPageSetting> {
+  return pageTexts("contact", await getSetting("page.contact"));
 }
 
 /** Cached so the footer can prerender (Cache Components forbids `new Date()` in a static shell). */

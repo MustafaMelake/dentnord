@@ -2,14 +2,18 @@ import "server-only";
 
 import { CONTENT_FIELDS, looksLikeExample, type ContentField } from "@/lib/content-fields";
 import { db } from "@/lib/db";
+import { PAGE_TEXT_FIELDS, type Bilingual, type PageName } from "@/lib/validation/admin";
 import { getImages } from "@/server/queries/media";
 import { requireAdmin } from "@/server/queries/session";
 import {
+  getAboutPageSetting,
   getAccountsSetting,
+  getContactPageSetting,
   getContactSetting,
   getDoctorSetting,
   getImagesSetting,
   getLegalSetting,
+  getServicesPageSetting,
   getStatsSetting,
 } from "@/server/queries/site-settings";
 
@@ -21,10 +25,29 @@ export type ChecklistItem = {
   href: string;
   done: boolean;
   /** Extra detail, e.g. "2 of 4 services". */
-  detail?: { key: "servicesWithoutImage" | "exampleRows" | "translationMissing"; count: number };
+  detail?: {
+    key:
+      | "servicesWithoutImage"
+      | "exampleRows"
+      | "translationMissing"
+      | "fieldsMissing"
+      | "starterText";
+    count: number;
+  };
 };
 
 const both = (v: { da: string; en: string }) => !!v.da.trim() && !!v.en.trim();
+
+/** A page is done when every text is filled in (both languages) and the starter copy was reviewed. */
+function pageCheck<P extends PageName>(
+  page: P,
+  texts: Record<(typeof PAGE_TEXT_FIELDS)[P][number], Bilingual> & { starter: boolean },
+): [boolean, ChecklistItem["detail"]] {
+  const fields: readonly (typeof PAGE_TEXT_FIELDS)[P][number][] = PAGE_TEXT_FIELDS[page];
+  const missing = fields.filter((f) => !both(texts[f])).length;
+  if (missing > 0) return [false, { key: "fieldsMissing", count: missing }];
+  return [!texts.starter, { key: "starterText", count: 1 }];
+}
 
 export async function getContentChecklist() {
   await requireAdmin();
@@ -39,6 +62,9 @@ export async function getContentChecklist() {
     examples,
     testimonials,
     portfolio,
+    servicesPage,
+    aboutPage,
+    contactPage,
   ] = await Promise.all([
     getStatsSetting(),
     getContactSetting(),
@@ -57,6 +83,9 @@ export async function getContentChecklist() {
     ]),
     db.testimonial.count({ where: { published: true, consent: true } }),
     db.portfolioCase.count({ where: { published: true } }),
+    getServicesPageSetting(),
+    getAboutPageSetting(),
+    getContactPageSetting(),
   ]);
   const images = await getImages([
     doctor.portraitId,
@@ -108,6 +137,9 @@ export async function getContentChecklist() {
     ["accounts.reviewDays", accounts.reviewDays !== null],
     ["legal.terms", both(legal.terms)],
     ["legal.privacy", both(legal.privacy)],
+    ["pages.services", ...pageCheck("services", servicesPage)],
+    ["pages.about", ...pageCheck("about", aboutPage)],
+    ["pages.contact", ...pageCheck("contact", contactPage)],
   ];
 
   const items: ChecklistItem[] = checks.map(([field, done, detail]) => ({

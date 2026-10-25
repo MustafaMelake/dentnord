@@ -56,7 +56,7 @@ import { SortableList } from "./sortable-list";
 // One form per /admin/settings tab. Each saves its own SiteSetting and invalidates its cache tag,
 // so the public site updates on the next request.
 
-function useSettingsForm<S extends z.ZodType<FieldValues, FieldValues>>(
+export function useSettingsForm<S extends z.ZodType<FieldValues, FieldValues>>(
   schema: S,
   defaultValues: z.input<S>,
   save: (values: z.input<S>) => Promise<ActionResult<unknown>>,
@@ -87,7 +87,7 @@ function useSettingsForm<S extends z.ZodType<FieldValues, FieldValues>>(
   return { form, saving, onSubmit };
 }
 
-function SettingsForm<T extends FieldValues>({
+export function SettingsForm<T extends FieldValues>({
   form,
   onSubmit,
   saving,
