@@ -53,6 +53,13 @@ export async function Hero({
           aria-hidden
           className="absolute inset-0 -z-10 bg-[linear-gradient(100deg,rgb(11_27_43/0.72)_0%,rgb(11_27_43/0.35)_45%,rgb(11_27_43/0)_75%)]"
         />
+        {/* Behind the transparent header (white nav, account control, DA/EN): the side scrim above
+            fades out to the right, so a light image there would swallow it. Top band only. */}
+        <div
+          aria-hidden
+          data-hero-top-scrim=""
+          className="absolute inset-x-0 top-0 -z-10 h-52 bg-linear-to-b from-ink/70 via-ink/40 via-45% to-transparent sm:h-56 lg:h-64"
+        />
 
         <Container className="flex flex-1 flex-col pt-28 pb-5 sm:pt-32 sm:pb-8 lg:pt-36">
           {clinics !== null ? (
