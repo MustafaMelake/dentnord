@@ -8,7 +8,7 @@ import {
   setSetting,
   uniqueEmail,
 } from "./support/db";
-import { login, newUser } from "./support/helpers";
+import { login, newUser, openMobileMenu } from "./support/helpers";
 
 // The Services / About / Contact pages: the contact form → inbox (/admin/messages), editing a page
 // in /admin/pages and seeing it on the site, and the header / footer links in both languages.
@@ -191,8 +191,8 @@ for (const locale of ["en", "da"] as const) {
       // Phone: the full-screen menu.
       await page.setViewportSize({ width: 390, height: 844 });
       await page.goto(`/${locale}`);
-      await page.getByRole("button", { name: labels.menu }).click();
-      await page.getByRole("dialog").getByRole("link", { name: labels[slug] }).click();
+      const menu = await openMobileMenu(page, labels.menu);
+      await menu.getByRole("link", { name: labels[slug] }).click();
       await expect(page).toHaveURL(new RegExp(`/${locale}/${slug}$`));
       await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
     }

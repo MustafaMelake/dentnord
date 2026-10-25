@@ -27,6 +27,20 @@ export async function login(page: Page, email: string, password: string, path = 
   await page.getByRole("button", { name: "Log in" }).click();
 }
 
+/**
+ * Phone width: open the site header's full-screen menu. Waits until the header is hydrated
+ * (`data-ready`): after a full page load the server-rendered button is visible before React has
+ * attached its click handler, and a tap in that window does nothing.
+ */
+export async function openMobileMenu(page: Page, buttonName = "Open menu") {
+  const button = page.getByRole("button", { name: buttonName });
+  await expect(button).toHaveAttribute("data-ready", "true");
+  await button.click();
+  const dialog = page.getByRole("dialog");
+  await expect(dialog).toBeVisible();
+  return dialog;
+}
+
 /** Admin: open the dentist's detail page and run an action (Approve / Reject / Disable / Re-activate). */
 export async function adminDecide(
   page: Page,

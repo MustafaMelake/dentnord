@@ -3,7 +3,7 @@
 import { useLenis } from "lenis/react";
 import { AnimatePresence, motion, useMotionValueEvent, useScroll } from "motion/react";
 import { useTranslations } from "next-intl";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState, useSyncExternalStore } from "react";
 
 import { MagneticButton } from "@/components/motion/magnetic";
 import { spring, usePrefersReducedMotion } from "@/components/motion/use-media-query";
@@ -33,6 +33,9 @@ export function SiteHeader({ accountSlot }: { accountSlot: React.ReactNode }) {
   const [scrolled, setScrolled] = useState(false);
   const [open, setOpen] = useState(false);
   const menuButtonRef = useRef<HTMLButtonElement>(null);
+  // False in the server HTML, true once React has hydrated the header (its click handlers are
+  // attached), so tests can wait for `data-ready` instead of tapping a button that does nothing yet.
+  const ready = useSyncExternalStore(noopSubscribe, isClient, isServer);
   const { scrollY } = useScroll();
 
   useMotionValueEvent(scrollY, "change", (y) => setScrolled(y > 24));
@@ -99,6 +102,7 @@ export function SiteHeader({ accountSlot }: { accountSlot: React.ReactNode }) {
               aria-expanded={open}
               aria-controls="mobile-menu"
               aria-label={t("openMenu")}
+              data-ready={ready || undefined}
               onClick={() => setOpen(true)}
               className="inline-flex h-11 items-center gap-3 rounded-full border border-line bg-surface/60 pr-1.5 pl-4 text-[0.9375rem] text-ink backdrop-blur-md transition-colors lg:hidden over-hero:border-white/30 over-hero:bg-white/10 over-hero:text-white"
             >
@@ -126,6 +130,10 @@ export function SiteHeader({ accountSlot }: { accountSlot: React.ReactNode }) {
 }
 
 const BAR = { placement: "bar" } as const;
+
+const noopSubscribe = () => () => {};
+const isClient = () => true;
+const isServer = () => false;
 
 function MobileMenu({
   open,

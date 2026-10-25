@@ -4,7 +4,6 @@ import { getLocale, getTranslations } from "next-intl/server";
 
 import { ContactForm } from "@/components/marketing/pages/contact-form";
 import { PageHero } from "@/components/marketing/pages/page-hero";
-import { pageText } from "@/components/marketing/pages/page-text";
 import { Reveal } from "@/components/motion/reveal";
 import { Container } from "@/components/shared/container";
 import { Missing } from "@/components/shared/missing";
@@ -21,8 +20,8 @@ export async function generateMetadata(): Promise<Metadata> {
     getContactPageSetting(),
   ]);
   return {
-    title: pageText(page.title, locale) || t("contact"),
-    description: pageText(page.intro, locale) || undefined,
+    title: localized(page.title, locale) || t("contact"),
+    description: localized(page.intro, locale) || undefined,
   };
 }
 
@@ -34,7 +33,7 @@ export default async function ContactPage() {
     getContactPageSetting(),
     getContactSetting(),
   ]);
-  const text = (key: Exclude<keyof typeof page, "starter">) => pageText(page[key], locale);
+  const text = (key: Exclude<keyof typeof page, "starter">) => localized(page[key], locale);
   const address = localized(contact.address, locale);
 
   return (

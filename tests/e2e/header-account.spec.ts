@@ -1,7 +1,7 @@
 import { expect, test, type Page } from "@playwright/test";
 
 import { cleanupE2EUsers, createUser } from "./support/db";
-import { login, newUser } from "./support/helpers";
+import { login, newUser, openMobileMenu } from "./support/helpers";
 
 // The marketing header's account control (session-aware slot in a prerendered header) and the
 // portal's "Back to site" link.
@@ -107,8 +107,7 @@ test("phone: the full-screen menu shows the account links; the portal bar links 
   await page.setViewportSize({ width: 390, height: 844 });
   // Signed out: Log in in the menu.
   await page.goto("/en/services");
-  await page.getByRole("button", { name: "Open menu" }).click();
-  const dialog = page.getByRole("dialog", { name: "Menu" });
+  let dialog = await openMobileMenu(page);
   await expect(dialog.locator('[data-account="signed-out"]')).toHaveText("Log in");
   await context.clearCookies();
 
@@ -116,7 +115,7 @@ test("phone: the full-screen menu shows the account links; the portal bar links 
   await expect(page).toHaveURL(/\/en\/portal\/dashboard$/);
   await page.locator("header [data-back-to-site]").click();
   await expect(page).toHaveURL(/\/en$/);
-  await page.getByRole("button", { name: "Open menu" }).click();
+  dialog = await openMobileMenu(page);
   const account = dialog.locator('[data-account="signed-in"]');
   await expect(account).toContainText("Hanne Jensen");
   await expect(dialog.locator('[data-account="signed-out"]')).toHaveCount(0);

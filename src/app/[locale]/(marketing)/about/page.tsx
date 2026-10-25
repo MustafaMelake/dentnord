@@ -3,7 +3,6 @@ import { getLocale, getTranslations } from "next-intl/server";
 
 import { PageCta } from "@/components/marketing/pages/page-cta";
 import { PageHero } from "@/components/marketing/pages/page-hero";
-import { pageText } from "@/components/marketing/pages/page-text";
 import { Paragraphs } from "@/components/marketing/pages/paragraphs";
 import { Reveal, RevealItem } from "@/components/motion/reveal";
 import { Container } from "@/components/shared/container";
@@ -29,8 +28,8 @@ export async function generateMetadata(): Promise<Metadata> {
     getAboutPageSetting(),
   ]);
   return {
-    title: pageText(page.title, locale) || t("about"),
-    description: pageText(page.intro, locale) || undefined,
+    title: localized(page.title, locale) || t("about"),
+    description: localized(page.intro, locale) || undefined,
   };
 }
 
@@ -47,7 +46,7 @@ export default async function AboutPage() {
   const images = await getImages([doctor.portraitId, page.imageId]);
   const img = (id: string | null) => (id ? (images[id] ?? null) : null);
   const text = (key: Exclude<keyof typeof page, "imageId" | "starter">) =>
-    pageText(page[key], locale);
+    localized(page[key], locale);
   const fmt = (n: number) => new Intl.NumberFormat(locale).format(n);
 
   const credentials = localized(doctor.credentials, locale);
