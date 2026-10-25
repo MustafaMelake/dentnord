@@ -10,6 +10,7 @@ import {
   getTrail,
 } from "./support/db";
 import { login, newUser } from "./support/helpers";
+import { uploadFile as file } from "./support/uploads";
 
 // The full case lifecycle against a production build, the dev database and the real bucket (under
 // test/): dentist ↔ lab through every status, plans, 3D viewer, messages, emails (EmailLog) and
@@ -44,23 +45,6 @@ async function signIn(
   await expect(session.page).toHaveURL(/\/(portal|admin)\//);
   await session.page.waitForLoadState("networkidle");
   return session;
-}
-
-async function file(page: Page, scope: string, slot: string, name: string, buffer: Buffer) {
-  await page.locator(`${scope} [data-slot="${slot}"] input[type=file]`).setInputFiles({
-    name,
-    mimeType: "application/octet-stream",
-    buffer,
-  });
-  const fileRow = page.locator(`${scope} [data-slot="${slot}"] [data-file-row="${name}"]`);
-  // Like a user on a shaky connection: if the upload fails, press Retry (it resumes the parts).
-  for (let attempt = 1; ; attempt++) {
-    await expect(fileRow).toHaveAttribute("data-state", /^(done|error)$/, { timeout: 90_000 });
-    if ((await fileRow.getAttribute("data-state")) === "done" || attempt > 3) break;
-    await fileRow.getByRole("button", { name: /^Retry/ }).click();
-    await expect(fileRow).not.toHaveAttribute("data-state", "error");
-  }
-  await expect(fileRow).toHaveAttribute("data-state", "done");
 }
 
 /** Wizard → SUBMITTED, with a CBCT zip and an upper scan. Returns the case id. */
