@@ -52,6 +52,7 @@ export default async function PortalLayout({ children }: LayoutProps<"/[locale]/
       navLabel={t("label")}
       menuLabel={t("menu")}
       locale={locale}
+      siteLink={{ label: t("backToSite") }}
       sidebarFooter={
         <Suspense fallback={<UserMenuSkeleton />}>
           <PortalAccount locale={locale} />

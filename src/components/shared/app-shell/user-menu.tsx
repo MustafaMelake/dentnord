@@ -14,7 +14,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Link as IntlLink } from "@/i18n/navigation";
 
-function initials(name: string) {
+export function initials(name: string) {
   return name
     .split(/\s+/)
     .filter(Boolean)

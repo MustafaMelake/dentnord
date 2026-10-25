@@ -1,5 +1,6 @@
 import { Suspense, type ReactNode } from "react";
 
+import { BackToSite, type SiteLink } from "./back-to-site";
 import { MobileBar } from "./mobile-bar";
 import { ShellNav, ShellNavList, type ShellNavItem } from "./shell-nav";
 
@@ -13,6 +14,7 @@ export function AppShell({
   navLabel,
   menuLabel,
   locale,
+  siteLink,
   sidebarFooter,
   children,
 }: {
@@ -22,6 +24,8 @@ export function AppShell({
   navLabel: string;
   menuLabel: string;
   locale?: string;
+  /** Portal: a "Back to site" link under the logo (and in the mobile bar + sheet). */
+  siteLink?: SiteLink;
   /** Account box at the bottom of the sidebar (and of the mobile sheet). */
   sidebarFooter: ReactNode;
   children: ReactNode;
@@ -35,7 +39,10 @@ export function AppShell({
   return (
     <div className="flex min-h-dvh flex-1 flex-col bg-canvas lg:grid lg:grid-cols-[16.5rem_minmax(0,1fr)]">
       <aside className="sticky top-0 hidden h-dvh flex-col gap-8 border-r border-line bg-surface px-4 py-5 lg:flex">
-        <div className="px-2">{brand}</div>
+        <div className="flex flex-col items-start gap-4 px-2">
+          {brand}
+          {siteLink && <BackToSite {...siteLink} />}
+        </div>
         <div className="flex-1 overflow-y-auto">{nav}</div>
         {sidebarFooter}
       </aside>
@@ -46,6 +53,7 @@ export function AppShell({
         items={items}
         navLabel={navLabel}
         locale={locale}
+        siteLink={siteLink}
         footer={sidebarFooter}
       />
 

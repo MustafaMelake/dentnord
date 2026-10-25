@@ -3,7 +3,7 @@
 import { useLenis } from "lenis/react";
 import { AnimatePresence, motion, useMotionValueEvent, useScroll } from "motion/react";
 import { useTranslations } from "next-intl";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import { MagneticButton } from "@/components/motion/magnetic";
 import { spring, usePrefersReducedMotion } from "@/components/motion/use-media-query";
@@ -13,10 +13,13 @@ import { LocaleSwitcher } from "@/components/shared/locale-switcher";
 import { Link } from "@/i18n/navigation";
 import { cn } from "@/lib/utils";
 
+import { AccountPlacement } from "./header-account";
 import { Logo } from "./logo";
 
 // Fixed header. Transparent with white text over the home hero (CSS `over-hero:` variant),
 // a blurred sticky bar once the page scrolls. Full-screen animated menu below `lg`.
+// The header itself is static; the session-dependent account control arrives as `accountSlot`
+// (see header-account.tsx), rendered once in the bar and once in the mobile menu.
 
 const NAV = [
   { href: "/services", key: "services" },
@@ -25,7 +28,7 @@ const NAV = [
   { href: "/contact", key: "contact" },
 ] as const;
 
-export function SiteHeader() {
+export function SiteHeader({ accountSlot }: { accountSlot: React.ReactNode }) {
   const t = useTranslations("nav");
   const [scrolled, setScrolled] = useState(false);
   const [open, setOpen] = useState(false);
@@ -80,12 +83,7 @@ export function SiteHeader() {
 
           <div className="flex items-center gap-2 sm:gap-3">
             <LocaleSwitcher tone="header" className="hidden lg:inline-flex" />
-            <Link
-              href="/login"
-              className="hidden rounded-full px-3 py-2 text-[0.9375rem] text-ink transition-colors duration-300 hover:bg-ink/5 lg:inline-block over-hero:text-white over-hero:hover:bg-white/10"
-            >
-              {t("login")}
-            </Link>
+            <AccountPlacement value={BAR}>{accountSlot}</AccountPlacement>
             <MagneticButton className="hidden sm:block">
               <ButtonLink
                 href="/portal/cases/new"
@@ -117,20 +115,29 @@ export function SiteHeader() {
         </Container>
       </div>
 
-      <MobileMenu open={open} onClose={() => setOpen(false)} triggerRef={menuButtonRef} />
+      <MobileMenu
+        open={open}
+        onClose={() => setOpen(false)}
+        triggerRef={menuButtonRef}
+        accountSlot={accountSlot}
+      />
     </header>
   );
 }
+
+const BAR = { placement: "bar" } as const;
 
 function MobileMenu({
   open,
   onClose,
   triggerRef,
+  accountSlot,
 }: {
   open: boolean;
   onClose: () => void;
   /** Focus returns here on close (Safari doesn't focus buttons on click, so don't rely on activeElement). */
   triggerRef: React.RefObject<HTMLButtonElement | null>;
+  accountSlot: React.ReactNode;
 }) {
   const t = useTranslations("nav");
   const reduce = usePrefersReducedMotion();
@@ -138,6 +145,7 @@ function MobileMenu({
   const panelRef = useRef<HTMLDivElement>(null);
 
   const close = useCallback(() => onClose(), [onClose]);
+  const placement = useMemo(() => ({ placement: "menu" as const, onNavigate: close }), [close]);
 
   // Lock scroll, move focus in, trap Tab, close on Escape, restore focus on close.
   useEffect(() => {
@@ -255,17 +263,11 @@ function MobileMenu({
           </Container>
 
           <Container className="flex flex-wrap items-center justify-between gap-4 border-t border-white/15 py-6">
-            <div className="flex items-center gap-3">
+            <div className="flex flex-wrap items-center gap-3">
               <ButtonLink href="/portal/cases/new" variant="light" icon onClick={close}>
                 {t("submitCase")}
               </ButtonLink>
-              <Link
-                href="/login"
-                onClick={close}
-                className="rounded-full px-3 py-2 text-white/90 hover:text-white"
-              >
-                {t("login")}
-              </Link>
+              <AccountPlacement value={placement}>{accountSlot}</AccountPlacement>
             </div>
             <LocaleSwitcher tone="onDark" />
           </Container>
