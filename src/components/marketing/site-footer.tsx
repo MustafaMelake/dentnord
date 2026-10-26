@@ -4,7 +4,7 @@ import { Container } from "@/components/shared/container";
 import { LocaleSwitcher } from "@/components/shared/locale-switcher";
 import { Missing } from "@/components/shared/missing";
 import { Link } from "@/i18n/navigation";
-import { localized } from "@/lib/utils";
+import { cn, localized } from "@/lib/utils";
 import { getContactSetting, getCurrentYear } from "@/server/queries/site-settings";
 
 import { Logo } from "./logo";
@@ -101,8 +101,24 @@ export async function SiteFooter() {
         </div>
       </Container>
 
-      <Container className="flex flex-wrap items-center justify-between gap-3 border-t border-line py-6 font-mono text-label text-ink-muted">
-        <span>{t("rights", { year })}</span>
+      <Container className="flex flex-wrap items-center justify-between gap-x-6 gap-y-3 border-t border-line py-6 font-mono text-label text-ink-muted">
+        <span className="flex flex-wrap items-center gap-x-5 gap-y-2">
+          <span>{t("rights", { year })}</span>
+          <span className="text-ink-muted">
+            {t("credit")}{" "}
+            <a
+              href="https://mustafamelake-portfolio.vercel.app/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className={cn(
+                "text-ink underline-offset-4 transition-colors duration-200",
+                "hover:text-brand hover:underline",
+              )}
+            >
+              Mustafa Melake
+            </a>
+          </span>
+        </span>
         <span className="flex flex-wrap items-center gap-x-5 gap-y-2">
           <Link href="/terms" className="underline-offset-4 hover:text-ink hover:underline">
             {t("terms")}
