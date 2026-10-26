@@ -1,4 +1,4 @@
-import { expect, test, type BrowserContext, type Page, type Request } from "@playwright/test";
+import type { BrowserContext, Page, Request } from "@playwright/test";
 
 import {
   cleanupE2EUsers,
@@ -11,6 +11,7 @@ import {
 } from "./support/db";
 import { login, newUser } from "./support/helpers";
 import { uploadFile as file } from "./support/uploads";
+import { expect, test } from "./support/test";
 
 // The full case lifecycle against a production build, the dev database and the real bucket (under
 // test/): dentist ↔ lab through every status, plans, 3D viewer, messages, emails (EmailLog) and

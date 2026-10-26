@@ -1,5 +1,8 @@
 import { expect, type Browser, type Page } from "@playwright/test";
 
+import { watchCsp } from "./csp";
+import { totp, totpSecretFor } from "./totp";
+
 /**
  * A fresh browser context (own cookies) with its own client IP. Better Auth rate-limits sign-in per
  * IP + path; locally every request would otherwise share one bucket. (On Vercel the edge sets
@@ -10,6 +13,7 @@ import { expect, type Browser, type Page } from "@playwright/test";
 export async function newUser(browser: Browser) {
   const ip = `10.${rand()}.${rand()}.${rand()}`;
   const context = await browser.newContext();
+  await watchCsp(context);
   await context.route(
     (url) => url.origin === "http://localhost:3000",
     (route) => route.continue({ headers: { ...route.request().headers(), "x-forwarded-for": ip } }),
@@ -20,11 +24,29 @@ export async function newUser(browser: Browser) {
 
 const rand = () => Math.floor(Math.random() * 254) + 1;
 
+/**
+ * Logs in on the English login page. Accounts created with 2FA (admins, see db.ts createUser) get
+ * the second step answered with a fresh TOTP code; with a wrong password the code step never comes.
+ */
 export async function login(page: Page, email: string, password: string, path = "/en/login") {
   await page.goto(path);
   await page.getByLabel("Email").fill(email);
   await page.getByLabel("Password", { exact: true }).fill(password);
   await page.getByRole("button", { name: "Log in" }).click();
+  const secret = totpSecretFor(email);
+  if (!secret) return;
+  // The code step, or an error (e.g. a wrong password: the test checks that itself).
+  const step = page.locator('[data-step="two-factor"]');
+  await step.or(page.locator('form [role="alert"]')).first().waitFor();
+  if (!(await step.isVisible())) return;
+  await enterTotp(page, secret);
+}
+
+/** Answers the login's code step with the current code for `secret`. */
+export async function enterTotp(page: Page, secret: Buffer | string) {
+  const step = page.locator('[data-step="two-factor"]');
+  await step.locator("#code").fill(totp(secret));
+  await step.locator('button[type="submit"]').click();
 }
 
 /**

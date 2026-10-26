@@ -5,6 +5,10 @@ import { Suspense } from "react";
 import { WizardLoader } from "@/components/cases/wizard/wizard-page";
 import { ShellPageHeader } from "@/components/shared/app-shell/app-shell";
 import { PageSkeleton } from "@/components/shared/app-shell/page-skeleton";
+import { FormAlert } from "@/components/shared/form-controls";
+import { Link } from "@/i18n/navigation";
+import { canOpenDraft, STORAGE_LIMITS } from "@/lib/storage-limits";
+import { countOwnDrafts } from "@/server/queries/dentist";
 
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getTranslations("portal.newCase");
@@ -25,5 +29,18 @@ export default async function NewCasePage() {
 }
 
 async function NewCase() {
-  return <WizardLoader locale={await getLocale()} caseId={null} />;
+  const locale = await getLocale();
+  // createDraft enforces the limit; this only explains it up front instead of a failing autosave.
+  if (!canOpenDraft(await countOwnDrafts(locale))) {
+    const t = await getTranslations("portal.newCase");
+    return (
+      <FormAlert tone="info" className="max-w-2xl">
+        {t("draftLimit", { max: STORAGE_LIMITS.maxOpenDrafts })}{" "}
+        <Link href="/portal/cases" className="font-medium underline underline-offset-4">
+          {t("draftLimitLink")}
+        </Link>
+      </FormAlert>
+    );
+  }
+  return <WizardLoader locale={locale} caseId={null} />;
 }

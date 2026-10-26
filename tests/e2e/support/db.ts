@@ -1,5 +1,7 @@
 import { execFileSync } from "node:child_process";
 
+import { randomSecret, rememberTotp } from "./totp";
+
 // Test setup/teardown against the database in .env (must be the Neon `dev` branch; db-cli.ts
 // refuses `production`). Runs db-cli.ts in a tsx child process, see the note there.
 
@@ -33,26 +35,36 @@ export function uniqueEmail(label: string) {
   return `e2e-${label}-${Date.now()}-${Math.random().toString(36).slice(2, 7)}@example.test`;
 }
 
+/**
+ * A test user. Admins get 2FA (TOTP) already set up unless `twoFactor: false`, as every real admin
+ * must have it: login() in helpers.ts then answers the code step. `backupCodes` work once each.
+ */
 export function createUser({
   label,
   role = "DENTIST",
   status = "APPROVED",
   name = "E2E Dentist",
+  twoFactor = role === "ADMIN",
 }: {
   label: string;
   role?: "ADMIN" | "DENTIST";
   status?: "PENDING" | "APPROVED" | "REJECTED";
   name?: string;
+  twoFactor?: boolean;
 }) {
   const email = uniqueEmail(label);
+  const totpSecret = twoFactor ? randomSecret() : null;
+  const backupCodes = twoFactor ? [`${randomSecret(5)}-${randomSecret(5)}`] : [];
   const { id } = run<{ id: string }>("createUser", {
     email,
     password: E2E_PASSWORD,
     name,
     role,
     status,
+    ...(totpSecret ? { twoFactor: { secret: totpSecret, backupCodes } } : {}),
   });
-  return { id, email, name, password: E2E_PASSWORD };
+  if (totpSecret) rememberTotp(email, totpSecret);
+  return { id, email, name, password: E2E_PASSWORD, totpSecret, backupCodes };
 }
 
 export type DbUser = {
@@ -159,3 +171,43 @@ export const getMessages = (caseId: string) =>
     "caseMessages",
     { caseId },
   );
+
+export const getAuditFor = (targetType: string, targetId: string) =>
+  run<{ action: string; actorId: string | null; actorEmail: string; metadata: unknown }[]>(
+    "getAudit",
+    { targetId, targetType },
+  );
+
+export const getTwoFactorState = (email: string) =>
+  run<{ enabled: boolean; verified: boolean | null } | null>("twoFactorState", { email });
+
+/** `count` empty drafts, straight in the DB. */
+export const createDrafts = (email: string, count: number) =>
+  run<{ ok: true }>("createDrafts", { email, count });
+
+/** An empty DRAFT case for an e2e user. */
+export const createDraft = (email: string) => run<{ id: string }>("createDraft", { email }).id;
+
+/** A COMPLETE file row of `sizeBytes` without an object (fills the storage quota). */
+export const addFileRow = (caseId: string, sizeBytes: number) =>
+  run<{ id: string }>("addFileRow", { caseId, sizeBytes }).id;
+
+/** A real 2 KB object in R2 with its COMPLETE file row (created `ageDays` ago). */
+export const addStoredFile = (caseId: string, ageDays = 0) =>
+  run<{ id: string; key: string }>("addStoredFile", { caseId, ageDays });
+
+/** An upload registered `ageHours` ago that never finished (open multipart upload in R2). */
+export const addStuckUpload = (caseId: string, ageHours: number) =>
+  run<{ id: string }>("addStuckUpload", { caseId, ageHours }).id;
+
+/** Backdates a case's `updatedAt`. */
+export const ageCase = (caseId: string, days: number) =>
+  run<{ ok: true }>("ageCase", { caseId, days });
+
+export const addMessage = (caseId: string) => run<{ ok: true }>("addMessage", { caseId });
+
+export const getCaseEvents = (caseId: string) =>
+  run<{ type: string; actorId: string | null; metadata: unknown }[]>("caseEvents", { caseId });
+
+export const getUserTraces = (user: { id: string; email: string }) =>
+  run<Record<string, number>>("userTraces", user);

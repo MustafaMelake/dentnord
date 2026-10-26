@@ -28,6 +28,7 @@ export function RegisterForm() {
   const locale = useLocale();
   const [error, setError] = useState<AuthErrorKey | null>(null);
   const [redirecting, setRedirecting] = useState(false);
+  const [verifyEmailSentTo, setVerifyEmailSentTo] = useState<string | null>(null);
   const {
     register,
     handleSubmit,
@@ -55,18 +56,38 @@ export function RegisterForm() {
     const { cvr, ...rest } = values;
     delete (rest as Partial<typeof rest>).confirmPassword; // form-only field
     // Same schema is enforced again on the server (Better Auth hooks.before in lib/auth.ts).
-    const body = { ...rest, ...(cvr?.trim() ? { cvr: cvr.trim() } : {}) };
-    const { error } = await signUp
+    const body = {
+      ...rest,
+      ...(cvr?.trim() ? { cvr: cvr.trim() } : {}),
+      // Where the email confirmation link leads (only used with EMAIL_VERIFICATION=on).
+      callbackURL: `/${locale}/login?verified=1`,
+    };
+    const { data, error } = await signUp
       .email(body as Parameters<typeof signUp.email>[0])
-      .catch(() => ({ error: { status: 0 } }));
+      .catch(() => ({ data: null, error: { status: 0 } }));
     if (error) {
       setError(authErrorKey(error, "register"));
+      window.scrollTo({ top: 0, behavior: "smooth" });
+      return;
+    }
+    // Email verification on: no session until the address is confirmed.
+    if (!data?.token) {
+      setVerifyEmailSentTo(values.email.trim());
       window.scrollTo({ top: 0, behavior: "smooth" });
       return;
     }
     // Signed in (new accounts start as PENDING): show the status page.
     setRedirecting(true);
     hardNavigate(`/${locale}/pending-approval`);
+  }
+
+  if (verifyEmailSentTo) {
+    return (
+      <FormAlert tone="success">
+        <strong className="block font-medium">{t("register.checkEmailTitle")}</strong>
+        {t("register.checkEmailBody", { email: verifyEmailSentTo })}
+      </FormAlert>
+    );
   }
 
   const e = {

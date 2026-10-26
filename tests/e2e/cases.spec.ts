@@ -1,7 +1,8 @@
-import { expect, test, type APIRequestContext, type Page } from "@playwright/test";
+import type { APIRequestContext, Page } from "@playwright/test";
 
 import { cleanupE2EUsers, createUser, getCase, getCaseFiles, getR2Objects } from "./support/db";
 import { login, newUser } from "./support/helpers";
+import { expect, test } from "./support/test";
 
 // Case submission against a production build and the real (EU) R2 bucket. Every object goes under
 // the test/ key prefix (playwright.config.ts) and global teardown deletes everything there.

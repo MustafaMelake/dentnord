@@ -28,6 +28,8 @@ export async function generateMetadata(): Promise<Metadata> {
       title: t("title"),
       description: t("description"),
     },
+    // The image itself: (marketing)/opengraph-image.tsx.
+    twitter: { card: "summary_large_image" },
   };
 }
 

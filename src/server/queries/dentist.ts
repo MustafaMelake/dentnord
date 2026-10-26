@@ -37,11 +37,18 @@ export const getOwnProfile = cache(async (locale: string) => {
       address: true,
       cvr: true,
       preferredLocale: true,
+      twoFactorEnabled: true,
     },
   });
   if (!profile) notFound();
   return profile;
 });
+
+/** Unsubmitted drafts (the new-case page shows a notice at STORAGE_LIMITS.maxOpenDrafts). */
+export async function countOwnDrafts(locale: string) {
+  const { dentistId } = await getDentistScope(locale);
+  return db.case.count({ where: { dentistId, status: "DRAFT" } });
+}
 
 export async function countOwnCases(locale: string) {
   const { dentistId } = await getDentistScope(locale);

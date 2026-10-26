@@ -3,6 +3,7 @@ import "server-only";
 import type { Prisma } from "@/generated/prisma/client";
 import { REQUIRED_FILE_KINDS } from "@/lib/case-files";
 import { db } from "@/lib/db";
+import { canOpenDraft } from "@/lib/storage-limits";
 import { detailsSchema, sitesSchema, type DetailsInput } from "@/lib/validation/case";
 
 // Case drafts and submission. Every function takes the dentist id from the DB-checked session (never
@@ -13,7 +14,8 @@ export type Tx = Prisma.TransactionClient;
 
 export class CaseError extends Error {
   constructor(
-    readonly code: "notFound" | "invalid" | "incomplete" | "uploadsPending" | "storage",
+    readonly code:
+      "notFound" | "invalid" | "incomplete" | "uploadsPending" | "storage" | "tooManyDrafts",
     readonly fieldErrors?: Record<string, string>,
   ) {
     super(code);
@@ -79,9 +81,17 @@ async function markStep(tx: Tx, caseId: string, actorId: string, step: number) {
   }
 }
 
+/** Unsubmitted drafts of a dentist (STORAGE_LIMITS.maxOpenDrafts at once). */
+export function countOpenDrafts(client: Pick<Tx, "case">, dentistId: string) {
+  return client.case.count({ where: { dentistId, status: "DRAFT" } });
+}
+
 /** The first save of the wizard creates the DRAFT (no case number until submit). */
 export async function createDraft(dentistId: string, details: DraftDetails, complete: boolean) {
   return db.$transaction(async (tx) => {
+    // Per-dentist lock until commit: two first-autosaves can't both slip under the draft limit.
+    await tx.$executeRaw`SELECT pg_advisory_xact_lock(hashtext(${`drafts:${dentistId}`}))`;
+    if (!canOpenDraft(await countOpenDrafts(tx, dentistId))) throw new CaseError("tooManyDrafts");
     await assertGuideType(tx, details.guideTypeId);
     const created = await tx.case.create({
       data: { dentistId, status: "DRAFT", ...detailsData(details) },

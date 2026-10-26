@@ -1,7 +1,8 @@
-import { expect, test, type Page } from "@playwright/test";
+import type { Page } from "@playwright/test";
 
 import { cleanupE2EUsers, createUser } from "./support/db";
 import { login, newUser, openMobileMenu } from "./support/helpers";
+import { expect, test } from "./support/test";
 
 // The marketing header's account control (session-aware slot in a prerendered header) and the
 // portal's "Back to site" link.

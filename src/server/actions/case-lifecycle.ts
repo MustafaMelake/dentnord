@@ -7,6 +7,7 @@ import { z } from "zod";
 
 import { routing } from "@/i18n/routing";
 import { CASE_STATUSES, TRANSITION_IDS, type Actor } from "@/lib/case-workflow-rules";
+import { isVerifiedAdmin } from "@/lib/redirects";
 import { getSession } from "@/server/queries/session";
 import {
   deleteMessage,
@@ -33,7 +34,8 @@ async function currentActor(): Promise<{ id: string; role: Actor } | null> {
   const session = await getSession();
   if (!session) return null;
   const { role, dentistStatus } = session.user as { role: string; dentistStatus: string };
-  if (role === "ADMIN") return { id: session.user.id, role: "ADMIN" };
+  // Admins act only with 2FA on (requireAdmin's rule).
+  if (role === "ADMIN") return isVerifiedAdmin(session.user) ? { id: session.user.id, role } : null;
   if (role === "DENTIST" && dentistStatus === "APPROVED")
     return { id: session.user.id, role: "DENTIST" };
   return null;

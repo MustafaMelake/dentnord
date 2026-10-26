@@ -1,4 +1,4 @@
-import { expect, test, type Page } from "@playwright/test";
+import type { Page } from "@playwright/test";
 
 import {
   cleanupE2EUsers,
@@ -9,6 +9,7 @@ import {
   uniqueEmail,
 } from "./support/db";
 import { login, newUser, openMobileMenu } from "./support/helpers";
+import { expect, test } from "./support/test";
 
 // The Services / About / Contact pages: the contact form → inbox (/admin/messages), editing a page
 // in /admin/pages and seeing it on the site, and the header / footer links in both languages.

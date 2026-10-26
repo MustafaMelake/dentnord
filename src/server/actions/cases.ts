@@ -34,7 +34,7 @@ export type CaseActionResult<T = undefined> =
   | { ok: true; data: T }
   | {
       ok: false;
-      error: "invalid" | "notFound" | "incomplete" | "uploadsPending" | "storage";
+      error: "invalid" | "notFound" | "incomplete" | "uploadsPending" | "storage" | "tooManyDrafts";
       fieldErrors?: Record<string, string>;
     };
 
