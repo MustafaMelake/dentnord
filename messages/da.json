@@ -208,6 +208,7 @@
     "address": "Adresse",
     "cvr": "CVR {cvr}",
     "rights": "© {year} Dentnord",
+    "credit": "Designet og udviklet af",
     "terms": "Vilkår",
     "privacy": "Privatlivspolitik"
   },

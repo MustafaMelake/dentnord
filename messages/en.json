@@ -207,6 +207,7 @@
     "address": "Address",
     "cvr": "CVR {cvr}",
     "rights": "© {year} Dentnord",
+    "credit": "Designed & built by",
     "terms": "Terms",
     "privacy": "Privacy policy"
   },
