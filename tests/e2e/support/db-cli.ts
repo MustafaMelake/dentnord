@@ -5,14 +5,16 @@ import { existsSync } from "node:fs";
 
 import {
   AbortMultipartUploadCommand,
+  CreateMultipartUploadCommand,
   DeleteObjectsCommand,
   HeadObjectCommand,
   ListMultipartUploadsCommand,
   ListObjectsV2Command,
+  PutObjectCommand,
   S3Client,
 } from "@aws-sdk/client-s3";
 import { PrismaPg } from "@prisma/adapter-pg";
-import { hashPassword } from "better-auth/crypto";
+import { hashPassword, symmetricEncrypt } from "better-auth/crypto";
 
 import { PrismaClient, type Prisma } from "../../../src/generated/prisma/client";
 import { withVerifiedSsl } from "../../../src/lib/pg-url";
@@ -103,10 +105,28 @@ type CreateUserArgs = {
   name: string;
   role: "ADMIN" | "DENTIST";
   status: "PENDING" | "APPROVED" | "REJECTED";
+  /** 2FA already set up, stored as Better Auth's twoFactor plugin stores it (encrypted). */
+  twoFactor?: { secret: string; backupCodes: string[] };
 };
 
+/** Better Auth's symmetric encryption, keyed with the app's BETTER_AUTH_SECRET (from .env). */
+const encrypt = (data: string) =>
+  symmetricEncrypt({ key: process.env.BETTER_AUTH_SECRET ?? "", data });
+
+/** Ownership checks for the ops below: only e2e users' rows are ever touched. */
+async function e2eCase(caseId: string) {
+  const c = await db.case.findUniqueOrThrow({
+    where: { id: caseId },
+    select: { id: true, dentistId: true, dentist: { select: { email: true } } },
+  });
+  if (!c.dentist.email.startsWith(E2E_EMAIL_PREFIX)) throw new Error("not an e2e case");
+  return c;
+}
+
+const DAY = 24 * 60 * 60 * 1000;
+
 const ops = {
-  async createUser({ email, password, name, role, status }: CreateUserArgs) {
+  async createUser({ email, password, name, role, status, twoFactor }: CreateUserArgs) {
     if (!email.startsWith(E2E_EMAIL_PREFIX)) throw new Error("test users must use the e2e- prefix");
     const id = crypto.randomUUID();
     await db.user.create({
@@ -117,6 +137,19 @@ const ops = {
         emailVerified: true,
         role,
         dentistStatus: status,
+        twoFactorEnabled: !!twoFactor,
+        ...(twoFactor
+          ? {
+              twoFactors: {
+                create: {
+                  id: crypto.randomUUID(),
+                  secret: await encrypt(twoFactor.secret),
+                  backupCodes: await encrypt(JSON.stringify(twoFactor.backupCodes)),
+                  verified: true,
+                },
+              },
+            }
+          : {}),
         clinicName: `${name} Clinic`,
         phone: "+45 12 34 56 78",
         country: "DK",
@@ -150,12 +183,142 @@ const ops = {
     });
   },
 
-  async getAudit({ targetId }: { targetId: string }) {
+  async getAudit({ targetId, targetType = "user" }: { targetId: string; targetType?: string }) {
     return db.auditLog.findMany({
-      where: { targetType: "user", targetId },
+      where: { targetType, targetId },
       orderBy: { createdAt: "asc" },
       select: { action: true, actorId: true, actorEmail: true, metadata: true },
     });
+  },
+
+  async twoFactorState({ email }: { email: string }) {
+    const user = await db.user.findUnique({
+      where: { email },
+      select: { twoFactorEnabled: true, twoFactors: { select: { verified: true } } },
+    });
+    return (
+      user && { enabled: user.twoFactorEnabled, verified: user.twoFactors[0]?.verified ?? null }
+    );
+  },
+
+  /** `count` empty drafts for an e2e user. */
+  async createDrafts({ email, count }: { email: string; count: number }) {
+    if (!email.startsWith(E2E_EMAIL_PREFIX)) throw new Error("test users must use the e2e- prefix");
+    const user = await db.user.findUniqueOrThrow({ where: { email }, select: { id: true } });
+    await db.case.createMany({
+      data: Array.from({ length: count }, () => ({ dentistId: user.id })),
+    });
+    return { ok: true };
+  },
+
+  /** A COMPLETE file row of any size without an object (to fill a dentist's storage quota). */
+  async addFileRow({ caseId, sizeBytes }: { caseId: string; sizeBytes: number }) {
+    const c = await e2eCase(caseId);
+    const id = crypto.randomUUID();
+    await db.caseFile.create({
+      data: {
+        id,
+        caseId,
+        kind: "OTHER",
+        storageKey: `${R2_TEST_PREFIX}cases/${caseId}/${id}/filler.zip`,
+        fileName: "filler.zip",
+        sizeBytes: BigInt(sizeBytes),
+        mimeType: "application/zip",
+        uploadStatus: "COMPLETE",
+        completedAt: new Date(),
+        uploadedById: c.dentistId,
+      },
+    });
+    return { id };
+  },
+
+  /** A real object in R2 under test/cases/{caseId}/ with its COMPLETE file row. */
+  async addStoredFile({ caseId, ageDays = 0 }: { caseId: string; ageDays?: number }) {
+    const c = await e2eCase(caseId);
+    const id = crypto.randomUUID();
+    const key = `${R2_TEST_PREFIX}cases/${caseId}/${id}/scan.stl`;
+    const body = Buffer.alloc(2048, 1);
+    await r2().send(new PutObjectCommand({ Bucket, Key: key, Body: body }));
+    const at = new Date(Date.now() - ageDays * DAY);
+    await db.caseFile.create({
+      data: {
+        id,
+        caseId,
+        kind: "INTRAORAL_SCAN",
+        storageKey: key,
+        fileName: "scan.stl",
+        sizeBytes: BigInt(body.length),
+        mimeType: "model/stl",
+        uploadStatus: "COMPLETE",
+        completedAt: at,
+        createdAt: at,
+        uploadedById: c.dentistId,
+      },
+    });
+    return { id, key };
+  },
+
+  /** An upload registered `ageHours` ago and never finished (a real open multipart upload in R2). */
+  async addStuckUpload({ caseId, ageHours }: { caseId: string; ageHours: number }) {
+    const c = await e2eCase(caseId);
+    const id = crypto.randomUUID();
+    const key = `${R2_TEST_PREFIX}cases/${caseId}/${id}/cbct.zip`;
+    const { UploadId } = await r2().send(new CreateMultipartUploadCommand({ Bucket, Key: key }));
+    await db.caseFile.create({
+      data: {
+        id,
+        caseId,
+        kind: "CBCT",
+        storageKey: key,
+        fileName: "cbct.zip",
+        sizeBytes: BigInt(50 * 1024 * 1024),
+        mimeType: "application/zip",
+        uploadStatus: "UPLOADING",
+        uploadId: UploadId,
+        createdAt: new Date(Date.now() - ageHours * 60 * 60 * 1000),
+        uploadedById: c.dentistId,
+      },
+    });
+    return { id };
+  },
+
+  /** Backdates a draft's last edit (`updatedAt` is otherwise set by Prisma on every write). */
+  async ageCase({ caseId, days }: { caseId: string; days: number }) {
+    await e2eCase(caseId);
+    await db.$executeRaw`UPDATE "case" SET "updatedAt" = ${new Date(Date.now() - days * DAY)} WHERE "id" = ${caseId}`;
+    return { ok: true };
+  },
+
+  async addMessage({ caseId }: { caseId: string }) {
+    const c = await e2eCase(caseId);
+    await db.caseMessage.create({
+      data: { caseId, authorId: c.dentistId, authorRole: "DENTIST", body: "E2E message" },
+    });
+    return { ok: true };
+  },
+
+  async caseEvents({ caseId }: { caseId: string }) {
+    return db.caseEvent.findMany({
+      where: { caseId },
+      orderBy: { createdAt: "asc" },
+      select: { type: true, actorId: true, metadata: true },
+    });
+  },
+
+  /** Rows left anywhere for a (deleted) user id or email. */
+  async userTraces({ id, email }: { id: string; email: string }) {
+    const [users, cases, sessions, accounts, twoFactors, emails, verifications] = await Promise.all(
+      [
+        db.user.count({ where: { id } }),
+        db.case.count({ where: { dentistId: id } }),
+        db.session.count({ where: { userId: id } }),
+        db.account.count({ where: { userId: id } }),
+        db.twoFactor.count({ where: { userId: id } }),
+        db.emailLog.count({ where: { to: email } }),
+        db.verification.count({ where: { value: id } }),
+      ],
+    );
+    return { users, cases, sessions, accounts, twoFactors, emails, verifications };
   },
 
   /** A published test service (slug "e2e-…"), appended to the list. */
@@ -364,6 +527,25 @@ const ops = {
       select: { id: true },
     });
     const contentIds = [...services, ...testimonials, ...messages].map((r) => r.id);
+    // Images e2e admins uploaded to the public media bucket (rows and objects).
+    const media = await db.mediaAsset.findMany({
+      where: { uploadedById: { in: ids } },
+      select: { id: true, key: true },
+    });
+    for (const m of media) {
+      await r2().send(
+        new DeleteObjectsCommand({
+          Bucket: process.env.R2_MEDIA_BUCKET ?? "dentnord-media",
+          Delete: { Objects: [{ Key: m.key }] },
+        }),
+      );
+    }
+    await db.mediaAsset.deleteMany({ where: { id: { in: media.map((m) => m.id) } } });
+    // Drafts of e2e users removed by the storage cleanup job.
+    if (ids.length > 0) {
+      await db.$executeRaw`
+        DELETE FROM "audit_log" WHERE "action" = 'DRAFT_EXPIRED' AND "metadata"->>'dentistId' = ANY(${ids})`;
+    }
     await db.auditLog.deleteMany({
       where: {
         OR: [

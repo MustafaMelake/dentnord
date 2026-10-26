@@ -1,6 +1,7 @@
 import "server-only";
 
 import { auth } from "@/lib/auth";
+import { isVerifiedAdmin } from "@/lib/redirects";
 import { caseStorageConfigured } from "@/lib/storage";
 import { UploadError } from "@/server/services/case-uploads";
 import { rateLimit, UPLOAD_LIMITS } from "@/server/services/rate-limit";
@@ -36,7 +37,8 @@ export async function requireUploadUser(
     role: string;
     dentistStatus: string;
   };
-  const isAdmin = role === "ADMIN";
+  // An admin without 2FA is no admin yet (requireAdmin sends them to the setup page).
+  const isAdmin = isVerifiedAdmin(session.user);
   const isDentist = role === "DENTIST" && dentistStatus === "APPROVED";
   if (!(isDentist || isAdmin)) return error(403, "forbidden", {}, format);
   if (!caseStorageConfigured()) return error(503, "notConfigured", {}, format);

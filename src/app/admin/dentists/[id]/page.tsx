@@ -5,8 +5,10 @@ import NextLink from "next/link";
 import { Suspense, type ReactNode } from "react";
 
 import { DentistActions } from "@/components/admin/dentist-actions";
+import { DentistErase } from "@/components/admin/dentist-erase";
 import { PageSkeleton } from "@/components/shared/app-shell/page-skeleton";
 import type { DentistStatus } from "@/generated/prisma/enums";
+import { formatBytes } from "@/lib/storage-limits";
 import { cn } from "@/lib/utils";
 import { getDentistDetail } from "@/server/queries/admin-dentists";
 
@@ -28,7 +30,7 @@ const statusTone: Record<DentistStatus, string> = {
 
 async function DentistDetail({ params }: Pick<PageProps<"/admin/dentists/[id]">, "params">) {
   const { id } = await params;
-  const [{ dentist, history }, t, tStatus, format] = await Promise.all([
+  const [{ dentist, history, erasure }, t, tStatus, format] = await Promise.all([
     getDentistDetail(id),
     getTranslations({ locale: "en", namespace: "admin.dentists" }),
     getTranslations({ locale: "en", namespace: "dentistStatus" }),
@@ -165,6 +167,18 @@ async function DentistDetail({ params }: Pick<PageProps<"/admin/dentists/[id]">,
           </ol>
         )}
       </section>
+
+      <DentistErase
+        dentist={{ id: dentist.id, name: dentist.name, email: dentist.email }}
+        summary={{
+          cases: erasure.cases,
+          drafts: erasure.drafts,
+          open: erasure.open,
+          files: erasure.files,
+          size: formatBytes(erasure.bytes),
+          messages: erasure.messages,
+        }}
+      />
     </>
   );
 }

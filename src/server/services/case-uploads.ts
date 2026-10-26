@@ -11,6 +11,7 @@ import {
 } from "@/lib/case-files";
 import type { Actor, CaseStatusValue } from "@/lib/case-workflow-rules";
 import { db } from "@/lib/db";
+import { withinStorageQuota } from "@/lib/storage-limits";
 import {
   abortMultipartUpload,
   completeMultipartUpload,
@@ -32,6 +33,7 @@ import {
   type PlanState,
 } from "@/lib/upload-permissions";
 import { toClientFile } from "@/server/queries/cases";
+import type { Tx } from "@/server/services/cases";
 
 // Case-file uploads, removals and downloads, for the dentist (their case files) and the admin (plan
 // files). The browser only PUTs parts to signed R2 URLs; everything else happens here. Every call
@@ -39,6 +41,7 @@ import { toClientFile } from "@/server/queries/cases";
 // - scope: a dentist reaches only their own cases; the admin never reaches drafts → else 404
 // - state: lib/upload-permissions.ts decides kind × case status × plan state, re-checked on every
 //   request (a part can't be signed once the case moved on) → else 403
+// - storage: a dentist's uploads together stay under STORAGE_LIMITS.maxBytesPerDentist → else 413
 // Keys and R2 upload ids never come from the client.
 
 export class UploadError extends Error {
@@ -80,6 +83,26 @@ function deny(p: Permission): asserts p is { ok: true } {
   if (!p.ok) throw new UploadError(403, p.reason);
 }
 
+/** Bytes a dentist stores: their own uploads, finished or still running (lib/storage-limits.ts). */
+export async function storedBytes(client: Pick<Tx, "caseFile">, dentistId: string) {
+  const { _sum } = await client.caseFile.aggregate({
+    where: { uploadedById: dentistId, uploadStatus: { in: ["PENDING", "UPLOADING", "COMPLETE"] } },
+    _sum: { sizeBytes: true },
+  });
+  return _sum.sizeBytes ?? BigInt(0);
+}
+
+/**
+ * Refuses a file that would take the dentist over their storage limit. Holds a per-dentist advisory
+ * lock until the transaction ends, so parallel registrations are counted one after another.
+ */
+async function assertStorageQuota(tx: Tx, dentistId: string, sizeBytes: number) {
+  await tx.$executeRaw`SELECT pg_advisory_xact_lock(hashtext(${`storage:${dentistId}`}))`;
+  if (!withinStorageQuota(await storedBytes(tx, dentistId), sizeBytes)) {
+    throw new UploadError(413, "storageQuota");
+  }
+}
+
 /** Registers a file: checks it, creates the multipart upload in R2 and the CaseFile row (UPLOADING). */
 export async function registerUpload(
   user: Uploader,
@@ -109,22 +132,26 @@ export async function registerUpload(
   const key = buildCaseFileKey({ prefix: env.R2_KEY_PREFIX, caseId: c.id, fileId, fileName });
   const { uploadId } = await createMultipartUpload(key, check.mimeType);
   try {
-    const file = await db.caseFile.create({
-      data: {
-        id: fileId,
-        caseId: c.id,
-        kind,
-        storageKey: key,
-        fileName,
-        sizeBytes: BigInt(input.sizeBytes),
-        mimeType: check.mimeType,
-        uploadStatus: "UPLOADING",
-        uploadId,
-        planId: plan?.id ?? null,
-        scanPart: kind === "INTRAORAL_SCAN" ? guessScanPart(input.fileName) : null,
-        uploadedById: user.id,
-      },
-      select: fileSelect,
+    const file = await db.$transaction(async (tx) => {
+      // A dentist's own uploads count against their storage limit (lab files don't).
+      if (user.role === "DENTIST") await assertStorageQuota(tx, user.id, input.sizeBytes);
+      return tx.caseFile.create({
+        data: {
+          id: fileId,
+          caseId: c.id,
+          kind,
+          storageKey: key,
+          fileName,
+          sizeBytes: BigInt(input.sizeBytes),
+          mimeType: check.mimeType,
+          uploadStatus: "UPLOADING",
+          uploadId,
+          planId: plan?.id ?? null,
+          scanPart: kind === "INTRAORAL_SCAN" ? guessScanPart(input.fileName) : null,
+          uploadedById: user.id,
+        },
+        select: fileSelect,
+      });
     });
     return { key, file: toClientFile(file) };
   } catch (error) {

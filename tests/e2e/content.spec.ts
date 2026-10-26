@@ -1,4 +1,4 @@
-import { expect, test, type BrowserContext, type Page, type Request } from "@playwright/test";
+import type { BrowserContext, Page, Request } from "@playwright/test";
 
 import {
   cleanupE2EUsers,
@@ -9,6 +9,7 @@ import {
   getTestimonials,
 } from "./support/db";
 import { login, newUser } from "./support/helpers";
+import { expect, test } from "./support/test";
 
 // Admin content management against a production build: instant public updates (cache tags), hidden
 // placeholders with admin-only markers, consent rules, and admin-only Server Actions.

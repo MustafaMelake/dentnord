@@ -5,6 +5,7 @@ import { notFound, redirect } from "next/navigation";
 import { cache } from "react";
 
 import { auth } from "@/lib/auth";
+import { isVerifiedAdmin, twoFactorSetupPath } from "@/lib/redirects";
 
 // Data Access Layer for auth. The proxy does an optimistic (cookie-cached) check; these helpers are the
 // authoritative check against the DB and must guard every protected layout, page, action and route.
@@ -30,11 +31,15 @@ export async function requireUser(locale: string) {
   return session;
 }
 
-/** ADMIN only. Signed-out users go to login; anyone else gets a 404 (the admin isn't advertised). */
+/**
+ * ADMIN with two-factor authentication on. Signed-out users go to login, an admin without 2FA to
+ * the setup page; anyone else gets a 404 (the admin isn't advertised).
+ */
 export async function requireAdmin() {
   const session = await getSession();
   if (!session) redirect("/en/login?next=/admin");
   if (session.user.role !== "ADMIN") notFound();
+  if (!isVerifiedAdmin(session.user)) redirect(twoFactorSetupPath("en", "/admin"));
   return session;
 }
 

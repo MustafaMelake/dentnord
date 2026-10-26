@@ -21,8 +21,8 @@ motion · three + @react-three/fiber + drei · next-intl 4 · Prisma 7 (`prisma-
 `@prisma/adapter-pg`) on PostgreSQL (Neon, Frankfurt) · Better Auth (email+password, Prisma adapter) ·
 zod 4 + react-hook-form · Cloudflare R2 (EU jurisdiction) via @aws-sdk/client-s3 + presigner ·
 Uppy (core/dashboard/aws-s3 multipart) · Resend + react-email · @tanstack/react-table ·
-react-markdown (no raw HTML) · @t3-oss/env-nextjs · ESLint + Prettier (tailwind plugin) · pnpm ·
-@playwright/test (dev).
+react-markdown (no raw HTML) · qrcode (2FA setup) · @t3-oss/env-nextjs · ESLint + Prettier (tailwind
+plugin) · pnpm · @playwright/test (dev).
 
 **Do not add dependencies outside this list without asking the user first.**
 
@@ -32,7 +32,9 @@ react-markdown (no raw HTML) · @t3-oss/env-nextjs · ESLint + Prettier (tailwin
 src/app/[locale]/            root layout #1 (html lang from `next/root-params`)
   (marketing)/ (auth)/ (portal)/portal/
 src/app/admin/               root layout #2 (English, no locale segment)
-src/app/api/                 auth/[...all] (Better Auth), uploads/* (case-file multipart + downloads)
+src/app/api/                 auth/[...all] (Better Auth), uploads/* (case-file multipart + downloads),
+                             cron/storage-cleanup (Vercel Cron, vercel.json)
+src/app/robots.ts, sitemap.ts, global-error.tsx; [locale]/error.tsx, admin/error.tsx
 src/proxy.ts                 Next 16 "proxy" (formerly middleware): auth gate + next-intl routing
 src/components/              ui/ (shadcn, generated) marketing/ portal/ admin/ three/ shared/
 src/lib/                     db, auth*, r2 + storage (cases) + media-storage, email, price, validation/, utils
@@ -146,11 +148,35 @@ prisma/schema.prisma, seed.ts
   `termsAcceptedAt`, and refuse to create sessions for `REJECTED` dentists. `/update-user`,
   `/change-email` and `/delete-user` are disabled; profile edits go through `server/actions/account.ts`.
 - Access: proxy (cookie cache, re-checks the DB before denying) → layout gate → every page/action via
-  `server/queries/session.ts` (`requireAdmin`, `requireApprovedDentist`). Dentist data goes through
+  `server/queries/session.ts` (`requireAdmin`, `requireApprovedDentist`). An admin is an admin only with
+  2FA on (`isVerifiedAdmin` in `lib/redirects.ts`): proxy, `requireAdmin`, the upload guard and the
+  lifecycle actions all use it. Dentist data goes through
   `server/queries/dentist.ts` (`getDentistScope`, `ownCaseWhere`, `getOwnCase`): the dentist id always
   comes from the session.
 - Admin decisions (`server/services/dentist-review.ts`): approve / reject (= disable when approved) /
   re-activate, in one transaction with an `AuditLog` row; rejecting deletes all the dentist's sessions.
+- **2FA** (Better Auth `twoFactor` plugin, in `lib/auth-options.ts`: TOTP + 10 backup codes, both stored
+  encrypted with `BETTER_AUTH_SECRET` in `two_factor`). **Mandatory for ADMIN**: without it the proxy,
+  `requireAdmin` and the login send the admin to `/<locale>/two-factor` (setup: password → QR code +
+  key → code → backup codes). Admins can't call `/two-factor/disable` (`hooks.before`). Turning 2FA on
+  signs out every other session of that user (`hooks.after`: they were opened with the password alone).
+  Optional for dentists (portal account page: set up, new backup codes, turn off). Login with 2FA:
+  `signIn.email` returns `twoFactorRedirect`, the login form asks for the code (or a backup code); the
+  session exists only after `/two-factor/verify-*`. Lost admin 2FA: reset in the DB (docs/go-live.md).
+- **GDPR erasure** (`server/services/dentist-erasure.ts`, `/admin/dentists/[id]` → "Delete dentist and
+  all data", `deleteDentist` in `server/actions/admin-dentists.ts`): the admin types the dentist's email
+  (checked again on the server). Order: disable + delete sessions → every case's R2 objects (a failure
+  stops here, rows intact, account stays disabled: run it again) → one transaction deleting the cases
+  (files, sites, events, messages, plans and their email log rows cascade), other emails to them,
+  contact-form messages from their address, pending tokens, their rate-limit rows, then the user
+  (sessions, password, 2FA cascade), and `reason` / `dentistId` are stripped from earlier audit
+  entries about them. One `DENTIST_DELETED` audit entry keeps only the admin, the deleted id and counts:
+  no name, email, clinic or file names. Plan approvals are deleted too: check retention duties (bookkeeping,
+  custom-made medical device documentation) before erasing a dentist with delivered cases.
+- **Email verification** is behind `EMAIL_VERIFICATION=on|off` (default off; `lib/auth.ts`). On: sign-up
+  sends a 24-hour link (`emails/verify-email.tsx`) back to `/<locale>/login?verified=1`, login is refused
+  with `EMAIL_NOT_VERIFIED` until then and the form requests a fresh link. Off: no verification config
+  at all. Turn on only once Resend sends from the real domain.
 - The admin user is created **only** by the seed (`ADMIN_EMAIL` + `SEED_ADMIN_PASSWORD`). No admin sign-up.
   The admin changes their password at `/admin/account` (account menu); the dentist form is shared
   (`components/auth/change-password-form.tsx`).
@@ -161,7 +187,8 @@ prisma/schema.prisma, seed.ts
   `pnpm db:seed`, not `tsx prisma/seed.ts`. Production seed:
   `DATABASE_URL=<prod pooled> NEON_BRANCH=production SEED_ADMIN_PASSWORD=<chosen> pnpm db:seed`.
 - Local `.env` keeps `BETTER_AUTH_URL` / `NEXT_PUBLIC_SITE_URL` = `http://localhost:3000` (the trusted
-  origin); production values live in Vercel only. `pnpm test:e2e` pins them to localhost regardless.
+  origin; an https apex also trusts its `www` twin, `lib/site-url.ts`); production values live in Vercel
+  only. Moving to dentnord.dk: `docs/go-live.md`. `pnpm test:e2e` pins them to localhost regardless.
 - Emails (`src/lib/email.ts`, templates in `src/emails/`, strings in `messages/*.json` → `emails`):
   sent via Resend when `RESEND_API_KEY` is a real key, otherwise logged to the console (links redacted in
   production builds). Always queued with `sendInBackground` (Next `after()`); a failed email never fails
@@ -252,9 +279,32 @@ prisma/schema.prisma, seed.ts
   scope (own case / no drafts for the admin) → 404, then the permission matrix → 403). Downloads:
   `/api/uploads/files/[id]/download` → 303 to a 5-minute signed GET (owner, or admin for non-drafts; a
   plan's files only once sent, for the dentist).
+- **Storage limits** (`STORAGE_LIMITS` in `lib/storage-limits.ts`): a dentist's own uploads (complete +
+  uploading) ≤ 50 GiB, checked in `registerUpload` under a per-dentist advisory lock (→ 413
+  `storageQuota`); ≤ 10 open drafts, checked in `createDraft` (same kind of lock; the new-case page shows
+  a notice at the limit). Lab files don't count.
+- **Storage cleanup** (`lib/storage-cleanup.ts` orchestration, `server/services/storage-cleanup.ts`
+  Prisma + R2): `GET /api/cron/storage-cleanup`, daily via `vercel.json`, only with
+  `Authorization: Bearer <CRON_SECRET>` (unset secret = 503, job off). Uploads unfinished 24 h after
+  registration → multipart aborted, file FAILED + `FILE_FAILED` event (actorId null). Drafts without
+  activity for 60 days (no edit, file or event by a person) → R2 objects, then the row, + `DRAFT_EXPIRED`
+  audit entry. R2 first; every write re-checks the row is still stale. At most 100 of each per run.
 - `R2_KEY_PREFIX` (default empty) prefixes every case key; E2E runs use `test/` and the teardown deletes
   everything under it (`tests/e2e/support/db-cli.ts`). E2E contexts add `x-forwarded-for` only to
   localhost requests: on R2 requests it would fail CORS.
+
+## Security headers
+
+`next.config.ts` → `headers()` sends `src/lib/security-headers.ts` on every route (computed at **build**
+time from env): CSP, `X-Frame-Options: DENY`, HSTS (2 y, includeSubDomains), `nosniff`,
+`Referrer-Policy: strict-origin-when-cross-origin`, `Permissions-Policy` (camera/mic/geolocation off);
+`poweredByHeader: false`. The CSP has **no nonces** on purpose: nonces force every page to render per
+request and would lose Cache Components' prerendered shells; Next inlines its RSC payload, so
+`script-src` has `'unsafe-inline'` (plus `'wasm-unsafe-eval'` for Draco). `connect-src` allows only our
+origin and the two R2 bucket hosts (`https://<bucket>.<account>.eu.r2.cloudflarestorage.com`), `img-src`
+the media URL. Adding a third-party script, font, iframe or API means adding it there (E2E fails on any
+violation). `CSP_REPORT_ONLY=1` at build time sends it as Report-Only. Preview deployments also allow
+the Vercel toolbar.
 
 ## Commands
 
@@ -264,12 +314,16 @@ pnpm lint | typecheck | format | format:check
 pnpm db:generate | db:migrate | db:push | db:seed | db:studio
 pnpm auth:generate     # after adding Better Auth plugins: merges auth tables into schema.prisma
 pnpm check:css [--url <page>…]   # shipped CSS matches source (fonts, theme vars, every class); runs in `pnpm build`
-pnpm test:unit         # node:test + tsx: zod schemas, redirect helpers (tests/unit)
+pnpm test:unit         # node:test + tsx: zod schemas, redirects, CSP, storage limits + cleanup (tests/unit)
 pnpm test:e2e          # Playwright vs a local production build on port 3000, DB = `dev` (tests/e2e)
 E2E_SKIP_BUILD=1 pnpm test:e2e   # reuse the existing .next build
 ```
 
-E2E tests create users with an `e2e-` email prefix and delete them (plus their audit rows) after each run.
+E2E tests create users with an `e2e-` email prefix and delete them (plus their audit rows and uploaded
+media) after each run. Specs import `test`/`expect` from `tests/e2e/support/test.ts`, which fails a test on
+any CSP violation in any of its browser contexts. Test admins get 2FA already set up (`createUser`,
+`twoFactor: false` to skip); `login()` answers the code step with a TOTP from `support/totp.ts`. The
+E2E server gets `CRON_SECRET` from `support/constants.ts`.
 Each test context gets its own `x-forwarded-for`, so the rate limiter doesn't merge them (on Vercel the
 edge sets that header, so clients can't spoof it).
 

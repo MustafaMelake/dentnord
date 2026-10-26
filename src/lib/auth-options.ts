@@ -1,5 +1,6 @@
 import type { BetterAuthOptions } from "better-auth";
 import { nextCookies } from "better-auth/next-js";
+import { twoFactor } from "better-auth/plugins/two-factor";
 
 // Everything here shapes the DB schema. Kept free of `server-only`, env and DB imports so the
 // Better Auth CLI can load it (`pnpm auth:generate`). Runtime-only options live in `lib/auth.ts`.
@@ -19,8 +20,7 @@ export const authOptions = {
     enabled: true,
     minPasswordLength: PASSWORD_MIN_LENGTH,
     maxPasswordLength: PASSWORD_MAX_LENGTH,
-    // TODO: enable email verification once Resend is configured.
-    requireEmailVerification: false,
+    // Email verification is switched by EMAIL_VERIFICATION at runtime (lib/auth.ts).
   },
   user: {
     additionalFields: {
@@ -62,5 +62,16 @@ export const authOptions = {
     storage: "database",
     modelName: "rateLimit",
   },
-  plugins: [nextCookies()], // nextCookies must stay last
+  plugins: [
+    // TOTP (authenticator app) + one-time backup codes. Mandatory for ADMIN (proxy + session DAL send
+    // an admin without it to /<locale>/two-factor), optional for dentists (portal account page).
+    // Sign-in with 2FA on returns `twoFactorRedirect` instead of a session; the session is created
+    // only after /two-factor/verify-totp or /verify-backup-code. The secret and the backup codes
+    // are stored encrypted with BETTER_AUTH_SECRET.
+    twoFactor({
+      issuer: "Dentnord",
+      backupCodeOptions: { amount: 10, length: 10 },
+    }),
+    nextCookies(), // nextCookies must stay last
+  ],
 } satisfies BetterAuthOptions;

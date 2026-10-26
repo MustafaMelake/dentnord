@@ -50,9 +50,12 @@ model User {
   reviewedAt      DateTime?
   /// Reason given when the account was rejected (also sent in the email). Cleared on re-activation.
   rejectionReason String?
+  /// Better Auth twoFactor plugin: TOTP verified and active. Required for ADMIN.
+  twoFactorEnabled Boolean @default(false)
 
   sessions      Session[]
   accounts      Account[]
+  twoFactors    TwoFactor[]
   cases         Case[]
   uploadedFiles CaseFile[]    @relation("CaseFileUploader")
   caseEvents    CaseEvent[]
@@ -113,6 +116,22 @@ model Verification {
   @@map("verification")
 }
 
+/// Better Auth twoFactor plugin: the TOTP secret and the backup codes (both encrypted with
+/// BETTER_AUTH_SECRET). `verified` stays false until the first code from the app is confirmed.
+model TwoFactor {
+  id                      String    @id
+  secret                  String
+  backupCodes             String
+  userId                  String    @unique
+  user                    User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  verified                Boolean   @default(true)
+  /// Consecutive failed codes; at 10 the account is locked for 15 minutes (`lockedUntil`).
+  failedVerificationCount Int       @default(0)
+  lockedUntil             DateTime?
+
+  @@map("two_factor")
+}
+
 /// Better Auth rate limiting (rateLimit.storage = "database"), shared across serverless instances.
 model RateLimit {
   id          String @id
@@ -130,6 +149,10 @@ enum AuditAction {
   DENTIST_APPROVED
   DENTIST_REJECTED
   DENTIST_REACTIVATED
+  /// GDPR erasure: the dentist and all their data. The entry keeps counts only (no personal data).
+  DENTIST_DELETED
+  /// Storage cleanup (cron): a draft untouched for 60 days was deleted with its files.
+  DRAFT_EXPIRED
   // Admin content management (targetType = model name or "setting:<key>")
   CONTENT_CREATED
   CONTENT_UPDATED

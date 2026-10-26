@@ -1,5 +1,7 @@
 import { defineConfig, devices } from "@playwright/test";
 
+import { E2E_CRON_SECRET } from "./tests/e2e/support/constants";
+
 // E2E tests run against a local *production* build (`next build && next start`) using the database in
 // `.env`, which must be the Neon `dev` branch (tests/e2e/support/db.ts refuses `production`).
 // The server gets BETTER_AUTH_URL / NEXT_PUBLIC_SITE_URL = http://localhost:3000 (Better Auth's trusted
@@ -33,7 +35,16 @@ export default defineConfig({
     command: skipBuild ? "pnpm start" : "pnpm build && pnpm start",
     url: `${BASE_URL}/en/login`,
     // Case files go under test/ in the real bucket; global teardown deletes everything there.
-    env: { BETTER_AUTH_URL: BASE_URL, NEXT_PUBLIC_SITE_URL: BASE_URL, R2_KEY_PREFIX: "test/" },
+    // CRON_SECRET: the specs call the storage cleanup job. CSP_REPORT_ONLY=1 (build time) sends the
+    // CSP as Report-Only; the specs fail on any violation either way (support/csp.ts).
+    env: {
+      BETTER_AUTH_URL: BASE_URL,
+      NEXT_PUBLIC_SITE_URL: BASE_URL,
+      R2_KEY_PREFIX: "test/",
+      CRON_SECRET: E2E_CRON_SECRET,
+      CSP_REPORT_ONLY: process.env.CSP_REPORT_ONLY ?? "",
+      EMAIL_VERIFICATION: "off",
+    },
     timeout: 10 * 60_000,
     reuseExistingServer: false,
     stdout: "ignore",

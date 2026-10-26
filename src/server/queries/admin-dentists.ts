@@ -6,6 +6,7 @@ import type { Prisma } from "@/generated/prisma/client";
 import type { DentistStatus } from "@/generated/prisma/enums";
 import { db } from "@/lib/db";
 import { requireAdmin } from "@/server/queries/session";
+import { erasureSummary } from "@/server/services/dentist-erasure";
 
 // Admin reads for /admin/dentists. Each function re-checks the admin session itself, so it is safe to
 // call from any page or action. Dates are returned as ISO strings for client components.
@@ -109,11 +110,14 @@ export async function getDentistDetail(id: string) {
     },
   });
   if (!dentist) notFound();
-  const history = await db.auditLog.findMany({
-    where: { targetType: "user", targetId: id },
-    orderBy: { createdAt: "desc" },
-    select: { id: true, action: true, actorEmail: true, metadata: true, createdAt: true },
-    take: 50,
-  });
-  return { dentist, history };
+  const [history, erasure] = await Promise.all([
+    db.auditLog.findMany({
+      where: { targetType: "user", targetId: id },
+      orderBy: { createdAt: "desc" },
+      select: { id: true, action: true, actorEmail: true, metadata: true, createdAt: true },
+      take: 50,
+    }),
+    erasureSummary(id),
+  ]);
+  return { dentist, history, erasure };
 }

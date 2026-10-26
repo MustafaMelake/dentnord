@@ -4,9 +4,11 @@ import { NextResponse, type NextRequest } from "next/server";
 import { routing } from "@/i18n/routing";
 import { ADMIN_HINT_COOKIE } from "@/lib/admin-hint";
 import { auth } from "@/lib/auth";
+import { isVerifiedAdmin, twoFactorSetupPath } from "@/lib/redirects";
 
 // Next 16 `proxy` (formerly middleware), Node.js runtime.
-// 1. /admin/**           → requires ADMIN (English only, no locale prefix)
+// 1. /admin/**           → requires ADMIN with 2FA on (English only, no locale prefix); an admin
+//                          without 2FA goes to /en/two-factor first
 // 2. /{locale}/portal/** → requires an APPROVED dentist
 // 3. everything else     → next-intl locale routing
 // These are optimistic checks (session cookie cache). Layouts, pages, actions and routes re-check
@@ -74,16 +76,20 @@ export async function proxy(request: NextRequest) {
 
   if (pathname === "/admin" || pathname.startsWith("/admin/")) {
     const cached = await cachedSession(request);
-    if (cached.session?.user.role === "ADMIN") {
+    if (isVerifiedAdmin(cached.session?.user)) {
       return withAdminHint(withCookies(NextResponse.next(), cached.setCookies), true);
     }
 
-    // Not an admin according to the (possibly stale) cookie cache: ask the DB before denying, so a
-    // freshly promoted admin isn't bounced to the home page for up to 5 minutes.
+    // Not an admin with 2FA according to the (possibly stale) cookie cache: ask the DB before
+    // denying, so a freshly promoted admin isn't bounced to the home page for up to 5 minutes.
     const { session, setCookies } = await freshSession(request);
     if (!session) return withCookies(redirectTo(request, "/en/login", requested), setCookies);
     if (session.user.role !== "ADMIN") {
       return withAdminHint(withCookies(redirectTo(request, "/"), setCookies), false);
+    }
+    // 2FA is mandatory for admins: set it up before anything in /admin.
+    if (!isVerifiedAdmin(session.user)) {
+      return withCookies(redirectTo(request, twoFactorSetupPath("en", requested)), setCookies);
     }
     return withAdminHint(withCookies(NextResponse.next(), setCookies), true);
   }

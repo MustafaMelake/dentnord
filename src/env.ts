@@ -30,10 +30,15 @@ export const env = createEnv({
       .default(""),
     // Optional: without a real key, emails are logged to the console instead (src/lib/email.ts).
     RESEND_API_KEY: z.string().optional(),
+    // "on": new accounts confirm their email before they can log in (lib/auth.ts). Needs Resend
+    // sending from the real domain; off until then.
+    EMAIL_VERIFICATION: z.enum(["on", "off"]).default("off"),
     EMAIL_FROM: z.string().min(1),
     ADMIN_EMAIL: z.email(),
     // Only needed by `pnpm db:seed`.
     SEED_ADMIN_PASSWORD: z.string().min(12).optional(),
+    // Vercel Cron's bearer token for /api/cron/*. Without it the storage cleanup job is off.
+    CRON_SECRET: z.string().min(16).optional(),
   },
   client: {
     NEXT_PUBLIC_SITE_URL: z.url(),

@@ -2,7 +2,8 @@
   "metadata": {
     "title": "Dentnord — Surgical guides for dental implants",
     "description": "Digital implant planning and custom surgical guides for dental clinics, planned and printed in Denmark.",
-    "ogLocale": "en_GB"
+    "ogLocale": "en_GB",
+    "ogHeadline": "Surgical guides for dental implants"
   },
   "common": {
     "brand": "Dentnord",
@@ -228,7 +229,9 @@
       "noAccount": "New to Dentnord?",
       "register": "Create a dentist account",
       "resetDone": "Your password has been changed. Log in with your new password.",
-      "signedOut": "You have been signed out on all devices."
+      "signedOut": "You have been signed out on all devices.",
+      "emailVerified": "Your email address is confirmed. Log in to continue.",
+      "verifyLinkInvalid": "This confirmation link has expired or was already used. Log in, and we'll send you a new one."
     },
     "register": {
       "title": "Create a dentist account",
@@ -250,7 +253,9 @@
       "submit": "Create account",
       "submitting": "Creating account…",
       "haveAccount": "Already have an account?",
-      "login": "Log in"
+      "login": "Log in",
+      "checkEmailTitle": "Check your email",
+      "checkEmailBody": "We've sent a confirmation link to {email}. Open it to confirm your address, then log in. We review every new account before you can submit cases."
     },
     "pendingApproval": {
       "title": "Your account is awaiting approval",
@@ -288,7 +293,8 @@
       "invalidCredentials": "Incorrect email or password.",
       "accountRejected": "This account is not active, so you can't log in. If you think this is a mistake, contact us at {email}.",
       "registrationFailed": "We couldn't create an account with these details. If you already have an account, log in or reset your password.",
-      "invalidRegistration": "Some details are missing or invalid. Check the form and try again."
+      "invalidRegistration": "Some details are missing or invalid. Check the form and try again.",
+      "emailNotVerified": "Confirm your email address first. We've just sent you a new link."
     },
     "fields": {
       "email": "Email",
@@ -347,7 +353,7 @@
       "emptyBody": "Cases you submit appear here with their status.",
       "emptyCta": "Submit your first case",
       "draftsTitle": "Drafts ({count})",
-      "draftsIntro": "Not sent yet. Continue where you left off, or delete what you don't need.",
+      "draftsIntro": "Not sent yet. Continue where you left off, or delete what you don't need. Drafts untouched for 60 days are deleted automatically.",
       "submittedTitle": "Submitted cases",
       "searchLabel": "Search cases",
       "searchPlaceholder": "Case number or patient code",
@@ -361,7 +367,9 @@
     "newCase": {
       "title": "New case",
       "intro": "Four short steps. Everything is saved as you go, so you can leave and come back.",
-      "editTitle": "Continue case"
+      "editTitle": "Continue case",
+      "draftLimit": "You have {max} unfinished drafts, the most you can have at once. Submit or delete one before you start a new case.",
+      "draftLimitLink": "Go to your cases"
     },
     "caseDetail": {
       "title": "Case",
@@ -391,6 +399,10 @@
         "confirmBody": "You will need to log in again on every device, including this one.",
         "confirm": "Sign out everywhere",
         "cancel": "Cancel"
+      },
+      "twoFactor": {
+        "title": "Two-factor authentication",
+        "description": "Optional. Protects your account with a code from your phone in addition to your password."
       }
     },
     "nav": {
@@ -533,13 +545,31 @@
         "CONTENT_DELETED": "Deleted",
         "CONTENT_ARCHIVED": "Archived",
         "CONTENT_REORDERED": "Reordered",
-        "MEDIA_UPLOADED": "Image uploaded"
+        "MEDIA_UPLOADED": "Image uploaded",
+        "DENTIST_DELETED": "Deleted with all data",
+        "DRAFT_EXPIRED": "Draft deleted after 60 days without activity"
       },
       "errors": {
         "invalid": "That request wasn't valid.",
         "notFound": "This dentist no longer exists.",
         "invalidState": "This account changed in the meantime. The page has been refreshed; try again.",
-        "generic": "Something went wrong. Please try again."
+        "generic": "Something went wrong. Please try again.",
+        "confirmMismatch": "The email address doesn't match.",
+        "storage": "File storage didn't respond, so nothing was deleted from the database. The account is disabled and signed out; try again."
+      },
+      "erase": {
+        "title": "Delete dentist",
+        "intro": "For a GDPR erasure request. Permanently deletes the account and everything linked to it: {cases, plural, =0 {no cases} one {# case} other {# cases}} with {files, plural, =0 {no files} one {# file} other {# files}} ({size}) and {messages, plural, =0 {no messages} one {# message} other {# messages}}, plus the login, sessions and emails sent to them. The history keeps only that an admin deleted an account, with these counts.",
+        "button": "Delete dentist and all data",
+        "confirmTitle": "Delete {name} permanently?",
+        "confirmBody": "This deletes the account, {cases, plural, =0 {no cases} one {# case} other {# cases}} with {files, plural, =0 {no files} one {# file} other {# files}} ({size}), plans and messages, and signs them out everywhere. It can't be undone.",
+        "openCases": "{count, plural, one {# case is} other {# cases are}} still in progress (submitted, in planning or in production).",
+        "retention": "Before deleting, check that no legal duty to keep these records applies, such as bookkeeping or documentation for custom-made medical devices.",
+        "confirmLabel": "Type {email} to confirm",
+        "confirm": "Delete permanently",
+        "working": "Deleting…",
+        "cancel": "Cancel",
+        "deleted": "{name} and all their data were deleted."
       }
     },
     "account": {
@@ -549,6 +579,10 @@
       "password": {
         "title": "Password",
         "description": "Changing your password signs you out on all other devices."
+      },
+      "twoFactor": {
+        "title": "Two-factor authentication",
+        "description": "Required for the admin account. If you lose your phone, log in with a backup code and set up the app again."
       }
     },
     "validation": {
@@ -1141,6 +1175,14 @@
       "deleteDescription": "The message from {name} will be deleted for good.",
       "cancel": "Cancel",
       "deleted": "Message deleted"
+    },
+    "errorPage": {
+      "label": "Error",
+      "title": "Something went wrong",
+      "body": "This page hit an unexpected error. Try again; the server log has the details under the reference below.",
+      "retry": "Try again",
+      "home": "Go to the dashboard",
+      "reference": "Reference: {digest}"
     }
   },
   "dentistStatus": {
@@ -1312,6 +1354,14 @@
       "email": "Email",
       "phone": "Phone",
       "cta": "Open the inbox"
+    },
+    "verifyEmail": {
+      "subject": "Confirm your email for Dentnord",
+      "preview": "Confirm your email address to finish creating your Dentnord account.",
+      "heading": "Confirm your email address",
+      "body": "Thanks for creating a Dentnord account. Confirm your email address to continue. The link is valid for 24 hours.",
+      "cta": "Confirm email address",
+      "ignore": "If you didn't create an account, you can ignore this email."
     }
   },
   "changePassword": {
@@ -1446,7 +1496,8 @@
       "uploadsPending": "Wait until all uploads have finished.",
       "storage": "We couldn't reach file storage. Please try again in a moment.",
       "generic": "Something went wrong. Please try again.",
-      "network": "We couldn't save. Check your connection and try again."
+      "network": "We couldn't save. Check your connection and try again.",
+      "tooManyDrafts": "You've reached the maximum number of unfinished drafts. Submit or delete a draft before you start a new case."
     },
     "wizard": {
       "progress": "Progress",
@@ -1587,7 +1638,8 @@
           "generic": "something went wrong; please retry",
           "wrongState": "files can't be added to this case right now",
           "planRequired": "start a plan version first",
-          "notViewable": "this file can't be shown in 3D"
+          "notViewable": "this file can't be shown in 3D",
+          "storageQuota": "your account's storage limit is reached; contact Dentnord"
         }
       },
       "review": {
@@ -1816,5 +1868,82 @@
       "rateLimited": "Too many messages from this connection. Please try again later.",
       "failed": "The message could not be sent. Please try again."
     }
+  },
+  "twoFactor": {
+    "setup": {
+      "title": "Two-factor authentication",
+      "intro": "Add a second step to your login: a 6-digit code from an authenticator app on your phone.",
+      "introRequired": "Admin accounts are protected with two-factor authentication. Set it up once; after that you log in with your password and a code from your authenticator app.",
+      "passwordStep": "Confirm your password to start.",
+      "start": "Continue",
+      "starting": "Checking…",
+      "scanTitle": "Scan the QR code",
+      "scanBody": "Open an authenticator app (for example Google Authenticator, Microsoft Authenticator or 1Password), add an account and scan this code. Then enter the 6-digit code the app shows.",
+      "qrAlt": "QR code for your authenticator app",
+      "manualLabel": "Can't scan it? Enter this key in the app:",
+      "copyKey": "Copy key",
+      "copied": "Copied",
+      "openApp": "Open in authenticator app",
+      "codeLabel": "6-digit code",
+      "verify": "Turn on two-factor authentication",
+      "verifying": "Checking…",
+      "enabled": "Two-factor authentication is on.",
+      "backupTitle": "Save your backup codes",
+      "backupBody": "If you lose your phone, each of these codes lets you log in once. Keep them somewhere safe, such as a password manager. They won't be shown again.",
+      "savedConfirm": "I have saved my backup codes",
+      "continue": "Continue"
+    },
+    "backup": {
+      "listLabel": "Backup codes",
+      "copy": "Copy codes",
+      "copied": "Copied",
+      "download": "Download (.txt)",
+      "fileHeading": "Dentnord backup codes for {email}. Each code works once."
+    },
+    "login": {
+      "intro": "Enter the 6-digit code from your authenticator app.",
+      "introBackup": "Enter one of your backup codes. Each code works once.",
+      "codeLabel": "6-digit code",
+      "backupLabel": "Backup code",
+      "submit": "Verify",
+      "submitting": "Verifying…",
+      "useBackup": "Use a backup code instead",
+      "useApp": "Use the authenticator app instead",
+      "back": "Back to login"
+    },
+    "settings": {
+      "statusOn": "On. You log in with your password and a code from your authenticator app.",
+      "statusOff": "Off. You log in with your password only.",
+      "setUp": "Set up two-factor authentication",
+      "regenerate": "New backup codes",
+      "regenerateTitle": "Create new backup codes?",
+      "regenerateBody": "Your current backup codes stop working. Confirm with your password.",
+      "regeneratedBody": "Your new backup codes. The old ones no longer work.",
+      "regenerateConfirm": "Create new codes",
+      "disable": "Turn off",
+      "disableTitle": "Turn off two-factor authentication?",
+      "disableBody": "You'll log in with your password only, and your backup codes stop working. Confirm with your password.",
+      "disableConfirm": "Turn off",
+      "working": "Saving…",
+      "done": "Done"
+    },
+    "errors": {
+      "generic": "Something went wrong. Please try again.",
+      "network": "We couldn't reach the server. Check your connection and try again.",
+      "rateLimited": "Too many attempts. Please wait a minute and try again.",
+      "invalidCode": "That code isn't right. Check the app and try again.",
+      "codeFormat": "Enter the code exactly as shown.",
+      "expired": "This login attempt has expired. Log in again.",
+      "locked": "Too many incorrect codes. Wait 15 minutes, then try again.",
+      "wrongPassword": "Incorrect password."
+    }
+  },
+  "errorPage": {
+    "label": "Error",
+    "title": "Something went wrong",
+    "body": "An unexpected error stopped this page from loading. Please try again. If it keeps happening, contact us.",
+    "retry": "Try again",
+    "home": "Go to the front page",
+    "reference": "Reference: {digest}"
   }
 }

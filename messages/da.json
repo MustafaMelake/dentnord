@@ -3,7 +3,8 @@
   "metadata": {
     "title": "Dentnord — Boreskabeloner til tandimplantater",
     "description": "Digital implantatplanlægning og individuelle boreskabeloner til tandklinikker, planlagt og printet i Danmark.",
-    "ogLocale": "da_DK"
+    "ogLocale": "da_DK",
+    "ogHeadline": "Boreskabeloner til tandimplantater"
   },
   "common": {
     "brand": "Dentnord",
@@ -229,7 +230,9 @@
       "noAccount": "Ny hos Dentnord?",
       "register": "Opret en tandlægekonto",
       "resetDone": "Din adgangskode er ændret. Log ind med din nye adgangskode.",
-      "signedOut": "Du er logget ud på alle enheder."
+      "signedOut": "Du er logget ud på alle enheder.",
+      "emailVerified": "Din e-mailadresse er bekræftet. Log ind for at fortsætte.",
+      "verifyLinkInvalid": "Bekræftelseslinket er udløbet eller allerede brugt. Log ind, så sender vi dig et nyt."
     },
     "register": {
       "title": "Opret tandlægekonto",
@@ -251,7 +254,9 @@
       "submit": "Opret konto",
       "submitting": "Opretter konto…",
       "haveAccount": "Har du allerede en konto?",
-      "login": "Log ind"
+      "login": "Log ind",
+      "checkEmailTitle": "Tjek din e-mail",
+      "checkEmailBody": "Vi har sendt et bekræftelseslink til {email}. Åbn det for at bekræfte din adresse, og log derefter ind. Vi gennemgår alle nye konti, før du kan sende sager."
     },
     "pendingApproval": {
       "title": "Din konto afventer godkendelse",
@@ -289,7 +294,8 @@
       "invalidCredentials": "Forkert e-mail eller adgangskode.",
       "accountRejected": "Kontoen er ikke aktiv, så du kan ikke logge ind. Hvis du mener, det er en fejl, så kontakt os på {email}.",
       "registrationFailed": "Vi kunne ikke oprette en konto med disse oplysninger. Har du allerede en konto, så log ind eller nulstil din adgangskode.",
-      "invalidRegistration": "Nogle oplysninger mangler eller er ugyldige. Tjek formularen, og prøv igen."
+      "invalidRegistration": "Nogle oplysninger mangler eller er ugyldige. Tjek formularen, og prøv igen.",
+      "emailNotVerified": "Bekræft først din e-mailadresse. Vi har lige sendt dig et nyt link."
     },
     "fields": {
       "email": "E-mail",
@@ -348,7 +354,7 @@
       "emptyBody": "Cases, du indsender, vises her med deres status.",
       "emptyCta": "Indsend din første case",
       "draftsTitle": "Kladder ({count})",
-      "draftsIntro": "Ikke sendt endnu. Fortsæt hvor du slap, eller slet det, du ikke skal bruge.",
+      "draftsIntro": "Ikke sendt endnu. Fortsæt hvor du slap, eller slet det, du ikke skal bruge. Kladder, der ikke er rørt i 60 dage, slettes automatisk.",
       "submittedTitle": "Indsendte sager",
       "searchLabel": "Søg i sager",
       "searchPlaceholder": "Sagsnummer eller patientkode",
@@ -362,7 +368,9 @@
     "newCase": {
       "title": "Ny sag",
       "intro": "Fire korte trin. Alt gemmes undervejs, så du kan gå fra og komme tilbage.",
-      "editTitle": "Fortsæt sag"
+      "editTitle": "Fortsæt sag",
+      "draftLimit": "Du har {max} kladder, der ikke er sendt, og det er det højeste antal ad gangen. Send eller slet en, før du starter en ny sag.",
+      "draftLimitLink": "Gå til dine sager"
     },
     "caseDetail": {
       "title": "Sag",
@@ -392,6 +400,10 @@
         "confirmBody": "Du skal logge ind igen på alle enheder, også denne.",
         "confirm": "Log ud overalt",
         "cancel": "Annuller"
+      },
+      "twoFactor": {
+        "title": "Totrinsbekræftelse",
+        "description": "Valgfrit. Beskytter din konto med en kode fra din telefon ud over din adgangskode."
       }
     },
     "nav": {
@@ -585,6 +597,14 @@
       "email": "E-mail",
       "phone": "Telefon",
       "cta": "Åbn indbakken"
+    },
+    "verifyEmail": {
+      "subject": "Bekræft din e-mail hos Dentnord",
+      "preview": "Bekræft din e-mailadresse for at gøre din Dentnord-konto færdig.",
+      "heading": "Bekræft din e-mailadresse",
+      "body": "Tak, fordi du har oprettet en konto hos Dentnord. Bekræft din e-mailadresse for at fortsætte. Linket gælder i 24 timer.",
+      "cta": "Bekræft e-mailadresse",
+      "ignore": "Hvis du ikke har oprettet en konto, kan du se bort fra denne e-mail."
     }
   },
   "changePassword": {
@@ -719,7 +739,8 @@
       "uploadsPending": "Vent, til alle uploads er færdige.",
       "storage": "Vi kunne ikke nå fillageret. Prøv igen om lidt.",
       "generic": "Noget gik galt. Prøv igen.",
-      "network": "Vi kunne ikke gemme. Tjek din forbindelse, og prøv igen."
+      "network": "Vi kunne ikke gemme. Tjek din forbindelse, og prøv igen.",
+      "tooManyDrafts": "Du har nået det maksimale antal kladder, der ikke er sendt. Send eller slet en kladde, før du starter en ny sag."
     },
     "wizard": {
       "progress": "Forløb",
@@ -860,7 +881,8 @@
           "generic": "noget gik galt; prøv igen",
           "wrongState": "der kan ikke tilføjes filer til sagen lige nu",
           "planRequired": "start først en planversion",
-          "notViewable": "filen kan ikke vises i 3D"
+          "notViewable": "filen kan ikke vises i 3D",
+          "storageQuota": "din kontos lagerplads er brugt op; kontakt Dentnord"
         }
       },
       "review": {
@@ -1089,5 +1111,82 @@
       "rateLimited": "For mange beskeder fra denne forbindelse. Prøv igen senere.",
       "failed": "Beskeden kunne ikke sendes. Prøv igen."
     }
+  },
+  "twoFactor": {
+    "setup": {
+      "title": "Totrinsbekræftelse",
+      "intro": "Tilføj et ekstra trin til dit login: en 6-cifret kode fra en godkendelsesapp på din telefon.",
+      "introRequired": "Administratorkonti er beskyttet med totrinsbekræftelse. Du opsætter det én gang; derefter logger du ind med din adgangskode og en kode fra din godkendelsesapp.",
+      "passwordStep": "Bekræft din adgangskode for at starte.",
+      "start": "Fortsæt",
+      "starting": "Kontrollerer…",
+      "scanTitle": "Scan QR-koden",
+      "scanBody": "Åbn en godkendelsesapp (fx Google Authenticator, Microsoft Authenticator eller 1Password), tilføj en konto, og scan koden. Indtast derefter den 6-cifrede kode, som appen viser.",
+      "qrAlt": "QR-kode til din godkendelsesapp",
+      "manualLabel": "Kan du ikke scanne den? Indtast denne nøgle i appen:",
+      "copyKey": "Kopiér nøgle",
+      "copied": "Kopieret",
+      "openApp": "Åbn i godkendelsesappen",
+      "codeLabel": "6-cifret kode",
+      "verify": "Slå totrinsbekræftelse til",
+      "verifying": "Kontrollerer…",
+      "enabled": "Totrinsbekræftelse er slået til.",
+      "backupTitle": "Gem dine backupkoder",
+      "backupBody": "Hvis du mister din telefon, kan hver af disse koder bruges til at logge ind én gang. Opbevar dem et sikkert sted, fx i en adgangskodeadministrator. De bliver ikke vist igen.",
+      "savedConfirm": "Jeg har gemt mine backupkoder",
+      "continue": "Fortsæt"
+    },
+    "backup": {
+      "listLabel": "Backupkoder",
+      "copy": "Kopiér koder",
+      "copied": "Kopieret",
+      "download": "Download (.txt)",
+      "fileHeading": "Dentnord-backupkoder for {email}. Hver kode virker én gang."
+    },
+    "login": {
+      "intro": "Indtast den 6-cifrede kode fra din godkendelsesapp.",
+      "introBackup": "Indtast en af dine backupkoder. Hver kode virker én gang.",
+      "codeLabel": "6-cifret kode",
+      "backupLabel": "Backupkode",
+      "submit": "Bekræft",
+      "submitting": "Bekræfter…",
+      "useBackup": "Brug en backupkode i stedet",
+      "useApp": "Brug godkendelsesappen i stedet",
+      "back": "Tilbage til login"
+    },
+    "settings": {
+      "statusOn": "Slået til. Du logger ind med din adgangskode og en kode fra din godkendelsesapp.",
+      "statusOff": "Slået fra. Du logger ind med din adgangskode alene.",
+      "setUp": "Opsæt totrinsbekræftelse",
+      "regenerate": "Nye backupkoder",
+      "regenerateTitle": "Opret nye backupkoder?",
+      "regenerateBody": "Dine nuværende backupkoder holder op med at virke. Bekræft med din adgangskode.",
+      "regeneratedBody": "Dine nye backupkoder. De gamle virker ikke længere.",
+      "regenerateConfirm": "Opret nye koder",
+      "disable": "Slå fra",
+      "disableTitle": "Slå totrinsbekræftelse fra?",
+      "disableBody": "Du logger ind med din adgangskode alene, og dine backupkoder holder op med at virke. Bekræft med din adgangskode.",
+      "disableConfirm": "Slå fra",
+      "working": "Gemmer…",
+      "done": "Færdig"
+    },
+    "errors": {
+      "generic": "Noget gik galt. Prøv igen.",
+      "network": "Vi kunne ikke få forbindelse til serveren. Tjek din forbindelse, og prøv igen.",
+      "rateLimited": "For mange forsøg. Vent et minut, og prøv igen.",
+      "invalidCode": "Koden er forkert. Tjek appen, og prøv igen.",
+      "codeFormat": "Indtast koden præcis, som den står.",
+      "expired": "Loginforsøget er udløbet. Log ind igen.",
+      "locked": "For mange forkerte koder. Vent 15 minutter, og prøv igen.",
+      "wrongPassword": "Forkert adgangskode."
+    }
+  },
+  "errorPage": {
+    "label": "Fejl",
+    "title": "Noget gik galt",
+    "body": "En uventet fejl forhindrede siden i at blive vist. Prøv igen. Hvis det bliver ved, så kontakt os.",
+    "retry": "Prøv igen",
+    "home": "Gå til forsiden",
+    "reference": "Reference: {digest}"
   }
 }

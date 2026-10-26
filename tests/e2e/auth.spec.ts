@@ -1,5 +1,3 @@
-import { expect, test } from "@playwright/test";
-
 import {
   cleanupE2EUsers,
   createUser,
@@ -9,6 +7,7 @@ import {
   uniqueEmail,
 } from "./support/db";
 import { adminDecide, login, newUser } from "./support/helpers";
+import { expect, test } from "./support/test";
 
 // Registration, admin approval and access control, end to end against a production build.
 

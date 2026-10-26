@@ -3,9 +3,11 @@ import { getLocale, getTranslations } from "next-intl/server";
 import { Suspense, type ReactNode } from "react";
 
 import { ChangePasswordForm } from "@/components/auth/change-password-form";
+import { TwoFactorSettings } from "@/components/auth/two-factor-settings";
 import { ProfileForm, SignOutEverywhere } from "@/components/portal/account-forms";
 import { ShellPageHeader } from "@/components/shared/app-shell/app-shell";
 import { PageSkeleton } from "@/components/shared/app-shell/page-skeleton";
+import { twoFactorSetupPath } from "@/lib/redirects";
 import { COUNTRIES, DEFAULT_COUNTRY, type ProfileInput } from "@/lib/validation/auth";
 import { getOwnProfile } from "@/server/queries/dentist";
 
@@ -52,6 +54,14 @@ async function Account() {
       </Panel>
       <Panel title={t("password.title")} description={t("password.description")}>
         <ChangePasswordForm />
+      </Panel>
+      <Panel title={t("twoFactor.title")} description={t("twoFactor.description")}>
+        <TwoFactorSettings
+          enabled={profile.twoFactorEnabled}
+          email={profile.email}
+          setupHref={twoFactorSetupPath(locale, `/${locale}/portal/account`)}
+          canDisable
+        />
       </Panel>
       <Panel title={t("sessions.title")} description={t("sessions.description")}>
         <SignOutEverywhere />
