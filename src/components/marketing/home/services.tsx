@@ -1,19 +1,21 @@
-import { getTranslations } from "next-intl/server";
-
 import { Reveal } from "@/components/motion/reveal";
 import { Container } from "@/components/shared/container";
-import { missingProps } from "@/components/shared/missing";
+import { Missing, missingProps } from "@/components/shared/missing";
 import { SectionHeading } from "@/components/shared/section-label";
 import { localized } from "@/lib/utils";
 import { getPublishedServices } from "@/server/queries/catalog";
 
+import { hasGaps, type HomeCopy } from "./home-copy";
 import { ServicesCarousel } from "./services-carousel";
 
-export async function Services({ locale }: { locale: string }) {
-  const [t, services] = await Promise.all([
-    getTranslations("home.services"),
-    getPublishedServices(),
-  ]);
+export async function Services({
+  locale,
+  copy,
+}: {
+  locale: string;
+  copy: HomeCopy<"servicesLabel" | "servicesTitle">;
+}) {
+  const services = await getPublishedServices();
   if (services.length === 0) return null;
 
   const missingImage = await missingProps("services.images");
@@ -28,13 +30,19 @@ export async function Services({ locale }: { locale: string }) {
     // scroll-mt: lands below the fixed header when reached via "#services".
     <section
       id="services"
-      aria-labelledby="services-title"
+      aria-labelledby={copy.servicesTitle ? "services-title" : undefined}
       className="scroll-mt-24 overflow-x-clip py-20 sm:py-28"
     >
       <Container>
         <Reveal>
-          <SectionHeading index="02" label={t("label")} title={t("title")} id="services-title" />
+          <SectionHeading
+            index="02"
+            label={copy.servicesLabel}
+            title={copy.servicesTitle}
+            id="services-title"
+          />
         </Reveal>
+        {hasGaps(copy) && <Missing field="homePage.services" className="mt-6" />}
         <ServicesCarousel
           items={items}
           locale={locale}

@@ -8,6 +8,7 @@ import { env } from "@/env";
 import { authOptions } from "@/lib/auth-options";
 import { db } from "@/lib/db";
 import { safeNextPath } from "@/lib/redirects";
+import { resetLinkCapture } from "@/lib/reset-link-capture";
 import { siteOrigins } from "@/lib/site-url";
 import { registerSchema } from "@/lib/validation/auth";
 
@@ -39,6 +40,9 @@ type RegisteredProfile = {
  */
 const verifyEmail = env.EMAIL_VERIFICATION === "on";
 
+/** How long a password-reset link works (emailed, or created by the admin). */
+export const RESET_PASSWORD_TOKEN_TTL_SECONDS = 60 * 60;
+
 export const auth = betterAuth({
   ...authOptions,
   baseURL: env.BETTER_AUTH_URL,
@@ -64,10 +68,16 @@ export const auth = betterAuth({
   emailAndPassword: {
     ...authOptions.emailAndPassword,
     requireEmailVerification: verifyEmail,
-    resetPasswordTokenExpiresIn: 60 * 60,
+    resetPasswordTokenExpiresIn: RESET_PASSWORD_TOKEN_TTL_SECONDS,
     revokeSessionsOnPasswordReset: true,
     // Better Auth answers the same way whether or not the email exists (no account enumeration).
+    // The admin's reset link (server/services/password-reset-link.ts) captures the URL instead.
     sendResetPassword: async ({ user, url }) => {
+      const capture = resetLinkCapture.getStore();
+      if (capture) {
+        capture.url = url;
+        return;
+      }
       const { sendPasswordResetEmail } = await notifications();
       sendPasswordResetEmail(user as typeof user & { preferredLocale?: string }, url);
     },

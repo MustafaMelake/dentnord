@@ -5,6 +5,7 @@ import { PAGE_STARTERS } from "../../prisma/page-starters";
 import {
   aboutPageSchema,
   contactPageSchema,
+  homePageSchema,
   PAGE_TEXT_FIELDS,
   servicesPageSchema,
 } from "../../src/lib/validation/admin";
@@ -70,6 +71,7 @@ describe("contact form", () => {
 
 describe("page texts", () => {
   const schemas = {
+    home: homePageSchema,
     services: servicesPageSchema,
     about: aboutPageSchema,
     contact: contactPageSchema,
@@ -81,13 +83,13 @@ describe("page texts", () => {
       const fields = PAGE_TEXT_FIELDS[page as keyof typeof schemas];
       const values = Object.fromEntries(fields.map((f) => [f, empty]));
       assert.ok(schema.safeParse(values).success, page);
-      const tooLong = { ...values, title: { da: "x".repeat(161), en: "" } };
+      const tooLong = { ...values, [fields[0]!]: { da: "x".repeat(5001), en: "" } };
       assert.equal(schema.safeParse(tooLong).success, false, page);
     }
   });
 
   it("starter copy: every field in both languages, flagged as starter, valid, and without figures", () => {
-    for (const page of ["services", "about", "contact"] as const) {
+    for (const page of ["home", "services", "about", "contact"] as const) {
       const starter = PAGE_STARTERS[`page.${page}`] as Record<string, unknown>;
       assert.equal(starter.starter, true, page);
       assert.ok(schemas[page].safeParse(starter).success, page);
@@ -99,6 +101,16 @@ describe("page texts", () => {
         const text = `${value.da} ${value.en}`.replace(/\b3D\b/g, "");
         assert.doesNotMatch(text, /\d/, `${page}.${field} has a figure`);
       }
+    }
+  });
+
+  it("home: the schema's fields are the checklist's fields, and the placeholders are in place", () => {
+    assert.deepEqual(PAGE_TEXT_FIELDS.home, Object.keys(homePageSchema.shape));
+    const home = PAGE_STARTERS["page.home"];
+    for (const lang of ["da", "en"] as const) {
+      assert.match(home.heroTrust[lang], /{count}/);
+      assert.match(home.heroDoctorExperience[lang], /{years}/);
+      assert.match(home.aboutCta[lang], /{name}/);
     }
   });
 });

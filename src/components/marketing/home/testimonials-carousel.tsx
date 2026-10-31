@@ -2,7 +2,7 @@
 
 import { AnimatePresence, motion } from "motion/react";
 import { useTranslations } from "next-intl";
-import { useState } from "react";
+import { useState, type ReactNode } from "react";
 
 import { Reveal } from "@/components/motion/reveal";
 import { spring, usePrefersReducedMotion } from "@/components/motion/use-media-query";
@@ -13,7 +13,19 @@ import { SectionHeading } from "@/components/shared/section-label";
 // Published testimonials (admin: Settings → Testimonials; consent required). Never invent quotes.
 export type TestimonialItem = { id: string; quote: string; author: string; initials: string };
 
-export function TestimonialsCarousel({ items }: { items: TestimonialItem[] }) {
+/** `label` / `title`: the section heading from /admin/pages/home (empty = left out). */
+export function TestimonialsCarousel({
+  items,
+  label,
+  title,
+  missing,
+}: {
+  items: TestimonialItem[];
+  label: string;
+  title: string;
+  /** Admin-only marker when the heading has an empty text. */
+  missing?: ReactNode;
+}) {
   const t = useTranslations("home.testimonials");
   const reduce = usePrefersReducedMotion();
   const [index, setIndex] = useState(0);
@@ -24,19 +36,15 @@ export function TestimonialsCarousel({ items }: { items: TestimonialItem[] }) {
 
   return (
     <section
-      aria-labelledby="testimonials-title"
+      aria-labelledby={title ? "testimonials-title" : undefined}
       aria-roledescription="carousel"
       className="py-20 sm:py-28"
     >
       <Container>
         <Reveal>
-          <SectionHeading
-            index="07"
-            label={t("label")}
-            title={t("title")}
-            id="testimonials-title"
-          />
+          <SectionHeading index="07" label={label} title={title} id="testimonials-title" />
         </Reveal>
+        {missing && <div className="mt-6">{missing}</div>}
 
         <div aria-live="polite" className="mt-12 min-h-[12rem] sm:mt-16">
           <AnimatePresence mode="wait" initial={false}>

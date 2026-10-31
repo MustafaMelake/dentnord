@@ -1,5 +1,5 @@
 /**
- * Creates the starter texts of the Services / About / Contact pages where they're missing
+ * Creates the starter texts of the Home / Services / About / Contact pages where they're missing
  * (prisma/page-starters.ts). Insert-only: existing page rows are never changed. `pnpm db:seed` runs
  * the same step on dev; this script exists so production can get the page texts without the rest
  * of the seed (example catalog, admin user):

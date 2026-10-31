@@ -6,6 +6,7 @@ import { Suspense, type ReactNode } from "react";
 
 import { DentistActions } from "@/components/admin/dentist-actions";
 import { DentistErase } from "@/components/admin/dentist-erase";
+import { DentistResetLink } from "@/components/admin/dentist-reset-link";
 import { PageSkeleton } from "@/components/shared/app-shell/page-skeleton";
 import type { DentistStatus } from "@/generated/prisma/enums";
 import { formatBytes } from "@/lib/storage-limits";
@@ -129,6 +130,8 @@ async function DentistDetail({ params }: Pick<PageProps<"/admin/dentists/[id]">,
           <Row label={t("detail.sessions")} value={String(dentist._count.sessions)} />
         </Card>
       </div>
+
+      <DentistResetLink dentistId={dentist.id} disabled={dentist.dentistStatus === "REJECTED"} />
 
       <section aria-labelledby="history-heading" className="flex flex-col gap-3">
         <h2 id="history-heading" className="font-mono text-label text-ink-muted">

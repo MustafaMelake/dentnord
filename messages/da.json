@@ -51,49 +51,13 @@
     "CANCELLED": "Annulleret"
   },
   "home": {
-    "meta": {
-      "title": "Dentnord — Præcise boreskabeloner til implantattandlæger",
-      "description": "Send din CBCT og intraorale scanning. Dentnord planlægger implantatpositionerne sammen med dig og leverer en printet boreskabelon med hylstre til din klinik."
-    },
     "hero": {
-      "trust": "Brugt af {count} tandklinikker i Danmark",
-      "title": "Præcise boreskabeloner til implantattandlæger.",
-      "subtitle": "Send din CBCT og intraorale scanning. Vi planlægger implantatpositionerne sammen med dig og leverer en printet skabelon med hylstre direkte til klinikken.",
-      "primaryCta": "Indsend en case",
-      "secondaryCta": "Se ydelser",
       "guideTypesLabel": "Skabelontyper",
       "doctor": {
-        "role": "Tandlæge · implantatplanlægning",
-        "experience": "{years} års erfaring",
         "link": "Om {name}"
       }
     },
-    "workflow": {
-      "label": "Sådan foregår det",
-      "title": "Fra scanning til skabelon i fire trin",
-      "steps": {
-        "scans": {
-          "title": "Send dine scanninger",
-          "body": "Upload CBCT (DICOM) og intraorale scanninger (STL/PLY) sikkert i portalen."
-        },
-        "planning": {
-          "title": "Digital planlægning",
-          "body": "Vi planlægger implantatpositionerne protetisk med dit implantatsystem og dit kit."
-        },
-        "approve": {
-          "title": "Du godkender planen",
-          "body": "Gennemgå planen online, og godkend den eller bed om ændringer."
-        },
-        "shipped": {
-          "title": "Printet og afsendt",
-          "body": "Skabelonen printes, monteres med hylstre og sendes til din klinik."
-        }
-      }
-    },
-    "statement": "Præcision skal planlægges, ikke håbes på. Hver skabelon bygger på dine scanninger og en plan, du selv har gennemgået og godkendt, så operationen følger planen, og selve dagen byder på færre overraskelser.",
     "services": {
-      "label": "Ydelser",
-      "title": "Planlægning og skabeloner til alle implantatcases",
       "all": "Se alle ydelser",
       "carousel": "Ydelser",
       "previous": "Forrige ydelse",
@@ -101,9 +65,6 @@
       "position": "{current} af {total}"
     },
     "portal": {
-      "label": "Portalen",
-      "title": "En case, du kan følge fra scanning til levering",
-      "intro": "Sådan ser din tandlægeportal ud: alle cases, filer og beslutninger samlet ét sted.",
       "newCase": {
         "caption": "Illustration af portalen: valg af skabelontype til en ny case.",
         "title": "Ny case",
@@ -131,17 +92,10 @@
       }
     },
     "guide3d": {
-      "label": "I 3D",
-      "title": "Se skabelonen, før den bliver printet",
-      "body": "Træk for at dreje en boreskabelon: en gennemsigtig resinbue med metalhylstre ved de planlagte implantatpositioner. Planlagt digitalt, printet i eget laboratorium.",
-      "cta": "Indsend en case",
       "viewerLabel": "Interaktiv 3D-model af en boreskabelon. Træk for at dreje.",
       "poster": "3D-visning af en boreskabelon"
     },
     "about": {
-      "label": "Om os",
-      "title": "Planlagt af en tandlæge, til tandlæger",
-      "cta": "Kontakt {name}",
       "expertiseLabel": "Kompetenceområder",
       "facts": {
         "experience": {
@@ -156,27 +110,9 @@
           "label": "Sprog"
         }
       },
-      "ctaGeneric": "Kontakt os",
       "bioFallback": "Dentnord planlægger boreskabeloner til tandimplantater sammen med de tandlæger, der indsætter dem."
     },
     "technology": {
-      "label": "Teknologi",
-      "title": "Digitalt fra scanning til hylster",
-      "intro": "Planlægning, print og efterbehandling under samme tag, så intet går tabt mellem trinene.",
-      "features": {
-        "planning": {
-          "title": "Digital planlægning",
-          "body": "Protetisk drevet implantatplanlægning ud fra din CBCT og intraorale scanning."
-        },
-        "printing": {
-          "title": "3D-print i eget laboratorium",
-          "body": "Skabelonerne printes og efterbehandles i vores eget laboratorium."
-        },
-        "sleeves": {
-          "title": "Kompatible hylstre",
-          "body": "Hylstre, der passer til dit implantatsystem og dit kirurgiske kit."
-        }
-      },
       "stats": {
         "guides": "Leverede skabeloner",
         "turnaround": "Typisk leveringstid",
@@ -185,17 +121,9 @@
       }
     },
     "testimonials": {
-      "label": "Udtalelser",
-      "title": "Det siger tandlægerne",
       "previous": "Forrige udtalelse",
       "next": "Næste udtalelse",
       "position": "Udtalelse {current} af {total}"
-    },
-    "cta": {
-      "title": "Klar til at sende din første case?",
-      "body": "Opret en tandlægekonto, upload dine scanninger, og få en plan til gennemsyn.",
-      "primary": "Indsend en case",
-      "secondary": "Kontakt os"
     }
   },
   "footer": {

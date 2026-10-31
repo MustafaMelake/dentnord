@@ -90,6 +90,7 @@ export default async function AdminLayout({ children }: LayoutProps<"/admin">) {
             items={items}
             navLabel={t("label")}
             menuLabel={t("menu")}
+            siteLink={{ label: t("backToSite"), plain: true }}
             sidebarFooter={
               <Suspense fallback={<UserMenuSkeleton />}>
                 <AdminAccount />

@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { describe, it } from "node:test";
 
-import { localized } from "../../src/lib/utils";
+import { fillPlaceholders, localized } from "../../src/lib/utils";
 
 describe("localized (translatable DB text → one language)", () => {
   it("picks the requested language", () => {
@@ -33,5 +33,20 @@ describe("localized (translatable DB text → one language)", () => {
     assert.equal(localized(null, "en"), "");
     assert.equal(localized("Hello", "en"), "");
     assert.equal(localized({ da: 42, en: null }, "en"), "");
+  });
+});
+
+describe("fillPlaceholders (admin-edited texts with {name} slots)", () => {
+  it("fills known placeholders, every occurrence", () => {
+    assert.equal(
+      fillPlaceholders("Trusted by {count} clinics", { count: "12" }),
+      "Trusted by 12 clinics",
+    );
+    assert.equal(fillPlaceholders("{name} and {name}", { name: "Hossam" }), "Hossam and Hossam");
+  });
+
+  it("leaves unknown placeholders and plain text as typed", () => {
+    assert.equal(fillPlaceholders("Contact {nmae}", { name: "Hossam" }), "Contact {nmae}");
+    assert.equal(fillPlaceholders("No slots here", { count: "3" }), "No slots here");
   });
 });

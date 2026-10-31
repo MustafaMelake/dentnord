@@ -11,8 +11,8 @@ import {
 import { login, newUser, openMobileMenu } from "./support/helpers";
 import { expect, test } from "./support/test";
 
-// The Services / About / Contact pages: the contact form → inbox (/admin/messages), editing a page
-// in /admin/pages and seeing it on the site, and the header / footer links in both languages.
+// The Home / Services / About / Contact pages: the contact form → inbox (/admin/messages), editing a
+// page in /admin/pages and seeing it on the site, and the header / footer links in both languages.
 
 let admin: ReturnType<typeof createUser>;
 
@@ -163,6 +163,74 @@ test("an admin edits the About page and the site shows it in both languages", as
     // row exactly, starter flag included (saving always marks the page as reviewed).
     await saveAbout({ title: text("title"), approachBodyEn: text("approachBody").en });
     setSetting("page.about", before);
+  }
+});
+
+test("an admin edits the home page texts and the home page shows them in both languages", async ({
+  browser,
+}) => {
+  const before = getSetting("page.home");
+  expect(before, "page.home is seeded (pnpm db:seed:pages)").not.toBeNull();
+  const text = (field: string) =>
+    (before?.[field] ?? { da: "", en: "" }) as { da: string; en: string };
+  const stamp = Date.now();
+  const edited = {
+    heroTitle: { en: `E2E home headline ${stamp}`, da: `E2E forside-overskrift ${stamp}` },
+    workflowStep2Title: { en: `E2E step two ${stamp}`, da: text("workflowStep2Title").da },
+    ctaTitle: { en: `E2E closing band ${stamp}`, da: `E2E afslutning ${stamp}` },
+  };
+  const visitor = await newUser(browser);
+
+  // Before: the page shows the stored texts (seeded from what messages/*.json used to hold).
+  await visitor.page.goto("/en");
+  await expect(visitor.page.getByRole("heading", { level: 1 })).toHaveText(text("heroTitle").en);
+  await expect(visitor.page.locator("#cta-title")).toHaveText(text("ctaTitle").en);
+
+  const a = await signInAdmin(browser);
+  async function saveHome(values: Record<string, { da: string; en: string }>) {
+    await a.page.goto("/admin/pages/home");
+    await a.page.waitForLoadState("networkidle");
+    for (const [field, value] of Object.entries(values)) {
+      for (const lang of ["en", "da"] as const) {
+        const input = a.page.locator(`#${field}-${lang}`);
+        await input.fill(value[lang]);
+        await expect(input).toHaveValue(value[lang]);
+      }
+    }
+    await a.page.getByRole("button", { name: "Save changes" }).click();
+    await expect(a.page.getByText("Saved. The website is updated.")).toBeVisible();
+  }
+
+  try {
+    // Home is the first tab, and the placeholder hints show the placeholder as typed.
+    await a.page.goto("/admin/pages");
+    await expect(a.page).toHaveURL(/\/admin\/pages\/home$/);
+    await expect(a.page.getByRole("link", { name: "Home", exact: true })).toHaveAttribute(
+      "aria-current",
+      "page",
+    );
+    await expect(a.page.getByText("Write {count} where the number of clinics goes.")).toBeVisible();
+
+    await saveHome(edited);
+    await expect(a.page.locator("[data-starter-notice]")).toHaveCount(0);
+    expect(getSetting("page.home")).toMatchObject({ ...edited, starter: false });
+
+    await visitor.page.goto("/en");
+    await expect(visitor.page.getByRole("heading", { level: 1 })).toHaveText(edited.heroTitle.en);
+    await expect(visitor.page.getByText(edited.workflowStep2Title.en)).toBeVisible();
+    await expect(visitor.page.locator("#cta-title")).toHaveText(edited.ctaTitle.en);
+    await expect(visitor.page).toHaveTitle(text("metaTitle").en);
+    await visitor.page.goto("/da");
+    await expect(visitor.page.getByRole("heading", { level: 1 })).toHaveText(edited.heroTitle.da);
+    await expect(visitor.page.locator("#cta-title")).toHaveText(edited.ctaTitle.da);
+  } finally {
+    // Back through the form (refreshes the cached page), then the exact row, starter flag included.
+    await saveHome({
+      heroTitle: text("heroTitle"),
+      workflowStep2Title: text("workflowStep2Title"),
+      ctaTitle: text("ctaTitle"),
+    });
+    setSetting("page.home", before);
   }
 });
 

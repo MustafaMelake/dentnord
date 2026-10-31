@@ -7,6 +7,7 @@ import { requireAdmin } from "@/server/queries/session";
 import { ErasureError, eraseDentist } from "@/server/services/dentist-erasure";
 import { ReviewError, reviewDentist, type ReviewDecision } from "@/server/services/dentist-review";
 import { notifyAccountApproved, notifyAccountRejected } from "@/server/services/notifications";
+import { createPasswordResetLink, ResetLinkError } from "@/server/services/password-reset-link";
 
 // Admin decisions on dentist accounts. Admin UI is English only, so errors are plain codes the
 // client maps to English strings (messages `admin.dentists.errors.*`).
@@ -91,4 +92,30 @@ export async function deleteDentist(input: {
     throw error;
   }
   return { ok: true };
+}
+
+export type ResetLinkResult =
+  | { ok: true; url: string; expiresAt: string }
+  | { ok: false; error: "invalid" | "notFound" | "invalidState" | "rateLimited" };
+
+/**
+ * A one-time password-reset link (1 hour) for the admin to send the dentist by hand, when the reset
+ * email doesn't reach them (server/services/password-reset-link.ts). Audit-logged, rate-limited.
+ */
+export async function createResetLink(input: { dentistId: string }): Promise<ResetLinkResult> {
+  const session = await requireAdmin();
+  const parsed = z.object({ dentistId }).safeParse(input);
+  if (!parsed.success) return { ok: false, error: "invalid" };
+
+  try {
+    const link = await createPasswordResetLink({
+      actor: { id: session.user.id, email: session.user.email },
+      dentistId: parsed.data.dentistId,
+    });
+    refresh();
+    return { ok: true, url: link.url, expiresAt: link.expiresAt.toISOString() };
+  } catch (error) {
+    if (error instanceof ResetLinkError) return { ok: false, error: error.code };
+    throw error;
+  }
 }

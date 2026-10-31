@@ -22,7 +22,8 @@ export const SETTING_KEYS = [
   "accounts",
   "legal",
   "images",
-  // The texts of the Services / About / Contact pages (/admin/pages/*).
+  // The texts of the Home / Services / About / Contact pages (/admin/pages/*).
+  "page.home",
   "page.services",
   "page.about",
   "page.contact",

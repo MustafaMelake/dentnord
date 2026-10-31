@@ -5,10 +5,13 @@ import type { ReactNode } from "react";
 import { Reveal, RevealItem } from "@/components/motion/reveal";
 import { Chip } from "@/components/shared/chip";
 import { Container } from "@/components/shared/container";
+import { Missing } from "@/components/shared/missing";
 import { SectionHeading } from "@/components/shared/section-label";
 import { StatusBadge } from "@/components/shared/status-badge";
 import type { CaseStatus } from "@/generated/prisma/enums";
 import { cn, localized } from "@/lib/utils";
+
+import { hasGaps, type HomeCopy } from "./home-copy";
 
 // Three fake portal screens (plain markup, not forms) that show dentists the portal before
 // they sign up. Each mock is aria-hidden; its <figcaption> describes it for screen readers.
@@ -24,26 +27,41 @@ const CURRENT = 2;
 
 export async function CasePreview({
   locale,
+  copy,
   guideTypes,
 }: {
   locale: string;
+  /** The section heading (admin-edited). The mock screens' texts stay in messages: they are UI. */
+  copy: HomeCopy<"portalLabel" | "portalTitle" | "portalIntro">;
   guideTypes: { id: string; name: unknown }[];
 }) {
   const t = await getTranslations("home.portal");
   const tStatus = await getTranslations("caseStatus");
 
   return (
-    <section aria-labelledby="portal-title" className="py-20 sm:py-28">
+    <section
+      aria-labelledby={copy.portalTitle ? "portal-title" : undefined}
+      className="py-20 sm:py-28"
+    >
       <Container>
         <Reveal className="mb-12 sm:mb-16">
           <SectionHeading
             index="03"
-            label={t("label")}
-            title={t("title")}
+            label={copy.portalLabel}
+            title={copy.portalTitle}
             id="portal-title"
             align="center"
           />
-          <p className="mx-auto mt-5 max-w-[48ch] text-center text-ink-muted">{t("intro")}</p>
+          {copy.portalIntro && (
+            <p className="mx-auto mt-5 max-w-[48ch] text-center text-ink-muted">
+              {copy.portalIntro}
+            </p>
+          )}
+          {hasGaps(copy) && (
+            <div className="mt-5 flex justify-center">
+              <Missing field="homePage.portal" />
+            </div>
+          )}
         </Reveal>
 
         <Reveal stagger={0.1} className="grid gap-4 lg:grid-cols-2 lg:grid-rows-[auto_auto]">

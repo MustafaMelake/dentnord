@@ -5,9 +5,9 @@ import NextLink from "next/link";
 import type { PageName } from "@/lib/validation/admin";
 import { cn } from "@/lib/utils";
 
-const PAGES: PageName[] = ["services", "about", "contact"];
+const PAGES: PageName[] = ["home", "services", "about", "contact"];
 
-/** Tabs between the three page editors, plus links to the live page in both languages. */
+/** Tabs between the page editors, plus links to the live page in both languages. */
 export async function PagesNav({ current }: { current: PageName }) {
   const t = await getTranslations({ locale: "en", namespace: "admin.pages" });
   return (
@@ -37,7 +37,7 @@ export async function PagesNav({ current }: { current: PageName }) {
         {(["da", "en"] as const).map((locale) => (
           <a
             key={locale}
-            href={`/${locale}/${current}`}
+            href={current === "home" ? `/${locale}` : `/${locale}/${current}`}
             target="_blank"
             rel="noreferrer"
             className="inline-flex items-center gap-1 font-mono text-xs text-brand uppercase hover:underline"

@@ -149,6 +149,8 @@ enum AuditAction {
   DENTIST_APPROVED
   DENTIST_REJECTED
   DENTIST_REACTIVATED
+  /// The admin created a one-time password-reset link for a dentist (the link itself is never stored).
+  PASSWORD_RESET_LINK_CREATED
   /// GDPR erasure: the dentist and all their data. The entry keeps counts only (no personal data).
   DENTIST_DELETED
   /// Storage cleanup (cron): a draft untouched for 60 days was deleted with its files.
