@@ -24,7 +24,7 @@ export function AppShell({
   navLabel: string;
   menuLabel: string;
   locale?: string;
-  /** Portal: a "Back to site" link under the logo (and in the mobile bar + sheet). */
+  /** A "Back to site" link under the logo (and in the mobile bar + sheet). */
   siteLink?: SiteLink;
   /** Account box at the bottom of the sidebar (and of the mobile sheet). */
   sidebarFooter: ReactNode;

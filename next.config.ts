@@ -48,6 +48,11 @@ const nextConfig: NextConfig = {
   async headers() {
     return [{ source: "/:path*", headers: securityHeaders(headerInput()) }];
   },
+  async redirects() {
+    // A real HTTP redirect: redirect() in a page under Cache Components streams a client-side
+    // redirect after the page has loaded.
+    return [{ source: "/admin/pages", destination: "/admin/pages/home", permanent: false }];
+  },
   experimental: {
     // Vercel restores .next/cache between deploys. A restored Turbopack build cache once shipped the
     // previous compile of globals.css (Tailwind) alongside new code: wrong fonts, no theme tokens.

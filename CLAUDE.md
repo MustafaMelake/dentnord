@@ -163,6 +163,11 @@ prisma/schema.prisma, seed.ts
   Optional for dentists (portal account page: set up, new backup codes, turn off). Login with 2FA:
   `signIn.email` returns `twoFactorRedirect`, the login form asks for the code (or a backup code); the
   session exists only after `/two-factor/verify-*`. Lost admin 2FA: reset in the DB (docs/go-live.md).
+- **Admin reset link** (`server/services/password-reset-link.ts`, `/admin/dentists/[id]` → Password
+  reset): runs Better Auth's own `requestPasswordReset` inside `resetLinkCapture`
+  (`lib/reset-link-capture.ts`), so `sendResetPassword` hands the URL back instead of emailing it. Same
+  token, 1-hour expiry and reset page as the email; shown once to the admin, never stored; rate-limited
+  per admin and per dentist; `PASSWORD_RESET_LINK_CREATED` audit entry. Not for disabled dentists.
 - **GDPR erasure** (`server/services/dentist-erasure.ts`, `/admin/dentists/[id]` → "Delete dentist and
   all data", `deleteDentist` in `server/actions/admin-dentists.ts`): the admin types the dentist's email
   (checked again on the server). Order: disable + delete sessions → every case's R2 objects (a failure
@@ -198,7 +203,13 @@ prisma/schema.prisma, seed.ts
 
 - Pages: `/admin/services` (+ `[id]`, `new`), `/admin/catalog` (guide types, implant systems, kits),
   `/admin/portfolio` (+ `[id]`, `new`), `/admin/settings` (numbers, contact, doctor, testimonials,
-  photos, accounts, legal), and the dashboard's **Content checklist** (`server/queries/content-checklist.ts`).
+  photos, accounts, legal), `/admin/pages/home|services|about|contact` (page texts), and the dashboard's
+  **Content checklist** (`server/queries/content-checklist.ts`).
+- **Home page copy** is the SiteSetting `page.home` (`homePageSchema`, `/admin/pages/home`), not
+  messages: every section gets its texts as a `copy` prop (`components/marketing/home/home-copy.ts`);
+  `{count}` / `{years}` / `{name}` are filled with `fillPlaceholders`. Only UI strings (aria labels,
+  the portal mock screens, shared stat/fact labels) stay in `messages.home`. The row is created by
+  `pnpm db:seed:pages` (insert-only, `prisma/page-starters.ts`): without it the home page shows no copy.
 - Every admin mutation goes through `runAdminAction(schema, input, handler)`
   (`server/services/admin-action.ts`): `requireAdmin()` FIRST (so a direct POST of the action id by a
   non-admin never reaches validation or the DB), then the same zod schema as the form

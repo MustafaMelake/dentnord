@@ -40,3 +40,11 @@ export function localized(value: unknown, locale: string): string {
     typeof text[lang] === "string" ? text[lang].trim() : "";
   return pick(locale as keyof LocalizedText) || pick("da") || pick("en");
 }
+
+/**
+ * Fills `{name}` placeholders in an admin-edited text (e.g. "Trusted by {count} clinics"). A
+ * placeholder without a value is left as typed, so a typo shows up on the page instead of vanishing.
+ */
+export function fillPlaceholders(text: string, values: Record<string, string>): string {
+  return text.replace(/\{(\w+)\}/g, (match, key: string) => values[key] ?? match);
+}

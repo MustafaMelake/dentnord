@@ -6,13 +6,20 @@ import { useTranslations } from "next-intl";
 import {
   aboutPageSchema,
   contactPageSchema,
+  homePageSchema,
   servicesPageSchema,
   type AboutPageInput,
   type Bilingual,
   type ContactPageInput,
+  type HomePageInput,
   type ServicesPageInput,
 } from "@/lib/validation/admin";
-import { saveAboutPage, saveContactPage, saveServicesPage } from "@/server/actions/admin/settings";
+import {
+  saveAboutPage,
+  saveContactPage,
+  saveHomePage,
+  saveServicesPage,
+} from "@/server/actions/admin/settings";
 import type { PublicImage } from "@/server/queries/media";
 
 import { BilingualField } from "./form-kit";
@@ -20,7 +27,7 @@ import { FormSection } from "./form-section";
 import { ImageField } from "./image-picker";
 import { SettingsForm, useSettingsForm } from "./settings-forms";
 
-// The texts of the public Services / About / Contact pages (/admin/pages/*). Empty texts are
+// The texts of the public Home / Services / About / Contact pages (/admin/pages/*). Empty texts are
 // hidden on the site. Saving once also confirms the seeded starter copy (the checklist stops
 // listing the page).
 
@@ -58,6 +65,162 @@ function CtaSection() {
 }
 
 type TextValues<K extends string> = Record<K, Bilingual>;
+
+// ── Home ─────────────────────────────────────────────────────────────────────
+
+type HomeSectionName =
+  | "hero"
+  | "workflow"
+  | "statement"
+  | "services"
+  | "portal"
+  | "guide"
+  | "about"
+  | "technology"
+  | "testimonials"
+  | "cta"
+  | "meta";
+
+/** Fields with a hint under them (`admin.pages.home.hints`): where a button leads, placeholders. */
+const HOME_HINTS = [
+  "heroPrimaryCta",
+  "heroSecondaryCta",
+  "heroTrust",
+  "heroDoctorExperience",
+  "workflowTitle",
+  "guideCta",
+  "aboutCta",
+  "aboutCtaGeneric",
+  "ctaPrimary",
+  "ctaSecondary",
+] as const satisfies (keyof HomePageInput)[];
+const hasHint = (name: keyof HomePageInput): name is (typeof HOME_HINTS)[number] =>
+  (HOME_HINTS as readonly string[]).includes(name);
+
+/** The texts of one home page section, with the section's own heading and description. */
+function HomeSection({
+  section,
+  fields,
+}: {
+  section: HomeSectionName;
+  fields: { name: keyof HomePageInput; multiline?: boolean }[];
+}) {
+  const t = useTranslations("admin.pages.home");
+  return (
+    <FormSection
+      title={t(`sections.${section}.title`)}
+      description={t(`sections.${section}.description`)}
+    >
+      {fields.map(({ name, multiline }) => (
+        <BilingualField<HomePageInput>
+          key={name}
+          name={name}
+          label={t(`fields.${name}`)}
+          hint={hasHint(name) ? t(`hints.${name}`) : undefined}
+          multiline={multiline}
+        />
+      ))}
+    </FormSection>
+  );
+}
+
+export function HomePageForm({ values, starter }: { values: HomePageInput; starter: boolean }) {
+  const { form, saving, onSubmit } = useSettingsForm(homePageSchema, values, saveHomePage);
+  return (
+    <SettingsForm form={form} onSubmit={onSubmit} saving={saving}>
+      <StarterNotice starter={starter} />
+      <HomeSection
+        section="hero"
+        fields={[
+          { name: "heroTitle" },
+          { name: "heroSubtitle", multiline: true },
+          { name: "heroPrimaryCta" },
+          { name: "heroSecondaryCta" },
+          { name: "heroTrust" },
+          { name: "heroDoctorRole" },
+          { name: "heroDoctorExperience" },
+        ]}
+      />
+      <HomeSection
+        section="workflow"
+        fields={[
+          { name: "workflowLabel" },
+          { name: "workflowTitle" },
+          { name: "workflowStep1Title" },
+          { name: "workflowStep1Body", multiline: true },
+          { name: "workflowStep2Title" },
+          { name: "workflowStep2Body", multiline: true },
+          { name: "workflowStep3Title" },
+          { name: "workflowStep3Body", multiline: true },
+          { name: "workflowStep4Title" },
+          { name: "workflowStep4Body", multiline: true },
+        ]}
+      />
+      <HomeSection section="statement" fields={[{ name: "statement", multiline: true }]} />
+      <HomeSection
+        section="services"
+        fields={[{ name: "servicesLabel" }, { name: "servicesTitle" }]}
+      />
+      <HomeSection
+        section="portal"
+        fields={[
+          { name: "portalLabel" },
+          { name: "portalTitle" },
+          { name: "portalIntro", multiline: true },
+        ]}
+      />
+      <HomeSection
+        section="guide"
+        fields={[
+          { name: "guideLabel" },
+          { name: "guideTitle" },
+          { name: "guideBody", multiline: true },
+          { name: "guideCta" },
+        ]}
+      />
+      <HomeSection
+        section="about"
+        fields={[
+          { name: "aboutLabel" },
+          { name: "aboutTitle" },
+          { name: "aboutCta" },
+          { name: "aboutCtaGeneric" },
+        ]}
+      />
+      <HomeSection
+        section="technology"
+        fields={[
+          { name: "technologyLabel" },
+          { name: "technologyTitle" },
+          { name: "technologyIntro", multiline: true },
+          { name: "technologyFeature1Title" },
+          { name: "technologyFeature1Body", multiline: true },
+          { name: "technologyFeature2Title" },
+          { name: "technologyFeature2Body", multiline: true },
+          { name: "technologyFeature3Title" },
+          { name: "technologyFeature3Body", multiline: true },
+        ]}
+      />
+      <HomeSection
+        section="testimonials"
+        fields={[{ name: "testimonialsLabel" }, { name: "testimonialsTitle" }]}
+      />
+      <HomeSection
+        section="cta"
+        fields={[
+          { name: "ctaTitle" },
+          { name: "ctaBody", multiline: true },
+          { name: "ctaPrimary" },
+          { name: "ctaSecondary" },
+        ]}
+      />
+      <HomeSection
+        section="meta"
+        fields={[{ name: "metaTitle" }, { name: "metaDescription", multiline: true }]}
+      />
+    </SettingsForm>
+  );
+}
 
 // ── Services ─────────────────────────────────────────────────────────────────
 

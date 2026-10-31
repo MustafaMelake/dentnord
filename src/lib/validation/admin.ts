@@ -260,6 +260,66 @@ export const contactPageSchema = z.object({
 });
 export type ContactPageInput = z.input<typeof contactPageSchema>;
 
+/**
+ * The home page: every text on it, section by section. `{count}`, `{years}` and `{name}` in a text
+ * are filled in from Settings (number of clinics, years of experience, the doctor's name).
+ */
+const label = () => bilingual(60);
+const itemTitle = () => bilingual(80);
+const itemBody = () => bilingual(300);
+
+export const homePageSchema = z.object({
+  metaTitle: bilingual(120),
+  metaDescription: bilingual(300),
+  heroTrust: bilingual(160),
+  heroTitle: heading(),
+  heroSubtitle: bilingual(400),
+  heroPrimaryCta: label(),
+  heroSecondaryCta: label(),
+  heroDoctorRole: bilingual(80),
+  heroDoctorExperience: bilingual(80),
+  workflowLabel: label(),
+  workflowTitle: heading(),
+  workflowStep1Title: itemTitle(),
+  workflowStep1Body: itemBody(),
+  workflowStep2Title: itemTitle(),
+  workflowStep2Body: itemBody(),
+  workflowStep3Title: itemTitle(),
+  workflowStep3Body: itemBody(),
+  workflowStep4Title: itemTitle(),
+  workflowStep4Body: itemBody(),
+  statement: bilingual(600),
+  servicesLabel: label(),
+  servicesTitle: heading(),
+  portalLabel: label(),
+  portalTitle: heading(),
+  portalIntro: bilingual(400),
+  guideLabel: label(),
+  guideTitle: heading(),
+  guideBody: bilingual(600),
+  guideCta: label(),
+  aboutLabel: label(),
+  aboutTitle: heading(),
+  aboutCta: label(),
+  aboutCtaGeneric: label(),
+  technologyLabel: label(),
+  technologyTitle: heading(),
+  technologyIntro: bilingual(400),
+  technologyFeature1Title: itemTitle(),
+  technologyFeature1Body: itemBody(),
+  technologyFeature2Title: itemTitle(),
+  technologyFeature2Body: itemBody(),
+  technologyFeature3Title: itemTitle(),
+  technologyFeature3Body: itemBody(),
+  testimonialsLabel: label(),
+  testimonialsTitle: heading(),
+  ctaTitle: heading(),
+  ctaBody: bilingual(400),
+  ctaPrimary: label(),
+  ctaSecondary: label(),
+});
+export type HomePageInput = z.input<typeof homePageSchema>;
+
 /** The bilingual text fields of each page (the checklist wants both languages filled in). */
 export const PAGE_TEXT_FIELDS = {
   services: [
@@ -284,6 +344,7 @@ export const PAGE_TEXT_FIELDS = {
     "ctaLabel",
   ],
   contact: ["title", "intro", "detailsHeading", "formHeading", "formIntro"],
+  home: Object.keys(homePageSchema.shape) as (keyof HomePageInput)[],
 } as const satisfies Record<string, readonly string[]>;
 export type PageName = keyof typeof PAGE_TEXT_FIELDS;
 

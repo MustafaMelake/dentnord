@@ -126,6 +126,12 @@ function pageTexts<P extends keyof typeof PAGE_TEXT_FIELDS>(
   return { ...(fields as PageFields<P>), starter: v.starter === true };
 }
 
+export type HomePageSetting = PageFields<"home"> & { starter: boolean };
+
+export async function getHomePageSetting(): Promise<HomePageSetting> {
+  return pageTexts("home", await getSetting("page.home"));
+}
+
 export type ServicesPageSetting = PageFields<"services"> & {
   imageId: string | null;
   starter: boolean;

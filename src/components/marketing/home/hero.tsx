@@ -8,11 +8,22 @@ import { Container } from "@/components/shared/container";
 import { Missing } from "@/components/shared/missing";
 import { SiteImage } from "@/components/shared/site-image";
 import { Link } from "@/i18n/navigation";
-import { localized } from "@/lib/utils";
+import { fillPlaceholders, localized } from "@/lib/utils";
 import type { PublicImage } from "@/server/queries/media";
+
+import { hasGaps, type HomeCopy } from "./home-copy";
 
 type HeroProps = {
   locale: string;
+  copy: HomeCopy<
+    | "heroTrust"
+    | "heroTitle"
+    | "heroSubtitle"
+    | "heroPrimaryCta"
+    | "heroSecondaryCta"
+    | "heroDoctorRole"
+    | "heroDoctorExperience"
+  >;
   guideTypes: { id: string; name: unknown }[];
   clinics: number | null;
   yearsExperience: number | null;
@@ -24,6 +35,7 @@ type HeroProps = {
 // Content left empty in the admin is hidden here; admins see a "Missing: …" marker instead.
 export async function Hero({
   locale,
+  copy,
   guideTypes,
   clinics,
   yearsExperience,
@@ -36,7 +48,11 @@ export async function Hero({
 
   return (
     // data-over-hero: the fixed header renders transparent with white text while over this section.
-    <section data-over-hero="" aria-labelledby="hero-title" className="p-2 sm:p-3">
+    <section
+      data-over-hero=""
+      aria-labelledby={copy.heroTitle ? "hero-title" : undefined}
+      className="p-2 sm:p-3"
+    >
       <div className="relative isolate flex min-h-[calc(100svh-1rem)] flex-col overflow-hidden rounded-media text-white sm:min-h-[calc(100svh-1.5rem)] sm:rounded-media-lg lg:min-h-[44rem]">
         <SiteImage
           image={image}
@@ -63,34 +79,49 @@ export async function Hero({
 
         <Container className="flex flex-1 flex-col pt-28 pb-5 sm:pt-32 sm:pb-8 lg:pt-36">
           {clinics !== null ? (
-            <FadeIn delay={0.05}>
-              <p className="text-sm text-white/85">{t("trust", { count: fmt(clinics) })}</p>
-            </FadeIn>
+            copy.heroTrust && (
+              <FadeIn delay={0.05}>
+                <p className="text-sm text-white/85">
+                  {fillPlaceholders(copy.heroTrust, { count: fmt(clinics) })}
+                </p>
+              </FadeIn>
+            )
           ) : (
             <Missing field="stats.clinics" tone="dark" />
           )}
 
           <div className="flex flex-1 flex-col justify-end gap-8 pt-14 sm:pt-20">
             <div className="flex max-w-3xl flex-col gap-6">
-              <SplitText
-                as="h1"
-                id="hero-title"
-                trigger="load"
-                delay={0.1}
-                text={t("title")}
-                className="max-w-[13ch] text-display-2xl"
-              />
-              <FadeIn delay={0.45}>
-                <p className="max-w-[46ch] text-lead text-white/85">{t("subtitle")}</p>
-              </FadeIn>
-              <FadeIn delay={0.55} className="flex flex-wrap items-center gap-3">
-                <ButtonLink href="/portal/cases/new" variant="light" size="lg" icon>
-                  {t("primaryCta")}
-                </ButtonLink>
-                <ButtonLink href="#services" variant="glass" size="lg">
-                  {t("secondaryCta")}
-                </ButtonLink>
-              </FadeIn>
+              {copy.heroTitle && (
+                <SplitText
+                  as="h1"
+                  id="hero-title"
+                  trigger="load"
+                  delay={0.1}
+                  text={copy.heroTitle}
+                  className="max-w-[13ch] text-display-2xl"
+                />
+              )}
+              {copy.heroSubtitle && (
+                <FadeIn delay={0.45}>
+                  <p className="max-w-[46ch] text-lead text-white/85">{copy.heroSubtitle}</p>
+                </FadeIn>
+              )}
+              {(copy.heroPrimaryCta || copy.heroSecondaryCta) && (
+                <FadeIn delay={0.55} className="flex flex-wrap items-center gap-3">
+                  {copy.heroPrimaryCta && (
+                    <ButtonLink href="/portal/cases/new" variant="light" size="lg" icon>
+                      {copy.heroPrimaryCta}
+                    </ButtonLink>
+                  )}
+                  {copy.heroSecondaryCta && (
+                    <ButtonLink href="#services" variant="glass" size="lg">
+                      {copy.heroSecondaryCta}
+                    </ButtonLink>
+                  )}
+                </FadeIn>
+              )}
+              {hasGaps(copy) && <Missing field="homePage.hero" tone="dark" />}
             </div>
 
             <FadeIn
@@ -120,10 +151,14 @@ export async function Hero({
                       <span className="text-lg leading-tight font-medium tracking-[-0.02em]">
                         {doctorName}
                       </span>
-                      <span className="text-sm text-ink-muted">{t("doctor.role")}</span>
-                      {yearsExperience !== null && (
+                      {copy.heroDoctorRole && (
+                        <span className="text-sm text-ink-muted">{copy.heroDoctorRole}</span>
+                      )}
+                      {yearsExperience !== null && copy.heroDoctorExperience && (
                         <span className="mt-1 font-mono text-label text-ink-muted">
-                          {t("doctor.experience", { years: fmt(yearsExperience) })}
+                          {fillPlaceholders(copy.heroDoctorExperience, {
+                            years: fmt(yearsExperience),
+                          })}
                         </span>
                       )}
                     </span>

@@ -88,10 +88,67 @@ The media bucket is served from its `r2.dev` URL today. For a stable, branded UR
 
 ## 5. Email (Resend)
 
-- [ ] Resend → Domains → add `dentnord.dk`, add the DNS records it shows (SPF, DKIM; add a DMARC
-      record too, e.g. `v=DMARC1; p=quarantine; rua=mailto:<you>`), wait for "Verified".
-- [ ] Set `EMAIL_FROM=Dentnord <noreply@dentnord.dk>` and redeploy. Send a password reset to yourself
-      and check it arrives (not in spam) with working links to `https://dentnord.dk/...`.
+**Why reset emails don't reach dentists before this step.** Resend only delivers to anyone once the
+sender's domain is verified. Until then, a key can send only from Resend's test sender
+(`onboarding@resend.dev`) and only **to the email address of the Resend account owner**; any other
+recipient, or a sender address on an unverified domain, is refused with a 403. The site doesn't show
+that error: `sendEmail` (`src/lib/email.ts`) only logs `[email] send failed` in the Vercel logs, and
+"Forgot password" always answers "check your email" (Better Auth doesn't reveal which addresses
+exist). So the dentist sees success and gets nothing. Until this step is done, the admin can send a
+reset link by hand: `/admin/dentists/[id]` → **Password reset** → "Create password-reset link" (1 hour,
+one use, audit-logged).
+
+The free Resend plan is enough (3,000 emails a month, 100 a day, one domain).
+
+### 5a. Add the domain in Resend
+
+- [ ] Sign in to the client's Resend account → **Domains** → **Add domain**.
+- [ ] Domain: `dentnord.dk`. Region: **Ireland (eu-west-1)**, so emails are sent from the EU. Add.
+- [ ] Resend lists the DNS records to create (keep the page open). With the EU region they look like
+      this; **copy the values from Resend**, the DKIM key is unique to the account:
+
+      | Type | Name                 | Value                                         | Priority |
+      | ---- | -------------------- | --------------------------------------------- | -------- |
+      | TXT  | `resend._domainkey`  | `p=MIGfMA0GCSq…` (DKIM key from Resend)       |          |
+      | MX   | `send`               | `feedback-smtp.eu-west-1.amazonses.com`       | 10       |
+      | TXT  | `send`               | `v=spf1 include:amazonses.com ~all`           |          |
+      | TXT  | `_dmarc` (optional)  | `v=DMARC1; p=none; rua=mailto:<admin email>`  |          |
+
+      The MX and SPF records are on the `send` subdomain (the bounce address), so they don't touch the
+      domain's own mail (`@dentnord.dk` inboxes keep working).
+
+### 5b. Create the records in Cloudflare DNS
+
+Resend's **Auto configure** button can create them in Cloudflare after you sign in there. By hand:
+
+- [ ] Cloudflare → the `dentnord.dk` zone → **DNS** → **Records** → **Add record**, once per row:
+  - **DKIM:** Type `TXT`, Name `resend._domainkey`, Content = the `p=…` value from Resend (paste it
+    whole, without quotes), TTL Auto. Save.
+  - **Bounce MX:** Type `MX`, Name `send`, Mail server `feedback-smtp.eu-west-1.amazonses.com`,
+    Priority `10`, TTL Auto. Save.
+  - **SPF:** Type `TXT`, Name `send`, Content `v=spf1 include:amazonses.com ~all`, TTL Auto. Save.
+  - **DMARC** (only if the zone has no `_dmarc` record yet; never add a second one): Type `TXT`, Name
+    `_dmarc`, Content `v=DMARC1; p=none; rua=mailto:<admin email>`. Tighten to `p=quarantine` after a
+    few weeks of clean reports.
+- [ ] Cloudflare adds the zone name itself: type `send`, not `send.dentnord.dk`. TXT and MX records
+      can't be proxied, so there's no orange cloud to switch off.
+- [ ] Back in Resend → Domains → `dentnord.dk` → **Verify DNS records**. Usually verified within
+      minutes (up to a few hours). Wait for **Verified** on every row.
+
+### 5c. Key and sender in Vercel
+
+- [ ] Resend → **API Keys** → **Create API key**: name `dentnord-production`, permission **Sending
+      access**, domain `dentnord.dk`. Copy it (shown once; it starts with `re_`).
+- [ ] Vercel → Project → Settings → Environment Variables (Production): `RESEND_API_KEY` = the key,
+      `EMAIL_FROM` = `Dentnord <noreply@dentnord.dk>`. Redeploy.
+
+### 5d. Check, then turn on verification
+
+- [ ] On `https://dentnord.dk/da/forgot-password`, request a reset for a dentist test account whose
+      address is **not** the Resend account owner's (that is what failed before). The email arrives
+      (check spam too), its link opens `https://dentnord.dk/da/reset-password?token=…`, and the new
+      password works for logging in. Resend → **Emails** shows each message as Delivered; the Vercel
+      logs show no `[email] send failed`.
 - [ ] Then turn on email verification: `EMAIL_VERIFICATION=on`, redeploy. New dentists confirm their
       address (24-hour link) before they can log in. **Existing accounts** whose email was never
       confirmed are asked to confirm at their next login (a new link is sent when they enter the right

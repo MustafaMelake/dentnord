@@ -50,49 +50,13 @@
     "CANCELLED": "Cancelled"
   },
   "home": {
-    "meta": {
-      "title": "Dentnord — Precise surgical guides for implant dentists",
-      "description": "Send your CBCT and intraoral scan. Dentnord plans the implant positions with you and delivers a printed, sleeve-ready surgical guide to your clinic."
-    },
     "hero": {
-      "trust": "Trusted by {count} dental clinics in Denmark",
-      "title": "Precise surgical guides for implant dentists.",
-      "subtitle": "Send your CBCT and intraoral scan. We plan the implant positions with you and deliver a printed, sleeve-ready guide to your clinic.",
-      "primaryCta": "Submit a case",
-      "secondaryCta": "Explore services",
       "guideTypesLabel": "Guide types",
       "doctor": {
-        "role": "Dentist · implant planning",
-        "experience": "{years} years of experience",
         "link": "About {name}"
       }
     },
-    "workflow": {
-      "label": "How it works",
-      "title": "From scan to guide in four steps",
-      "steps": {
-        "scans": {
-          "title": "Send your scans",
-          "body": "Upload CBCT (DICOM) and intraoral scans (STL/PLY) securely in the portal."
-        },
-        "planning": {
-          "title": "Digital planning",
-          "body": "We plan the implant positions prosthetically, with your implant system and kit."
-        },
-        "approve": {
-          "title": "You approve the plan",
-          "body": "Review the plan online, then approve it or ask for changes."
-        },
-        "shipped": {
-          "title": "Printed & shipped",
-          "body": "Your guide is printed, fitted with sleeves and shipped to your clinic."
-        }
-      }
-    },
-    "statement": "Precision is planned, not hoped for. Every guide starts from your scans and a plan you have reviewed and approved, so the surgery follows the plan and the day itself holds fewer surprises.",
     "services": {
-      "label": "Services",
-      "title": "Planning and guides for every implant case",
       "all": "See all services",
       "carousel": "Services",
       "previous": "Previous service",
@@ -100,9 +64,6 @@
       "position": "{current} of {total}"
     },
     "portal": {
-      "label": "The portal",
-      "title": "A case you can follow, from scan to delivery",
-      "intro": "This is your dentist portal: every case, file and decision in one place.",
       "newCase": {
         "caption": "Illustration of the portal: choosing a guide type for a new case.",
         "title": "New case",
@@ -130,17 +91,10 @@
       }
     },
     "guide3d": {
-      "label": "In 3D",
-      "title": "See the guide before it's printed",
-      "body": "Drag to rotate a surgical guide: a translucent resin arch with metal sleeves at the planned implant positions. Planned digitally, printed in-house.",
-      "cta": "Submit a case",
       "viewerLabel": "Interactive 3D model of a surgical guide. Drag to rotate.",
       "poster": "3D preview of a surgical guide"
     },
     "about": {
-      "label": "About",
-      "title": "Planned by a dentist, for dentists",
-      "cta": "Contact {name}",
       "expertiseLabel": "Areas of expertise",
       "facts": {
         "experience": {
@@ -155,27 +109,9 @@
           "label": "Languages"
         }
       },
-      "ctaGeneric": "Contact us",
       "bioFallback": "Dentnord plans surgical guides for dental implants together with the dentists who place them."
     },
     "technology": {
-      "label": "Technology",
-      "title": "Digital from scan to sleeve",
-      "intro": "Planning, printing and finishing under one roof, so nothing gets lost between steps.",
-      "features": {
-        "planning": {
-          "title": "Digital planning",
-          "body": "Prosthetically driven implant planning from your CBCT and intraoral scan."
-        },
-        "printing": {
-          "title": "In-house 3D printing",
-          "body": "Guides are printed and post-processed in our own lab."
-        },
-        "sleeves": {
-          "title": "Sleeve compatibility",
-          "body": "Sleeves matched to your implant system and surgical kit."
-        }
-      },
       "stats": {
         "guides": "Guides delivered",
         "turnaround": "Typical turnaround",
@@ -184,17 +120,9 @@
       }
     },
     "testimonials": {
-      "label": "Testimonials",
-      "title": "What dentists say",
       "previous": "Previous testimonial",
       "next": "Next testimonial",
       "position": "Testimonial {current} of {total}"
-    },
-    "cta": {
-      "title": "Ready to send your first case?",
-      "body": "Create a dentist account, upload your scans and get a plan to review.",
-      "primary": "Submit a case",
-      "secondary": "Contact us"
     }
   },
   "footer": {
@@ -442,7 +370,7 @@
       "label": "Admin",
       "menu": "Menu",
       "openMenu": "Open menu",
-      "viewSite": "View website",
+      "backToSite": "Back to website",
       "logout": "Log out",
       "pendingBadge": "{count} pending",
       "account": "Account",
@@ -548,7 +476,8 @@
         "CONTENT_REORDERED": "Reordered",
         "MEDIA_UPLOADED": "Image uploaded",
         "DENTIST_DELETED": "Deleted with all data",
-        "DRAFT_EXPIRED": "Draft deleted after 60 days without activity"
+        "DRAFT_EXPIRED": "Draft deleted after 60 days without activity",
+        "PASSWORD_RESET_LINK_CREATED": "Password-reset link created"
       },
       "errors": {
         "invalid": "That request wasn't valid.",
@@ -556,7 +485,22 @@
         "invalidState": "This account changed in the meantime. The page has been refreshed; try again.",
         "generic": "Something went wrong. Please try again.",
         "confirmMismatch": "The email address doesn't match.",
-        "storage": "File storage didn't respond, so nothing was deleted from the database. The account is disabled and signed out; try again."
+        "storage": "File storage didn't respond, so nothing was deleted from the database. The account is disabled and signed out; try again.",
+        "rateLimited": "Too many reset links in a short time. Wait a while and try again."
+      },
+      "resetLink": {
+        "title": "Password reset",
+        "intro": "If the dentist can't use “Forgot password” (for example because the email doesn't arrive), create a one-time link here and send it to them yourself, e.g. by WhatsApp. It works once and for 1 hour; using it signs them out everywhere. Anyone who has the link can set a new password, so send it only to the dentist.",
+        "disabled": "The account is disabled. Re-activate it before creating a password-reset link.",
+        "button": "Create password-reset link",
+        "again": "Create a new link",
+        "working": "Creating…",
+        "linkLabel": "Password-reset link",
+        "copy": "Copy",
+        "copiedButton": "Copied",
+        "copied": "Link copied.",
+        "copyFailed": "Couldn't copy automatically. Select the link and copy it by hand.",
+        "validUntil": "Works once, until {time} (1 hour). Earlier links stay valid until they expire. The link isn't saved: reloading the page hides it."
       },
       "erase": {
         "title": "Delete dentist",
@@ -939,9 +883,22 @@
           "privacy": "Privacy policy (Danish and English)"
         },
         "pages": {
+          "home": "Home page texts",
           "services": "Services page texts",
           "about": "About page texts",
           "contact": "Contact page texts"
+        },
+        "homePage": {
+          "hero": "Home page: top of the page",
+          "workflow": "Home page: “How it works” section",
+          "statement": "Home page: statement",
+          "services": "Home page: heading above the services",
+          "portal": "Home page: heading above the portal illustrations",
+          "guide": "Home page: 3D guide card",
+          "about": "Home page: heading and button of the About section",
+          "technology": "Home page: technology section",
+          "testimonials": "Home page: heading above the testimonials",
+          "cta": "Home page: call to action"
         },
         "servicesPage": {
           "intro": "Services page: introduction",
@@ -1107,9 +1064,10 @@
     },
     "pages": {
       "pageTitle": "Pages",
-      "intro": "The texts of the public Services, About and Contact pages, in Danish and English. Empty texts are hidden on the site.",
+      "intro": "The texts of the public Home, Services, About and Contact pages, in Danish and English. Empty texts are hidden on the site.",
       "navLabel": "Pages",
       "names": {
+        "home": "Home",
         "services": "Services",
         "about": "About",
         "contact": "Contact"
@@ -1154,6 +1112,116 @@
         "detailsDescription": "The heading above your contact details. Email, phone, address and CVR come from Settings → Contact.",
         "formTitle": "Contact form",
         "formDescription": "The heading and short text above the form. Messages arrive under Messages, and you get an email for each one."
+      },
+      "home": {
+        "sections": {
+          "hero": {
+            "title": "Top of the page",
+            "description": "The big photo at the top: headline, short text, the two buttons, the line about clinics and the doctor card. The photo is set under Settings → Photos, the numbers under Settings → Numbers."
+          },
+          "workflow": {
+            "title": "How it works",
+            "description": "The four steps under the top of the page. A step left empty is not shown."
+          },
+          "statement": {
+            "title": "Statement",
+            "description": "The large sentence that lights up word by word as visitors scroll."
+          },
+          "services": {
+            "title": "Services",
+            "description": "The heading above your services. The services themselves are edited under Services."
+          },
+          "portal": {
+            "title": "The portal",
+            "description": "The heading above the three portal illustrations."
+          },
+          "guide": {
+            "title": "3D guide",
+            "description": "The dark card next to the interactive 3D model. Its button opens case submission in the dentist portal."
+          },
+          "about": {
+            "title": "About",
+            "description": "The heading and button of the section about the doctor. Name, bio, portrait and facts come from Settings → About the doctor."
+          },
+          "technology": {
+            "title": "Technology",
+            "description": "Heading, introduction and the three points of the technology section. A point left empty is not shown. The numbers come from Settings → Numbers."
+          },
+          "testimonials": {
+            "title": "Testimonials",
+            "description": "The heading above the testimonials. The section only shows once a testimonial is published (Settings → Testimonials)."
+          },
+          "cta": {
+            "title": "Call to action",
+            "description": "The dark band at the bottom of the page. Without a heading, the band is not shown."
+          },
+          "meta": {
+            "title": "Search engines",
+            "description": "The title and description that Google and link previews show for the home page."
+          }
+        },
+        "fields": {
+          "heroTitle": "Headline",
+          "heroSubtitle": "Text under the headline",
+          "heroPrimaryCta": "Main button",
+          "heroSecondaryCta": "Second button",
+          "heroTrust": "Line about clinics",
+          "heroDoctorRole": "Doctor card: role",
+          "heroDoctorExperience": "Doctor card: experience",
+          "workflowLabel": "Small label",
+          "workflowTitle": "Heading (screen readers)",
+          "workflowStep1Title": "Step 1: title",
+          "workflowStep1Body": "Step 1: text",
+          "workflowStep2Title": "Step 2: title",
+          "workflowStep2Body": "Step 2: text",
+          "workflowStep3Title": "Step 3: title",
+          "workflowStep3Body": "Step 3: text",
+          "workflowStep4Title": "Step 4: title",
+          "workflowStep4Body": "Step 4: text",
+          "statement": "Statement",
+          "servicesLabel": "Small label",
+          "servicesTitle": "Heading",
+          "portalLabel": "Small label",
+          "portalTitle": "Heading",
+          "portalIntro": "Introduction",
+          "guideLabel": "Small label",
+          "guideTitle": "Heading",
+          "guideBody": "Text",
+          "guideCta": "Button text",
+          "aboutLabel": "Small label",
+          "aboutTitle": "Heading",
+          "aboutCta": "Button text",
+          "aboutCtaGeneric": "Button text without a name",
+          "technologyLabel": "Small label",
+          "technologyTitle": "Heading",
+          "technologyIntro": "Introduction",
+          "technologyFeature1Title": "Point 1: title",
+          "technologyFeature1Body": "Point 1: text",
+          "technologyFeature2Title": "Point 2: title",
+          "technologyFeature2Body": "Point 2: text",
+          "technologyFeature3Title": "Point 3: title",
+          "technologyFeature3Body": "Point 3: text",
+          "testimonialsLabel": "Small label",
+          "testimonialsTitle": "Heading",
+          "ctaTitle": "Heading",
+          "ctaBody": "Text",
+          "ctaPrimary": "Main button",
+          "ctaSecondary": "Second button",
+          "metaTitle": "Page title",
+          "metaDescription": "Description"
+        },
+        "hints": {
+          "heroPrimaryCta": "Opens case submission in the dentist portal.",
+          "heroSecondaryCta": "Scrolls down to your services.",
+          "heroTrust": "Write '{count}' where the number of clinics goes. Shown only when the number is filled in under Settings → Numbers.",
+          "heroDoctorExperience": "Write '{years}' where the number of years goes. Shown only when it is filled in under Settings → Numbers.",
+          "workflowTitle": "Not shown on screen, but read aloud by screen readers and used by search engines.",
+          "guideCta": "Opens case submission in the dentist portal.",
+          "aboutCta": "Write '{name}' where the doctor's name goes. Opens the Contact page.",
+          "aboutCtaGeneric": "Used while no doctor's name is filled in under Settings → About the doctor.",
+          "ctaPrimary": "Opens case submission in the dentist portal.",
+          "ctaSecondary": "Opens the Contact page."
+        }
       }
     },
     "inbox": {

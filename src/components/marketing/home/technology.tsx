@@ -10,16 +10,21 @@ import { SiteImage } from "@/components/shared/site-image";
 import { cn } from "@/lib/utils";
 import type { PublicImage } from "@/server/queries/media";
 
-const FEATURES = ["planning", "printing", "sleeves"] as const;
+import { hasGaps, type HomeCopy } from "./home-copy";
+
+const FEATURES = [1, 2, 3] as const;
+type FeatureKey = `technologyFeature${(typeof FEATURES)[number]}${"Title" | "Body"}`;
 
 export async function Technology({
   locale,
+  copy,
   guidesDelivered,
   turnaroundDays,
   implantSystems,
   image,
 }: {
   locale: string;
+  copy: HomeCopy<"technologyLabel" | "technologyTitle" | "technologyIntro" | FeatureKey>;
   guidesDelivered: number | null;
   turnaroundDays: number | null;
   /** Live count of active implant systems in the catalog (DB). */
@@ -41,29 +46,46 @@ export async function Technology({
   ] as const;
   const stats = all.filter((s) => s.value !== null);
   const missing = all.filter((s) => s.value === null && s.field);
+  // A feature with neither title nor text is left out.
+  const features = FEATURES.map((n) => ({
+    n,
+    title: copy[`technologyFeature${n}Title`],
+    body: copy[`technologyFeature${n}Body`],
+  })).filter((f) => f.title || f.body);
 
   return (
-    <section aria-labelledby="technology-title" className="py-20 sm:py-28">
+    <section
+      aria-labelledby={copy.technologyTitle ? "technology-title" : undefined}
+      className="py-20 sm:py-28"
+    >
       <Container>
         <Reveal className="grid gap-6 lg:grid-cols-2 lg:items-end">
-          <SectionHeading index="06" label={t("label")} title={t("title")} id="technology-title" />
-          <p className="max-w-[46ch] text-lead text-ink-muted lg:justify-self-end">{t("intro")}</p>
+          <SectionHeading
+            index="06"
+            label={copy.technologyLabel}
+            title={copy.technologyTitle}
+            id="technology-title"
+          />
+          {copy.technologyIntro && (
+            <p className="max-w-[46ch] text-lead text-ink-muted lg:justify-self-end">
+              {copy.technologyIntro}
+            </p>
+          )}
         </Reveal>
+        {hasGaps(copy) && <Missing field="homePage.technology" className="mt-6" />}
 
-        <Reveal as="ol" stagger={0.07} className="mt-12 border-t border-line">
-          {FEATURES.map((key, i) => (
+        <Reveal as="ol" stagger={0.07} className="mt-12 border-t border-line empty:hidden">
+          {features.map((feature, i) => (
             <RevealItem
               as="li"
-              key={key}
+              key={feature.n}
               className="grid gap-2 border-b border-line py-6 sm:grid-cols-[4rem_1fr_1.4fr] sm:items-baseline sm:gap-6"
             >
               <span className="font-mono text-label text-ink-muted">
                 {String(i + 1).padStart(2, "0")}
               </span>
-              <h3 className="text-xl font-medium tracking-[-0.02em] text-ink">
-                {t(`features.${key}.title`)}
-              </h3>
-              <p className="text-ink-muted">{t(`features.${key}.body`)}</p>
+              <h3 className="text-xl font-medium tracking-[-0.02em] text-ink">{feature.title}</h3>
+              <p className="text-ink-muted">{feature.body}</p>
             </RevealItem>
           ))}
         </Reveal>

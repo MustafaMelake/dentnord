@@ -7,20 +7,24 @@ import { Container } from "@/components/shared/container";
 import { Missing } from "@/components/shared/missing";
 import { SectionHeading } from "@/components/shared/section-label";
 import { SiteImage } from "@/components/shared/site-image";
-import { localized } from "@/lib/utils";
+import { fillPlaceholders, localized } from "@/lib/utils";
 import type { PublicImage } from "@/server/queries/media";
 import type { DoctorSetting } from "@/server/queries/site-settings";
 
-// "About the doctor": all content comes from the admin (SiteSetting "doctor"). Empty fields are
-// hidden; admins see "Missing: …" markers instead.
+import { hasGaps, type HomeCopy } from "./home-copy";
+
+// "About the doctor": all content comes from the admin (SiteSetting "doctor", the heading and button
+// from "page.home"). Empty fields are hidden; admins see "Missing: …" markers instead.
 
 export async function About({
   locale,
+  copy,
   doctor,
   portrait,
   yearsExperience,
 }: {
   locale: string;
+  copy: HomeCopy<"aboutLabel" | "aboutTitle" | "aboutCta" | "aboutCtaGeneric">;
   doctor: DoctorSetting;
   portrait: PublicImage | null;
   yearsExperience: number | null;
@@ -50,16 +54,30 @@ export async function About({
     { key: "languages", value: languages || null, field: "doctor.languages" },
   ] as const;
   const shownFacts = facts.filter((f) => f.value);
+  const cta = doctor.name
+    ? fillPlaceholders(copy.aboutCta, { name: doctor.name })
+    : copy.aboutCtaGeneric;
 
   return (
-    <section aria-labelledby="about-title" className="py-20 sm:py-28">
+    <section
+      aria-labelledby={copy.aboutTitle ? "about-title" : undefined}
+      className="py-20 sm:py-28"
+    >
       <Container>
         <Reveal className="flex flex-col gap-8 sm:flex-row sm:items-end sm:justify-between">
-          <SectionHeading index="05" label={t("label")} title={t("title")} id="about-title" />
-          <ButtonLink href="/contact" variant="secondary" icon className="w-fit shrink-0">
-            {doctor.name ? t("cta", { name: doctor.name }) : t("ctaGeneric")}
-          </ButtonLink>
+          <SectionHeading
+            index="05"
+            label={copy.aboutLabel}
+            title={copy.aboutTitle}
+            id="about-title"
+          />
+          {cta && (
+            <ButtonLink href="/contact" variant="secondary" icon className="w-fit shrink-0">
+              {cta}
+            </ButtonLink>
+          )}
         </Reveal>
+        {hasGaps(copy) && <Missing field="homePage.about" className="mt-6" />}
 
         <Reveal className="mt-10 sm:mt-14">
           <div className="relative">

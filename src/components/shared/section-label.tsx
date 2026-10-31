@@ -30,7 +30,8 @@ export function SectionLabel({
 
 /**
  * Label + big headline, laid out like an editorial heading: on wider screens the label sits on the
- * headline's first line and the headline is indented past it.
+ * headline's first line and the headline is indented past it. An empty label or title (admin-edited
+ * text left blank) is left out.
  */
 export function SectionHeading({
   index,
@@ -52,24 +53,37 @@ export function SectionHeading({
   if (align === "center") {
     return (
       <div className={cn("flex flex-col items-center gap-5 text-center", className)}>
-        <SectionLabel index={index}>{label}</SectionLabel>
-        <h2 id={id} className={cn("max-w-[20ch] text-display-lg text-ink", titleClassName)}>
-          {title}
-        </h2>
+        {label && <SectionLabel index={index}>{label}</SectionLabel>}
+        {title && (
+          <h2 id={id} className={cn("max-w-[20ch] text-display-lg text-ink", titleClassName)}>
+            {title}
+          </h2>
+        )}
       </div>
     );
   }
   return (
     <div className={cn("relative", className)}>
-      <SectionLabel index={index} className="mb-4 sm:absolute sm:top-[0.85em] sm:left-0 sm:mb-0">
-        {label}
-      </SectionLabel>
-      <h2
-        id={id}
-        className={cn("max-w-[22ch] text-display-lg text-ink sm:indent-[11rem]", titleClassName)}
-      >
-        {title}
-      </h2>
+      {label && (
+        <SectionLabel
+          index={index}
+          className={cn("mb-4 sm:mb-0", title && "sm:absolute sm:top-[0.85em] sm:left-0")}
+        >
+          {label}
+        </SectionLabel>
+      )}
+      {title && (
+        <h2
+          id={id}
+          className={cn(
+            "max-w-[22ch] text-display-lg text-ink",
+            label && "sm:indent-[11rem]",
+            titleClassName,
+          )}
+        >
+          {title}
+        </h2>
+      )}
     </div>
   );
 }

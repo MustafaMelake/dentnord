@@ -10,6 +10,7 @@ import {
   contactPageSchema,
   contactSchema,
   doctorSchema,
+  homePageSchema,
   legalSchema,
   servicesPageSchema,
   siteImagesSchema,
@@ -19,6 +20,7 @@ import {
   type ContactInput,
   type ContactPageInput,
   type DoctorInput,
+  type HomePageInput,
   type LegalInput,
   type ServicesPageInput,
   type SiteImagesInput,
@@ -95,6 +97,12 @@ export async function saveSiteImages(input: SiteImagesInput) {
 }
 
 // Page texts (/admin/pages/*). Saving a page also marks its seeded starter copy as reviewed.
+
+export async function saveHomePage(input: HomePageInput) {
+  return runAdminAction(homePageSchema, input, (data, actor) =>
+    writeSetting("page.home", { ...data, starter: false }, actor),
+  );
+}
 
 export async function saveServicesPage(input: ServicesPageInput) {
   return runAdminAction(servicesPageSchema, input, async (data, actor) => {
