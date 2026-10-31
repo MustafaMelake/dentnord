@@ -33,6 +33,46 @@ Better Auth accepts requests from `NEXT_PUBLIC_SITE_URL` **and its www / apex tw
 `https://www.dentnord.dk` are trusted. Nothing to configure. Check after the switch that logging in
 works on both hosts (the `www` one redirects first).
 
+### Preview environment (Dependabot and branch deployments)
+
+Vercel builds every pushed branch and every Dependabot pull request as a **Preview** deployment, with
+the variables of the _Preview_ environment, not Production's. `src/env.ts` validates the environment
+at build time, so a Preview environment missing a required variable fails the build with
+`Invalid environment variables: <NAME>` (Dependabot's previews failed this way on
+`NEXT_PUBLIC_SITE_URL`). Fix it in Vercel → Project → Settings → Environment Variables, environment
+**Preview**, then redeploy the preview:
+
+| Variable                                  | Preview value                                                                                              |
+| ----------------------------------------- | ---------------------------------------------------------------------------------------------------------- |
+| `NEXT_PUBLIC_SITE_URL`, `BETTER_AUTH_URL` | the same URL for both, e.g. the project's `https://<project>.vercel.app` URL                               |
+| `DATABASE_URL`                            | the **`dev`** branch's pooled (`-pooler`) URL, as in a local `.env`. **Never production's**                |
+| `BETTER_AUTH_SECRET`                      | its own 32+ character value, not Production's                                                              |
+| `EMAIL_FROM`, `ADMIN_EMAIL`               | same as Production                                                                                         |
+| `R2_*`, `RESEND_API_KEY`, `CRON_SECRET`   | leave unset: uploads show "not configured", emails go to the log, and the cron job only runs on Production |
+
+The first five rows are the variables `src/env.ts` requires (no default, not optional). Previews run
+real server code with these credentials, including Dependabot's dependency bumps: that's why they must
+point at `dev` and never get production's database, R2 keys (patient case files) or secrets. Check that
+no variable added "for all environments" put a production value into Preview.
+
+A preview is a build check and a place to click through public pages. Logging in on a preview's own
+URL is refused unless its host is `NEXT_PUBLIC_SITE_URL` (Better Auth's trusted origin): test
+portal and admin flows locally (`pnpm test:e2e`) instead.
+
+Why the validation isn't relaxed for previews instead:
+
+- Skipping it (`SKIP_ENV_VALIDATION`) only moves the error to runtime: `NEXT_PUBLIC_SITE_URL` is read
+  at build time (browser bundle, CSP, sitemap, metadata) and would be `undefined` in emails, links and
+  auth.
+- Defaulting the URLs to Vercel's per-deployment URL when `VERCEL_ENV=preview` would make
+  `NEXT_PUBLIC_SITE_URL` pass, but previews still need `DATABASE_URL` and `BETTER_AUTH_SECRET` from
+  Vercel, so the setup above is needed anyway. It would also add a code path that only runs on Vercel
+  (untestable locally or in E2E), and a preview that builds without any setup is exactly the one that
+  might be using a production `DATABASE_URL` nobody checked.
+
+So validation stays strict in every environment and Preview gets its own values. `SKIP_ENV_VALIDATION=1`
+is only for jobs that never run the app (e.g. a CI lint/typecheck job).
+
 ## 3. R2 CORS (both buckets)
 
 Cloudflare → R2 → bucket → Settings → CORS policy. Replace the origins and keep the rest of the current
