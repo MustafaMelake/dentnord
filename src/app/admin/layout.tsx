@@ -68,6 +68,7 @@ export default async function AdminLayout({ children }: LayoutProps<"/admin">) {
         </Suspense>
       ),
     },
+    { href: "/admin/storage", label: t("storage"), icon: "storage" },
     { href: "/admin/settings", label: t("settings"), icon: "settings" },
   ];
 

@@ -13,7 +13,8 @@ import { requireAdmin, type AuthSession } from "@/server/queries/session";
 
 export type FieldErrors = Record<string, string>;
 
-type ErrorCode = "invalid" | "conflict" | "notFound" | "notAllowed" | "notConfigured";
+type ErrorCode =
+  "invalid" | "conflict" | "notFound" | "notAllowed" | "notConfigured" | "inUse" | "storage";
 
 export type ActionResult<T = undefined> =
   { ok: true; data: T } | { ok: false; error: ErrorCode; fieldErrors?: FieldErrors };

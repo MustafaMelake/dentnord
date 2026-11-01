@@ -378,7 +378,8 @@
       "unreadBadge": "{count, plural, one {# unread message} other {# unread messages}}",
       "pages": "Pages",
       "messages": "Messages",
-      "contactInboxBadge": "{count, plural, one {# unread message} other {# unread messages}}"
+      "contactInboxBadge": "{count, plural, one {# unread message} other {# unread messages}}",
+      "storage": "Storage"
     },
     "caseDetail": "Case",
     "dashboard": {
@@ -559,7 +560,9 @@
       "notFound": "This item no longer exists. Refresh the page.",
       "notAllowed": "That isn't allowed.",
       "notConfigured": "Image uploads are not configured.",
-      "generic": "Something went wrong. Please try again."
+      "generic": "Something went wrong. Please try again.",
+      "inUse": "This image is used on the website, so it can't be deleted. The page has been refreshed.",
+      "storage": "File storage didn't respond, so nothing was deleted. Try again."
     },
     "form": {
       "optional": "optional",
@@ -1252,6 +1255,69 @@
       "retry": "Try again",
       "home": "Go to the dashboard",
       "reference": "Reference: {digest}"
+    },
+    "storage": {
+      "title": "Storage",
+      "intro": "How much file storage the site uses, and the site images you can clean up. Case files can't be deleted here.",
+      "usageHeading": "Space used",
+      "cases": {
+        "label": "Case files (private)",
+        "detail": "{count, plural, one {# file} other {# files}}"
+      },
+      "media": {
+        "label": "Site images (public)",
+        "detail": "{count, plural, one {# image} other {# images}}"
+      },
+      "allowance": {
+        "title": "Cloudflare R2 free allowance",
+        "value": "{used} of {limit} ({percent}%)",
+        "note": "Both buckets together. Storage above the free allowance is billed by Cloudflare. Counted from the database (finished uploads), so it can differ slightly from Cloudflare's dashboard.",
+        "over": "Above the free allowance: Cloudflare bills the storage over it. Counted from the database (finished uploads)."
+      },
+      "dentists": {
+        "heading": "Case files per dentist",
+        "intro": "Largest first. Stored = finished files on the dentist's cases, including the lab's plan files. The cap ({cap} per dentist) counts only the dentist's own uploads.",
+        "empty": "No case files yet.",
+        "unnamed": "(no name)",
+        "columns": {
+          "dentist": "Dentist",
+          "files": "Files",
+          "stored": "Stored",
+          "cap": "Own uploads vs cap"
+        },
+        "capValue": "{used} ({percent}%)"
+      },
+      "library": {
+        "heading": "Site images",
+        "intro": "{count, plural, one {# image} other {# images}} in the media library, {unused, plural, =0 {none unused} one {# unused} other {# unused}} ({unusedSize}). Only images that nothing on the site uses can be deleted.",
+        "notConfigured": "Image storage is not configured, so images can't be deleted.",
+        "empty": "No images uploaded yet.",
+        "noAlt": "(no alt text)",
+        "usedIn": "Used in:",
+        "unused": "Not used",
+        "deleteBlocked": "In use, can't delete",
+        "delete": "Delete",
+        "deleteLabel": "Delete image: {alt}",
+        "confirmTitle": "Delete this image?",
+        "confirmBody": "“{alt}” ({size}) is deleted from the media library and from file storage. Nothing on the site uses it. This can't be undone.",
+        "confirmDelete": "Delete image",
+        "deleting": "Deleting…",
+        "cancel": "Cancel",
+        "deleted": "Image deleted.",
+        "usage": {
+          "service": "Service: {title}",
+          "portfolio": "Portfolio case: {title}",
+          "other": "Setting “{key}” ({path})",
+          "slots": {
+            "hero": "Home page: hero image",
+            "technology": "Home page: technology image",
+            "portrait": "Doctor: portrait",
+            "cardPhoto": "Doctor: card photo",
+            "servicesPage": "Services page: image",
+            "aboutPage": "About page: image"
+          }
+        }
+      }
     }
   },
   "dentistStatus": {
