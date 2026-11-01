@@ -233,6 +233,15 @@ prisma/schema.prisma, seed.ts
 - Seeded catalog rows contain "EXAMPLE"/"EKSEMPEL" (`looksLikeExample`): flagged in the admin and
   counted by the checklist until edited.
 - Testimonials: publishing needs consent (form, action and a DB `CHECK` constraint).
+- **Storage** (`/admin/storage`, `server/queries/admin-storage.ts`, math in `lib/storage-usage.ts`):
+  usage from the DB (COMPLETE `CaseFile` sizes, `MediaAsset` sizes; no bucket listing) against R2's
+  10 GB free allowance, case files per dentist against the 50 GB cap (read-only), and the media
+  library. "Used" = `findMediaUsages`: service images, portfolio images, and **any string in any
+  SiteSetting JSON equal to the media id** (so a new image slot is covered automatically; add a label
+  in `SETTING_IMAGE_SLOTS`). Only unused images can be deleted (`server/services/media-delete.ts`):
+  row locked, usage re-checked, row deleted + `CONTENT_DELETED` audit (`targetType` "media"), R2
+  object deleted last in the same transaction (a storage failure rolls back). Case files are never
+  deleted here.
 - **Media** (public images): R2 bucket `R2_MEDIA_BUCKET` (public read) served from
   `R2_MEDIA_PUBLIC_URL` (also allowed for next/image in `next.config.ts`, read at build time). Admin asks
   `createMediaUpload` for a presigned PUT (type + length signed; jpg/png/webp/avif ≤ 10 MB) → browser

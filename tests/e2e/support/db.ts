@@ -95,6 +95,12 @@ export const createService = (slug: string, title: string) =>
 export const getService = (id: string) =>
   run<{ title: { da: string; en: string }; published: boolean } | null>("getService", { id });
 
+export const createMedia = (uploaderEmail: string, alt: string) =>
+  run<{ id: string; key: string }>("createMedia", { uploaderEmail, alt });
+export const mediaState = (id: string, key: string) =>
+  run<{ row: boolean; object: boolean; deleteAudits: number }>("mediaState", { id, key });
+export const setServiceImage = (serviceId: string, mediaId: string) =>
+  run<{ ok: true }>("setServiceImage", { serviceId, mediaId });
 export const getSetting = (key: string) =>
   run<Record<string, unknown> | null>("getSetting", { key });
 

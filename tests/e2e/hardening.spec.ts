@@ -154,6 +154,7 @@ test("no page violates the CSP: public, auth, portal and admin (with an image up
     "/admin/portfolio",
     "/admin/pages",
     "/admin/messages",
+    "/admin/storage",
     "/admin/settings",
     "/admin/account",
   ]) {

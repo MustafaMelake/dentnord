@@ -125,6 +125,10 @@ async function e2eCase(caseId: string) {
 
 const DAY = 24 * 60 * 60 * 1000;
 
+// 1×1 transparent PNG.
+const TINY_PNG =
+  "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=";
+
 const ops = {
   async createUser({ email, password, name, role, status, twoFactor }: CreateUserArgs) {
     if (!email.startsWith(E2E_EMAIL_PREFIX)) throw new Error("test users must use the e2e- prefix");
@@ -340,6 +344,71 @@ const ops = {
 
   async getService({ id }: { id: string }) {
     return db.service.findUnique({ where: { id }, select: { title: true, published: true } });
+  },
+
+  /**
+   * A site image an e2e admin "uploaded": a real object in the media bucket (a 1×1 PNG under
+   * media/e2e/) and its MediaAsset row. Cleanup deletes both (by uploader).
+   */
+  async createMedia({ uploaderEmail, alt }: { uploaderEmail: string; alt: string }) {
+    if (!alt.startsWith("E2E ")) throw new Error('test images need an "E2E " alt text');
+    const uploader = await db.user.findUniqueOrThrow({
+      where: { email: uploaderEmail },
+      select: { id: true },
+    });
+    const body = Buffer.from(TINY_PNG, "base64");
+    const key = `media/e2e/${crypto.randomUUID()}.png`;
+    await r2().send(
+      new PutObjectCommand({
+        Bucket: process.env.R2_MEDIA_BUCKET ?? "dentnord-media",
+        Key: key,
+        Body: body,
+        ContentType: "image/png",
+      }),
+    );
+    const base = (process.env.R2_MEDIA_PUBLIC_URL ?? "").replace(/\/+$/, "");
+    const media = await db.mediaAsset.create({
+      data: {
+        key,
+        url: `${base}/${key}`,
+        width: 1,
+        height: 1,
+        contentType: "image/png",
+        sizeBytes: body.length,
+        alt: { da: alt, en: alt },
+        uploadedById: uploader.id,
+      },
+      select: { id: true },
+    });
+    return { id: media.id, key };
+  },
+
+  /** The MediaAsset row and whether its object is still in the bucket. */
+  async mediaState({ id, key }: { id: string; key: string }) {
+    const row = await db.mediaAsset.findUnique({ where: { id }, select: { id: true } });
+    const object = await r2()
+      .send(
+        new HeadObjectCommand({
+          Bucket: process.env.R2_MEDIA_BUCKET ?? "dentnord-media",
+          Key: key,
+        }),
+      )
+      .then(() => true)
+      .catch(() => false);
+    const audit = await db.auditLog.count({
+      where: { action: "CONTENT_DELETED", targetType: "media", targetId: id },
+    });
+    return { row: !!row, object, deleteAudits: audit };
+  },
+
+  async setServiceImage({ serviceId, mediaId }: { serviceId: string; mediaId: string }) {
+    const s = await db.service.findUniqueOrThrow({
+      where: { id: serviceId },
+      select: { slug: true },
+    });
+    if (!s.slug.startsWith(E2E_EMAIL_PREFIX)) throw new Error("only e2e services");
+    await db.service.update({ where: { id: serviceId }, data: { imageId: mediaId } });
+    return { ok: true };
   },
 
   async getSetting({ key }: { key: string }) {

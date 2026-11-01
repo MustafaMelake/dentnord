@@ -15,11 +15,17 @@ import {
   presignMediaPut,
   verifyUploadToken,
 } from "@/lib/media-storage";
-import { mediaAltSchema, mediaFinalizeSchema, mediaUploadSchema } from "@/lib/validation/admin";
+import {
+  mediaAltSchema,
+  mediaDeleteSchema,
+  mediaFinalizeSchema,
+  mediaUploadSchema,
+} from "@/lib/validation/admin";
 import { TAGS } from "@/server/cache-tags";
 import { listMediaLibrary } from "@/server/queries/admin-content";
 import { AdminActionError, runAdminAction } from "@/server/services/admin-action";
 import { recordAudit } from "@/server/services/audit";
+import { deleteUnusedMedia } from "@/server/services/media-delete";
 import { toPublicImage } from "@/server/queries/media";
 
 // Image uploads for the public site (admins only). Type and size are validated here, signed into the
@@ -117,4 +123,13 @@ export async function listMedia() {
     configured: mediaStorageStatus().configured,
     items: await listMediaLibrary(),
   }));
+}
+
+/** /admin/storage: delete an image nothing uses (R2 object + row, audit-logged). */
+export async function deleteMediaAsset(input: z.input<typeof mediaDeleteSchema>) {
+  return runAdminAction(mediaDeleteSchema, input, async ({ id }, actor) => {
+    await deleteUnusedMedia({ actor, id });
+    updateTag(TAGS.media);
+    return { id };
+  });
 }

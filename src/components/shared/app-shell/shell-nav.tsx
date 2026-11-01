@@ -5,6 +5,7 @@ import {
   FilePlus2,
   FileText,
   FolderOpen,
+  HardDrive,
   Images,
   Inbox,
   LayoutDashboard,
@@ -35,6 +36,7 @@ const ICONS = {
   settings: Settings,
   pages: FileText,
   messages: Inbox,
+  storage: HardDrive,
 } as const;
 
 export type ShellIcon = keyof typeof ICONS;

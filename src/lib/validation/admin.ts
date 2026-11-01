@@ -376,6 +376,8 @@ export const mediaFinalizeSchema = z.object({
 });
 
 export const mediaAltSchema = z.object({ id, alt: bilingualBoth(200) });
+/** /admin/storage: only the id; the key and "unused" are looked up again on the server. */
+export const mediaDeleteSchema = z.object({ id });
 
 // ── Lists ────────────────────────────────────────────────────────────────────
 
